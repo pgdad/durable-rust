@@ -1,0 +1,91 @@
+# generated: 2026-03-13
+# last_updated: 2026-03-13
+# project: durable-rust
+# project_key: NOKEY
+# tracking_system: file-system
+# story_location: {project-root}/_bmad-output/implementation-artifacts
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Epic Status Transitions:
+#   - backlog → in-progress: Automatically when first story is created (via create-story)
+#   - in-progress → done: Manually when all stories reach 'done' status
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created in stories folder
+#   - in-progress: Developer actively working on implementation
+#   - review: Ready for code review (via Dev's code-review workflow)
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+#
+# WORKFLOW NOTES:
+# ===============
+# - Epic transitions to 'in-progress' automatically when first story is created
+# - Stories can be worked in parallel if team capacity allows
+# - SM typically creates next story after previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+
+generated: 2026-03-13
+last_updated: 2026-03-14  # stories 4-1, 4-2, 4-3 ready-for-dev (parallel development)
+project: durable-rust
+project_key: NOKEY
+tracking_system: file-system
+story_location: _bmad-output/implementation-artifacts
+
+development_status:
+  # Epic 1: First Working Durable Lambda
+  epic-1: done
+  1-1-project-workspace-initialization: done
+  1-2-core-types-and-error-foundation: done
+  1-3-durablebackend-trait-and-replay-engine: done
+  1-4-step-operation-implementation: done
+  1-5-step-retries-and-typed-errors: done
+  1-6-closure-native-api-approach-and-lambda-integration: done
+  1-7-mockdurablecontext-and-local-testing: done
+  1-8-container-deployment-template: done
+  epic-1-retrospective: done
+
+  # Epic 2: Suspension & External Coordination
+  epic-2: done
+  2-1-wait-operation: done
+  2-2-callback-operation: done
+  2-3-invoke-operation: done
+  epic-2-retrospective: done
+
+  # Epic 3: Concurrent Execution & Observability
+  epic-3: done
+  3-1-parallel-operation: done
+  3-2-map-operation: done
+  3-3-child-context-operation: done
+  3-4-replay-safe-logging: done
+  epic-3-retrospective: done
+
+  # Epic 4: API Approach Variety
+  epic-4: in-progress
+  4-1-proc-macro-api-approach: ready-for-dev
+  4-2-trait-based-api-approach: ready-for-dev
+  4-3-builder-pattern-api-approach: ready-for-dev
+  4-4-cross-approach-behavioral-parity-verification: backlog
+  epic-4-retrospective: optional
+
+  # Epic 5: Comprehensive Testing & Behavioral Compliance
+  epic-5: backlog
+  5-1-operation-sequence-verification: backlog
+  5-2-python-rust-compliance-suite: backlog
+  epic-5-retrospective: optional
+
+  # Epic 6: Documentation, Examples & Developer Onboarding
+  epic-6: backlog
+  6-1-rustdoc-coverage: backlog
+  6-2-standalone-examples-across-all-api-styles: backlog
+  6-3-python-to-rust-migration-guide: backlog
+  epic-6-retrospective: optional

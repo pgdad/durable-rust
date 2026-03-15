@@ -1,0 +1,30 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/durable-lambda-core",
+    "crates/durable-lambda-macro",
+    "crates/durable-lambda-trait",
+    "crates/durable-lambda-closure",
+    "crates/durable-lambda-builder",
+    "crates/durable-lambda-testing",
+    "examples/closure-style",
+]
+
+[workspace.dependencies]
+aws-sdk-lambda = "1.118.0"
+aws-config = { version = "1.8.15", features = ["behavior-version-latest"] }
+lambda_runtime = "1.1.1"
+tokio = { version = "1.50.0", features = ["full"] }
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = "1.0.149"
+thiserror = "2.0.18"
+tracing = "0.1.44"
+tracing-subscriber = "0.3.23"
+syn = { version = "2.0.117", features = ["full"] }
+quote = "1.0.45"
+proc-macro2 = "1.0.106"
+blake2 = "0.10"
+hex = "0.4"
+async-trait = "0.1"
+aws-smithy-types = "1.4.6"
+tracing-test = "0.2"

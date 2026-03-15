@@ -1,0 +1,10 @@
+[package]
+name = "durable-lambda-builder"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+durable-lambda-core = { path = "../durable-lambda-core" }
+lambda_runtime = { workspace = true }
+tokio = { workspace = true }
+serde = { workspace = true }

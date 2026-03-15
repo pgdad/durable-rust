@@ -1,0 +1,13 @@
+[package]
+name = "durable-lambda-testing"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+durable-lambda-core = { path = "../durable-lambda-core" }
+aws-sdk-lambda = { workspace = true }
+aws-smithy-types = { workspace = true }
+async-trait = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tokio = { workspace = true }

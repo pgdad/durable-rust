@@ -1,0 +1,14 @@
+[package]
+name = "closure-style-example"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "closure-style-example"
+path = "src/main.rs"
+
+[dependencies]
+durable-lambda-closure = { path = "../../crates/durable-lambda-closure" }
+serde_json = { workspace = true }
+tokio = { workspace = true }
+lambda_runtime = { workspace = true }

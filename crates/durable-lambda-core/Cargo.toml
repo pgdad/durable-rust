@@ -1,0 +1,22 @@
+[package]
+name = "durable-lambda-core"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+aws-sdk-lambda = { workspace = true }
+aws-config = { workspace = true }
+tokio = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+blake2 = { workspace = true }
+hex = { workspace = true }
+async-trait = { workspace = true }
+aws-smithy-types = { workspace = true }
+
+[dev-dependencies]
+durable-lambda-testing = { path = "../durable-lambda-testing" }
+tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
+tracing-test = { workspace = true }
