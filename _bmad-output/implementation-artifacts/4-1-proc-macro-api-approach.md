@@ -1,6 +1,6 @@
 # Story 4.1: Proc-Macro API Approach
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -26,33 +26,33 @@ So that I can write handlers with minimal boilerplate in the most idiomatic Rust
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Implement the `#[durable_execution]` attribute macro in `lib.rs` (AC: #1, #2, #5)
-  - [ ] 1.1: Define `#[proc_macro_attribute] pub fn durable_execution(attr: TokenStream, item: TokenStream) -> TokenStream` in lib.rs
-  - [ ] 1.2: Parse the annotated function using `syn::parse_macro_input!(item as syn::ItemFn)`
-  - [ ] 1.3: Validate: function must be `async`, must have exactly 2 parameters (event: serde_json::Value, ctx: DurableContext), must return `Result<serde_json::Value, DurableError>`
-  - [ ] 1.4: Delegate to `expand::expand_durable_execution(func)` for code generation
-  - [ ] 1.5: Emit clear compile errors for invalid function signatures
+- [x] Task 1: Implement the `#[durable_execution]` attribute macro in `lib.rs` (AC: #1, #2, #5)
+  - [x] 1.1: Define `#[proc_macro_attribute] pub fn durable_execution(attr: TokenStream, item: TokenStream) -> TokenStream` in lib.rs
+  - [x] 1.2: Parse the annotated function using `syn::parse_macro_input!(item as syn::ItemFn)`
+  - [x] 1.3: Validate: function must be `async`, must have exactly 2 parameters (event: serde_json::Value, ctx: DurableContext), must return `Result<serde_json::Value, DurableError>`
+  - [x] 1.4: Delegate to `expand::expand_durable_execution(func)` for code generation
+  - [x] 1.5: Emit clear compile errors for invalid function signatures
 
-- [ ] Task 2: Implement macro expansion in `expand.rs` (AC: #1, #3)
-  - [ ] 2.1: Generate a `main()` function that wires up AWS config, Lambda client, RealBackend, and lambda_runtime
-  - [ ] 2.2: The generated code must parse `DurableExecutionArn`, `CheckpointToken`, and `InitialExecutionState` from the Lambda event JSON
-  - [ ] 2.3: Generate `DurableContext::new()` call with pagination support (matching closure crate's `run()` logic)
-  - [ ] 2.4: Generate call to the user's handler function with extracted event and DurableContext
-  - [ ] 2.5: Include the same helper functions as closure crate: `parse_operations()`, `parse_operation_type()`, `parse_operation_status()`, `extract_user_event()`
-  - [ ] 2.6: Preserve the original function name and signature — the macro wraps it, doesn't replace it
-  - [ ] 2.7: Generated code references `durable_lambda_core::*` paths (user's crate provides the dependency)
+- [x] Task 2: Implement macro expansion in `expand.rs` (AC: #1, #3)
+  - [x] 2.1: Generate a `main()` function that wires up AWS config, Lambda client, RealBackend, and lambda_runtime
+  - [x] 2.2: The generated code must parse `DurableExecutionArn`, `CheckpointToken`, and `InitialExecutionState` from the Lambda event JSON
+  - [x] 2.3: Generate `DurableContext::new()` call with pagination support (matching closure crate's `run()` logic)
+  - [x] 2.4: Generate call to the user's handler function with extracted event and DurableContext
+  - [x] 2.5: Include the same helper functions as closure crate: `parse_operations()`, `parse_operation_type()`, `parse_operation_status()`, `extract_user_event()`
+  - [x] 2.6: Preserve the original function name and signature — the macro wraps it, doesn't replace it
+  - [x] 2.7: Generated code references `durable_lambda_core::*` paths (user's crate provides the dependency)
 
-- [ ] Task 3: Write tests (AC: #1, #3, #6)
-  - [ ] 3.1: Test macro compiles on a valid async handler function
-  - [ ] 3.2: Test macro rejects non-async functions with clear error
-  - [ ] 3.3: Test macro rejects functions with wrong parameter count with clear error
-  - [ ] 3.4: Test generated code structure (verify expansion produces expected tokens)
-  - [ ] 3.5: All doc tests compile via `cargo test --doc`
+- [x] Task 3: Write tests (AC: #1, #3, #6)
+  - [x] 3.1: Test macro compiles on a valid async handler function
+  - [x] 3.2: Test macro rejects non-async functions with clear error
+  - [x] 3.3: Test macro rejects functions with wrong parameter count with clear error
+  - [x] 3.4: Test generated code structure (verify expansion produces expected tokens)
+  - [x] 3.5: All doc tests compile via `cargo test --doc`
 
-- [ ] Task 4: Verify all checks pass (AC: #6)
-  - [ ] 4.1: `cargo test --workspace` — all tests pass
-  - [ ] 4.2: `cargo clippy --workspace -- -D warnings` — no warnings
-  - [ ] 4.3: `cargo fmt --check` — formatting passes
+- [x] Task 4: Verify all checks pass (AC: #6)
+  - [x] 4.1: `cargo test --workspace` — all tests pass
+  - [x] 4.2: `cargo clippy --workspace -- -D warnings` — no warnings
+  - [x] 4.3: `cargo fmt --check` — formatting passes
 
 ## Dev Notes
 
@@ -213,10 +213,37 @@ The `parse_operations()`, `parse_operation_type()`, `parse_operation_status()`, 
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Claude Opus 4.6 (1M context)
 
 ### Debug Log References
 
+None — no debugging required.
+
 ### Completion Notes List
 
+- Implemented `#[durable_execution]` attribute macro in `lib.rs` with signature validation (async check, 2-parameter check)
+- Implemented full code generation in `expand.rs` — generates `#[tokio::main] async fn main()` with AWS config, Lambda client, RealBackend, lambda_runtime registration, event parsing, and DurableContext creation
+- Created shared `durable_lambda_core::event` module (Option 2 from Dev Notes) with `parse_operations()`, `parse_operation_type()`, `parse_operation_status()`, `extract_user_event()` — shared across all approach crates
+- Generated code uses fully qualified paths (`::durable_lambda_core::*`, `::lambda_runtime::*`, etc.) for hygiene
+- 7 unit tests in `expand.rs` verify expansion correctness, signature validation, and error messages
+- 2 trybuild compile-fail tests verify clear error messages for non-async and wrong parameter count
+- 8 unit tests + 4 doc tests in `event.rs` cover all event parsing helpers
+- All 252 workspace tests pass, clippy clean, fmt clean
+- Macro crate has NO runtime dependency on `durable-lambda-core` (only syn/quote/proc-macro2 as [dependencies]; core is only in [dev-dependencies] for trybuild tests)
+
+### Change Log
+
+- 2026-03-14: Story 4.1 implementation complete — proc-macro API approach with shared event helpers
+
 ### File List
+
+- `crates/durable-lambda-macro/src/lib.rs` (modified — attribute macro entry point)
+- `crates/durable-lambda-macro/src/expand.rs` (modified — code generation logic)
+- `crates/durable-lambda-macro/Cargo.toml` (modified — added dev-dependencies for trybuild tests)
+- `crates/durable-lambda-macro/tests/trybuild.rs` (new — trybuild test harness)
+- `crates/durable-lambda-macro/tests/ui/fail_not_async.rs` (new — compile-fail test)
+- `crates/durable-lambda-macro/tests/ui/fail_not_async.stderr` (new — expected error output)
+- `crates/durable-lambda-macro/tests/ui/fail_wrong_param_count.rs` (new — compile-fail test)
+- `crates/durable-lambda-macro/tests/ui/fail_wrong_param_count.stderr` (new — expected error output)
+- `crates/durable-lambda-core/src/event.rs` (new — shared event parsing helpers)
+- `crates/durable-lambda-core/src/lib.rs` (modified — added `pub mod event`)

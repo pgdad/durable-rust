@@ -1,0 +1,5 @@
+error: #[durable_execution] requires exactly 2 parameters (event: serde_json::Value, ctx: DurableContext), found 1
+ --> tests/ui/fail_wrong_param_count.rs:4:18
+  |
+4 | async fn handler(event: serde_json::Value) -> Result<serde_json::Value, durable_lambda_core::error::DurableError> {
+  |                  ^^^^^^^^^^^^^^^^^^^^^^^^

@@ -1,0 +1,19 @@
+error: #[durable_execution] requires an async function
+ --> tests/ui/fail_not_async.rs:6:1
+  |
+6 | fn handler(
+  | ^^
+
+warning: unused import: `durable_lambda_core::context::DurableContext`
+ --> tests/ui/fail_not_async.rs:1:5
+  |
+1 | use durable_lambda_core::context::DurableContext;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `durable_lambda_core::error::DurableError`
+ --> tests/ui/fail_not_async.rs:2:5
+  |
+2 | use durable_lambda_core::error::DurableError;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

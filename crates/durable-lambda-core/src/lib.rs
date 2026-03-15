@@ -1,6 +1,7 @@
 pub mod backend;
 pub mod context;
 pub mod error;
+pub mod event;
 pub mod operation_id;
 pub mod operations;
 pub mod replay;

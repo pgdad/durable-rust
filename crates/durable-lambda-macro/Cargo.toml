@@ -10,3 +10,12 @@ proc-macro = true
 syn = { workspace = true }
 quote = { workspace = true }
 proc-macro2 = { workspace = true }
+
+[dev-dependencies]
+trybuild = "1.0"
+durable-lambda-core = { path = "../durable-lambda-core" }
+tokio = { workspace = true }
+lambda_runtime = { workspace = true }
+serde_json = { workspace = true }
+aws-config = { workspace = true }
+aws-sdk-lambda = { workspace = true }
