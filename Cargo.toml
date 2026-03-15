@@ -12,6 +12,7 @@ members = [
     "examples/trait-style",
     "examples/builder-style",
     "tests/parity",
+    "tests/e2e",
     "compliance/rust",
 ]
 

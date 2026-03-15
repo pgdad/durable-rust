@@ -1,60 +1,108 @@
 # Test Automation Summary
 
-**Date:** 2026-03-14
-**Scope:** Epic 2 (Suspension & External Coordination) — integration tests for multi-operation workflows
+**Date:** 2026-03-15
+**Scope:** Full SDK — end-to-end workflow tests covering all operation types across execute and replay modes
 
 ## Generated Tests
 
-### MockDurableContext Extensions (Testing Crate)
+### E2E Test Crate (`tests/e2e/`)
 
-Added 3 new builder methods to `MockDurableContext` for Epic 2 operations:
-- `with_wait(name)` — pre-load a completed wait operation
-- `with_callback(name, callback_id, result_json)` — pre-load a completed callback with result
-- `with_invoke(name, result_json)` — pre-load a completed chained invoke with result
+28 end-to-end tests exercising realistic multi-operation durable workflows:
 
-**File:** `crates/durable-lambda-testing/src/mock_context.rs`
+### Execute Mode Workflows
+- [x] `execute_mode_step_runs_closure_and_checkpoints` — Single step execution + checkpoint verification
+- [x] `execute_mode_multi_step_workflow_checkpoints_each_step` — 3-step sequential workflow
+- [x] `execute_mode_step_error_is_checkpointed` — Typed errors are checkpointed correctly
 
-### Integration Tests
+### Replay Mode Workflows
+- [x] `replay_mode_step_error_replays_identically` — Error replay produces identical results
+- [x] `replay_step_wait_callback_invoke_in_sequence` — All 4 operation types replayed in sequence (6 operations)
+- [x] `full_workflow_replays_all_operation_types` — step + wait + callback + invoke + step (5-operation pipeline)
+- [x] `complex_types_replay_from_history` — Complex structs deserialize correctly from replay
 
-- [x] `tests/multi_operation_workflows.rs` — 6 integration tests exercising realistic multi-operation workflows
+### Replay-to-Execute Transitions
+- [x] `workflow_transitions_from_replay_to_execute_mid_stream` — Verifies mode transition when history is exhausted
 
-| Test | Operations | Description |
-|------|-----------|-------------|
-| `test_step_wait_step_workflow_replays_correctly` | step → wait → step | Order validation with cooldown |
-| `test_callback_workflow_replays_correctly` | callback (create + result) | External approval flow |
-| `test_invoke_workflow_replays_correctly` | invoke | Lambda-to-Lambda call |
-| `test_full_epic2_workflow_replays_correctly` | step → wait → callback → invoke → step | Complete 5-operation order processing workflow |
-| `test_context_transitions_to_executing_after_full_replay` | step → wait → step | Verifies Replaying → Executing mode transition |
-| `test_step_error_in_mixed_workflow` | step → wait → step (error) | Error replay in mixed operations |
+### Parallel Operations
+- [x] `parallel_with_steps_executes_and_returns_results` — 3-branch parallel with steps in each branch
+- [x] `parallel_with_mixed_success_and_failure` — Branch failure captured without blocking other branches
+- [x] `steps_before_and_after_parallel` — Sequential steps surrounding parallel block
+- [x] `parallel_inside_child_context` — Parallel nested inside child context
 
-**File:** `crates/durable-lambda-core/tests/multi_operation_workflows.rs`
+### Map Operations
+- [x] `map_processes_all_items_and_returns_ordered_results` — 5-item concurrent map with steps
+- [x] `map_with_batch_size_processes_in_batches` — Batched sequential processing
+- [x] `map_with_item_failure_captures_error` — Partial failure handling
+- [x] `map_with_empty_collection` — Edge case: empty input
+- [x] `map_with_single_item` — Edge case: single item
+- [x] `map_inside_child_context` — Map nested inside child context
+
+### Child Context Operations
+- [x] `child_context_executes_isolated_subflow` — Parent + child + parent step sequence
+- [x] `nested_child_contexts` — Two levels of nested child contexts
+
+### Logging (Replay-Safe)
+- [x] `logging_operations_do_not_affect_workflow` — All 8 log methods don't produce durable operations
+
+### Callback Options
+- [x] `callback_with_timeout_options_replays` — Timeout + heartbeat options in replay
+
+### Step Options
+- [x] `step_with_options_retries_configuration` — Retry configuration with backoff
+
+### Complex Data Types
+- [x] `complex_types_serialize_through_steps` — Custom structs through execute mode
+- [x] `complex_types_replay_from_history` — Custom structs through replay mode
+
+### Edge Cases
+- [x] `empty_context_starts_in_execute_mode` — Empty context mode + metadata
+- [x] `single_step_workflow` — Minimal workflow
+
+### Real-World Scenarios
+- [x] `e2e_order_processing_pipeline` — Complete order pipeline: validate → parallel inventory → child context payment → confirm
+
+### Assertion Helpers
+- [x] `assert_operation_count_works` — Validates all assertion helpers
 
 ## Coverage
 
 ### Operation Types Covered
-- Steps (basic + error): covered in integration tests
-- Wait: covered in integration tests
-- Callback (create + result): covered in integration tests
-- Invoke (chained): covered in integration tests
+| Operation | Execute Mode | Replay Mode | Error Cases |
+|-----------|:---:|:---:|:---:|
+| Step | x | x | x |
+| Step with Options | x | — | — |
+| Wait | — | x | — |
+| Callback | — | x | — |
+| Callback with Options | — | x | — |
+| Invoke | — | x | — |
+| Parallel | x | — | x |
+| Map | x | — | x |
+| Map (batched) | x | — | — |
+| Child Context | x | — | — |
+| Nested Child Context | x | — | — |
+| Logging (all 8 methods) | x | — | — |
 
-### Test Counts (Full Workspace)
+### Test Counts (E2E Crate)
 | Category | Count |
 |----------|-------|
-| Core unit tests | 72 |
-| Core doc tests | 55 |
-| Core integration tests | 6 (NEW) |
-| Closure unit tests | 6 |
-| Closure doc tests | 14 |
-| Testing crate unit tests | 6 |
-| Testing crate doc tests | 15 |
-| **Total** | **174** |
+| Execute mode tests | 16 |
+| Replay mode tests | 7 |
+| Transition tests | 1 |
+| Edge case tests | 4 |
+| **Total E2E tests** | **28** |
 
-## Files Modified/Created
-- `crates/durable-lambda-testing/src/mock_context.rs` — added `with_wait`, `with_callback`, `with_invoke` builders
-- `crates/durable-lambda-core/Cargo.toml` — added `durable-lambda-testing` dev-dependency
-- `crates/durable-lambda-core/tests/multi_operation_workflows.rs` — NEW: 6 integration tests
+## Files Created
+- `tests/e2e/Cargo.toml` — E2E test crate configuration
+- `tests/e2e/src/lib.rs` — Crate root
+- `tests/e2e/tests/e2e_workflows.rs` — 28 E2E tests
+- `Cargo.toml` — Updated workspace members
+
+## Prior Test Infrastructure (unchanged)
+- `crates/durable-lambda-core/tests/multi_operation_workflows.rs` — 6 integration tests
+- `tests/parity/tests/parity.rs` — Cross-approach behavioral parity tests
+- `compliance/rust/tests/compare_outputs.rs` — Python-Rust compliance tests
 
 ## Next Steps
 - Run tests in CI when GitHub Actions pipeline is set up
-- Add integration tests for Epic 3 operations (parallel, map, child context, logging) as they're implemented
-- Consider adding property-based tests for replay determinism
+- Add execute-mode tests for wait/callback/invoke (requires real backend or enhanced mock)
+- Consider property-based tests for replay determinism
