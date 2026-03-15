@@ -1,6 +1,6 @@
 # Story 4.3: Builder-Pattern API Approach
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -24,35 +24,35 @@ So that I can configure complex handlers with explicit, step-by-step constructio
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Implement `DurableHandlerBuilder` in `handler.rs` (AC: #1, #2)
-  - [ ] 1.1: `pub struct DurableHandlerBuilder<F, Fut>` with `handler: F` field — stores the user's handler closure
-  - [ ] 1.2: `pub fn handler<F, Fut>(f: F) -> DurableHandlerBuilder<F, Fut>` — constructor function that starts the builder
-  - [ ] 1.3: `pub async fn run(self) -> Result<(), lambda_runtime::Error>` — consumes builder, wires up AWS config, Lambda client, RealBackend, lambda_runtime
-  - [ ] 1.4: Reuse event parsing helpers from `durable_lambda_core::event` module (if created by story 4-1) or duplicate from closure crate's handler.rs
-  - [ ] 1.5: Rustdoc with `# Examples` showing builder construction and `run()` usage
+- [x] Task 1: Implement `DurableHandlerBuilder` in `handler.rs` (AC: #1, #2)
+  - [x] 1.1: `pub struct DurableHandlerBuilder<F, Fut>` with `handler: F` field — stores the user's handler closure
+  - [x] 1.2: `pub fn handler<F, Fut>(f: F) -> DurableHandlerBuilder<F, Fut>` — constructor function that starts the builder
+  - [x] 1.3: `pub async fn run(self) -> Result<(), lambda_runtime::Error>` — consumes builder, wires up AWS config, Lambda client, RealBackend, lambda_runtime
+  - [x] 1.4: Reuse event parsing helpers from `durable_lambda_core::event` module (if created by story 4-1) or duplicate from closure crate's handler.rs
+  - [x] 1.5: Rustdoc with `# Examples` showing builder construction and `run()` usage
 
-- [ ] Task 2: Implement `BuilderContext` wrapper in `context.rs` (AC: #1, #3)
-  - [ ] 2.1: `pub struct BuilderContext { inner: DurableContext }` — same thin wrapper pattern as ClosureContext
-  - [ ] 2.2: All 8 durable operation methods delegating to `self.inner.*()` (step, step_with_options, wait, create_callback, callback_result, invoke, parallel, child_context, map)
-  - [ ] 2.3: All 8 log methods delegating to `self.inner.log*()`
-  - [ ] 2.4: Query methods: `execution_mode()`, `is_replaying()`, `arn()`, `checkpoint_token()`
-  - [ ] 2.5: `pub(crate) fn new(ctx: DurableContext) -> Self` constructor
-  - [ ] 2.6: Rustdoc with `# Examples` on all public methods
+- [x] Task 2: Implement `BuilderContext` wrapper in `context.rs` (AC: #1, #3)
+  - [x] 2.1: `pub struct BuilderContext { inner: DurableContext }` — same thin wrapper pattern as ClosureContext
+  - [x] 2.2: All 8 durable operation methods delegating to `self.inner.*()` (step, step_with_options, wait, create_callback, callback_result, invoke, parallel, child_context, map)
+  - [x] 2.3: All 8 log methods delegating to `self.inner.log*()`
+  - [x] 2.4: Query methods: `execution_mode()`, `is_replaying()`, `arn()`, `checkpoint_token()`
+  - [x] 2.5: `pub(crate) fn new(ctx: DurableContext) -> Self` constructor
+  - [x] 2.6: Rustdoc with `# Examples` on all public methods
 
-- [ ] Task 3: Set up `lib.rs` and `prelude.rs` re-exports (AC: #3, #4)
-  - [ ] 3.1: lib.rs re-exports: `BuilderContext`, `DurableHandlerBuilder`, `handler` (constructor function)
-  - [ ] 3.2: prelude.rs re-exports: `BuilderContext`, `DurableHandlerBuilder`, `handler`, `DurableError`, and all core types (BatchItem, BatchItemStatus, BatchResult, CallbackHandle, CallbackOptions, CheckpointResult, CompletionReason, ExecutionMode, MapOptions, ParallelOptions, StepOptions)
+- [x] Task 3: Set up `lib.rs` and `prelude.rs` re-exports (AC: #3, #4)
+  - [x] 3.1: lib.rs re-exports: `BuilderContext`, `DurableHandlerBuilder`, `handler` (constructor function)
+  - [x] 3.2: prelude.rs re-exports: `BuilderContext`, `DurableHandlerBuilder`, `handler`, `DurableError`, and all core types (BatchItem, BatchItemStatus, BatchResult, CallbackHandle, CallbackOptions, CheckpointResult, CompletionReason, ExecutionMode, MapOptions, ParallelOptions, StepOptions)
 
-- [ ] Task 4: Write tests (AC: #1, #2, #5)
-  - [ ] 4.1: Test builder construction and type correctness
-  - [ ] 4.2: Test BuilderContext delegation — step, log, execution_mode, arn, checkpoint_token
-  - [ ] 4.3: Test builder `run()` function type signature
-  - [ ] 4.4: All doc tests compile via `cargo test --doc`
+- [x] Task 4: Write tests (AC: #1, #2, #5)
+  - [x] 4.1: Test builder construction and type correctness
+  - [x] 4.2: Test BuilderContext delegation — step, log, execution_mode, arn, checkpoint_token
+  - [x] 4.3: Test builder `run()` function type signature
+  - [x] 4.4: All doc tests compile via `cargo test --doc`
 
-- [ ] Task 5: Verify all checks pass (AC: #5)
-  - [ ] 5.1: `cargo test --workspace` — all tests pass
-  - [ ] 5.2: `cargo clippy --workspace -- -D warnings` — no warnings
-  - [ ] 5.3: `cargo fmt --check` — formatting passes
+- [x] Task 5: Verify all checks pass (AC: #5)
+  - [x] 5.1: `cargo test --workspace` — all tests pass
+  - [x] 5.2: `cargo clippy --workspace -- -D warnings` — no warnings
+  - [x] 5.3: `cargo fmt --check` — formatting passes
 
 ## Dev Notes
 
@@ -181,10 +181,32 @@ aws-smithy-types = { workspace = true }
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+Claude Opus 4.6 (1M context)
 
 ### Debug Log References
 
+No debug issues encountered.
+
 ### Completion Notes List
 
+- Implemented `DurableHandlerBuilder<F, Fut>` struct with `handler()` constructor and `run()` method, mirroring the closure crate's `run()` but using builder-pattern API (`handler(f).run().await`)
+- Implemented `BuilderContext` as thin wrapper over `DurableContext` with all 9 durable operations (step, step_with_options, wait, create_callback, callback_result, invoke, parallel, child_context, map), 8 log methods, and 4 query methods
+- Set up `lib.rs` with re-exports of `BuilderContext`, `DurableHandlerBuilder`, `handler`
+- Set up `prelude.rs` with re-exports of all builder types plus core types (DurableError, StepOptions, CallbackOptions, CallbackHandle, ExecutionMode, etc.)
+- Added Cargo.toml dependencies matching closure crate (durable-lambda-core, lambda_runtime, tokio, serde, serde_json, aws-config, aws-sdk-lambda, aws-smithy-types)
+- Event parsing helpers (parse_operations, extract_user_event, parse_operation_type, parse_operation_status) duplicated from closure crate since no shared event module exists in core
+- 10 unit tests: builder construction, run() type signature, BuilderContext delegation (step, step_with_options, execution_mode, replaying, arn, checkpoint_token, child_context, log methods)
+- 27 doc tests all compile
+- Full workspace: all tests pass, clippy clean, fmt clean
+
+### Change Log
+
+- 2026-03-14: Implemented Story 4.3 — Builder-Pattern API Approach (all 5 tasks complete)
+
 ### File List
+
+- crates/durable-lambda-builder/Cargo.toml (modified — added dependencies)
+- crates/durable-lambda-builder/src/lib.rs (modified — re-exports and crate docs)
+- crates/durable-lambda-builder/src/handler.rs (modified — DurableHandlerBuilder, handler(), run(), event parsing)
+- crates/durable-lambda-builder/src/context.rs (modified — BuilderContext wrapper with all operations + tests)
+- crates/durable-lambda-builder/src/prelude.rs (modified — user-facing re-exports)
