@@ -7,10 +7,10 @@
 use std::future::Future;
 use std::sync::Arc;
 
-use aws_sdk_lambda::types::{Operation, OperationStatus, OperationType, StepDetails};
 use durable_lambda_core::backend::RealBackend;
 use durable_lambda_core::context::DurableContext;
 use durable_lambda_core::error::DurableError;
+use durable_lambda_core::event::{extract_user_event, parse_operations};
 use lambda_runtime::{service_fn, LambdaEvent};
 
 use crate::context::ClosureContext;
@@ -119,122 +119,4 @@ where
         }
     }))
     .await
-}
-
-/// Parse operations from the InitialExecutionState JSON.
-///
-/// Constructs `Operation` objects from the JSON array using the builder pattern.
-/// Operations that cannot be parsed are silently skipped.
-fn parse_operations(initial_state: &serde_json::Value) -> Vec<Operation> {
-    let Some(ops_array) = initial_state["Operations"].as_array() else {
-        return vec![];
-    };
-
-    ops_array
-        .iter()
-        .filter_map(|op_json| {
-            let id = op_json["Id"].as_str()?;
-            let op_type = parse_operation_type(op_json["Type"].as_str()?)?;
-            let status = parse_operation_status(op_json["Status"].as_str()?)?;
-
-            let timestamp = op_json["StartTimestamp"]
-                .as_f64()
-                .map(aws_smithy_types::DateTime::from_secs_f64)
-                .unwrap_or_else(|| aws_smithy_types::DateTime::from_secs(0));
-
-            let mut builder = Operation::builder()
-                .id(id)
-                .r#type(op_type)
-                .status(status)
-                .start_timestamp(timestamp);
-
-            // Parse step details if present.
-            if let Some(step_details_json) = op_json.get("StepDetails") {
-                let mut sd_builder = StepDetails::builder();
-
-                if let Some(result) = step_details_json["Result"].as_str() {
-                    sd_builder = sd_builder.result(result);
-                }
-
-                if let Some(error_json) = step_details_json.get("Error") {
-                    if let (Some(error_type), Some(error_data)) = (
-                        error_json["ErrorType"].as_str(),
-                        error_json["ErrorData"].as_str(),
-                    ) {
-                        sd_builder = sd_builder.error(
-                            aws_sdk_lambda::types::ErrorObject::builder()
-                                .error_type(error_type)
-                                .error_data(error_data)
-                                .build(),
-                        );
-                    }
-                }
-
-                if let Some(attempt) = step_details_json["Attempt"].as_i64() {
-                    sd_builder = sd_builder.attempt(attempt as i32);
-                }
-
-                builder = builder.step_details(sd_builder.build());
-            }
-
-            // Parse execution details if present.
-            if let Some(exec_json) = op_json.get("ExecutionDetails") {
-                let mut ed_builder = aws_sdk_lambda::types::ExecutionDetails::builder();
-                if let Some(input) = exec_json["InputPayload"].as_str() {
-                    ed_builder = ed_builder.input_payload(input);
-                }
-                builder = builder.execution_details(ed_builder.build());
-            }
-
-            builder.build().ok()
-        })
-        .collect()
-}
-
-/// Parse an operation type string into the AWS SDK enum.
-fn parse_operation_type(s: &str) -> Option<OperationType> {
-    match s {
-        "Step" | "STEP" => Some(OperationType::Step),
-        "Execution" | "EXECUTION" => Some(OperationType::Execution),
-        "Wait" | "WAIT" => Some(OperationType::Wait),
-        "Callback" | "CALLBACK" => Some(OperationType::Callback),
-        "ChainedInvoke" | "CHAINED_INVOKE" => Some(OperationType::ChainedInvoke),
-        _ => None,
-    }
-}
-
-/// Parse an operation status string into the AWS SDK enum.
-fn parse_operation_status(s: &str) -> Option<OperationStatus> {
-    match s {
-        "Succeeded" | "SUCCEEDED" => Some(OperationStatus::Succeeded),
-        "Failed" | "FAILED" => Some(OperationStatus::Failed),
-        "Pending" | "PENDING" => Some(OperationStatus::Pending),
-        "Ready" | "READY" => Some(OperationStatus::Ready),
-        "Started" | "STARTED" => Some(OperationStatus::Started),
-        _ => None,
-    }
-}
-
-/// Extract the user's original event payload from the InitialExecutionState JSON.
-///
-/// The first operation with type EXECUTION contains the user's input payload
-/// in its `ExecutionDetails.InputPayload` field. If not found, returns an
-/// empty JSON object.
-fn extract_user_event(initial_state: &serde_json::Value) -> serde_json::Value {
-    if let Some(ops) = initial_state["Operations"].as_array() {
-        for op in ops {
-            if op["Type"].as_str() == Some("Execution") || op["Type"].as_str() == Some("EXECUTION")
-            {
-                if let Some(input) = op
-                    .get("ExecutionDetails")
-                    .and_then(|ed| ed["InputPayload"].as_str())
-                {
-                    if let Ok(parsed) = serde_json::from_str(input) {
-                        return parsed;
-                    }
-                }
-            }
-        }
-    }
-    serde_json::Value::Object(serde_json::Map::new())
 }

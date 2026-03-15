@@ -1,0 +1,15 @@
+[package]
+name = "parity-tests"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+durable-lambda-core = { path = "../../crates/durable-lambda-core" }
+durable-lambda-closure = { path = "../../crates/durable-lambda-closure" }
+durable-lambda-trait = { path = "../../crates/durable-lambda-trait" }
+durable-lambda-builder = { path = "../../crates/durable-lambda-builder" }
+durable-lambda-testing = { path = "../../crates/durable-lambda-testing" }
+tokio = { workspace = true, features = ["test-util", "macros"] }
+serde_json = { workspace = true }
+async-trait = { workspace = true }

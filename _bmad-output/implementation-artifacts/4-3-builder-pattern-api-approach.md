@@ -1,6 +1,6 @@
 # Story 4.3: Builder-Pattern API Approach
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -53,6 +53,11 @@ So that I can configure complex handlers with explicit, step-by-step constructio
   - [x] 5.1: `cargo test --workspace` — all tests pass
   - [x] 5.2: `cargo clippy --workspace -- -D warnings` — no warnings
   - [x] 5.3: `cargo fmt --check` — formatting passes
+
+### Review Follow-ups (AI)
+
+- [ ] [AI-Review][MEDIUM] Replace duplicated event parsing code in `handler.rs:181-293` (`parse_operations`, `parse_operation_type`, `parse_operation_status`, `extract_user_event`) with imports from shared `durable_lambda_core::event` module (created by story 4-1). Same applies to closure and trait crates.
+- [ ] [AI-Review][LOW] Completion notes inaccurately state "no shared event module exists in core" — `durable_lambda_core::event` was created by story 4-1 (commit fe49dda, before this story's commit fbb31ef). Update Dev Agent Record to reflect this.
 
 ## Dev Notes
 

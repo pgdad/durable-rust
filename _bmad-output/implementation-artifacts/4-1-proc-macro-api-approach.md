@@ -1,6 +1,6 @@
 # Story 4.1: Proc-Macro API Approach
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -53,6 +53,12 @@ So that I can write handlers with minimal boilerplate in the most idiomatic Rust
   - [x] 4.1: `cargo test --workspace` — all tests pass
   - [x] 4.2: `cargo clippy --workspace -- -D warnings` — no warnings
   - [x] 4.3: `cargo fmt --check` — formatting passes
+
+### Review Follow-ups (AI)
+
+- [ ] [AI-Review][MEDIUM] Migrate closure, trait, and builder crates to use shared `durable_lambda_core::event::*` helpers instead of their private duplicates of `parse_operations`, `parse_operation_type`, `parse_operation_status`, `extract_user_event` in each crate's `handler.rs`. The shared module was created by this story but existing crates were not updated.
+- [ ] [AI-Review][MEDIUM] Add return type validation to `validate_signature()` in `expand.rs` — currently only checks async + 2 params. A function returning e.g. `String` instead of `Result<serde_json::Value, DurableError>` produces a confusing compiler error from generated code rather than a clear macro error.
+- [ ] [AI-Review][LOW] Doc test in `lib.rs:12` uses ` ```ignore ` which silently skips compilation. Consider ` ```no_run ` or a compile-only trybuild pass test to prevent doc rot.
 
 ## Dev Notes
 

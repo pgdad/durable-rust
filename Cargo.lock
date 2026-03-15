@@ -644,9 +644,14 @@ checksum = "92773504d58c093f6de2459af4af33faa518c13451eb8f2b5698ed3d36e7c813"
 name = "durable-lambda-builder"
 version = "0.1.0"
 dependencies = [
+ "async-trait",
+ "aws-config",
+ "aws-sdk-lambda",
+ "aws-smithy-types",
  "durable-lambda-core",
  "lambda_runtime",
  "serde",
+ "serde_json",
  "tokio",
 ]
 
@@ -717,9 +722,14 @@ dependencies = [
 name = "durable-lambda-trait"
 version = "0.1.0"
 dependencies = [
+ "async-trait",
+ "aws-config",
+ "aws-sdk-lambda",
+ "aws-smithy-types",
  "durable-lambda-core",
  "lambda_runtime",
  "serde",
+ "serde_json",
  "tokio",
 ]
 
@@ -1439,6 +1449,20 @@ name = "outref"
 version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1a80800c0488c3a21695ea981a54918fbb37abf04f4d0720c453632255e2ff0e"
+
+[[package]]
+name = "parity-tests"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "durable-lambda-builder",
+ "durable-lambda-closure",
+ "durable-lambda-core",
+ "durable-lambda-testing",
+ "durable-lambda-trait",
+ "serde_json",
+ "tokio",
+]
 
 [[package]]
 name = "parking_lot"
