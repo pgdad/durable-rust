@@ -1,0 +1,19 @@
+[package]
+name = "durable-lambda-compliance"
+version = "0.1.0"
+edition = "2021"
+description = "Python/Rust behavioral compliance verification suite"
+publish = false
+
+[dependencies]
+durable-lambda-closure = { path = "../../crates/durable-lambda-closure" }
+durable-lambda-testing = { path = "../../crates/durable-lambda-testing" }
+durable-lambda-core = { path = "../../crates/durable-lambda-core" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tokio = { workspace = true }
+
+[dev-dependencies]
+durable-lambda-testing = { path = "../../crates/durable-lambda-testing" }
+tokio = { workspace = true }
+serde_json = { workspace = true }

@@ -11,7 +11,7 @@
 //!
 //! #[tokio::test]
 //! async fn test_my_handler() {
-//!     let (mut ctx, calls) = MockDurableContext::new()
+//!     let (mut ctx, calls, _ops) = MockDurableContext::new()
 //!         .with_step_result("validate", r#"true"#)
 //!         .build()
 //!         .await;
@@ -30,5 +30,7 @@ pub mod mock_backend;
 pub mod mock_context;
 pub mod prelude;
 
-pub use mock_backend::{CheckpointCall, MockBackend};
+pub use mock_backend::{
+    CheckpointCall, CheckpointRecorder, MockBackend, OperationRecord, OperationRecorder,
+};
 pub use mock_context::MockDurableContext;

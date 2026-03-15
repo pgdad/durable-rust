@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-03-13
-last_updated: 2026-03-15  # epic 4 all stories done
+last_updated: 2026-03-15  # 6-2-standalone-examples review
 project: durable-rust
 project_key: NOKEY
 tracking_system: file-system
@@ -78,14 +78,14 @@ development_status:
   epic-4-retrospective: optional
 
   # Epic 5: Comprehensive Testing & Behavioral Compliance
-  epic-5: backlog
-  5-1-operation-sequence-verification: backlog
-  5-2-python-rust-compliance-suite: backlog
+  epic-5: in-progress
+  5-1-operation-sequence-verification: done
+  5-2-python-rust-compliance-suite: done
   epic-5-retrospective: optional
 
   # Epic 6: Documentation, Examples & Developer Onboarding
-  epic-6: backlog
-  6-1-rustdoc-coverage: backlog
-  6-2-standalone-examples-across-all-api-styles: backlog
-  6-3-python-to-rust-migration-guide: backlog
+  epic-6: in-progress
+  6-1-rustdoc-coverage: done
+  6-2-standalone-examples-across-all-api-styles: done
+  6-3-python-to-rust-migration-guide: done
   epic-6-retrospective: optional

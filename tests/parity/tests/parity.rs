@@ -23,12 +23,12 @@ async fn step_parity_all_approaches_produce_identical_results() {
     // Verify DurableContext produces correct results in both execute and replay modes.
 
     // Execute mode: step runs the closure and checkpoints.
-    let (mut ctx, _calls) = MockDurableContext::new().build().await;
+    let (mut ctx, _calls, _ops) = MockDurableContext::new().build().await;
     let result: Result<i32, String> = ctx.step("validate", || async { Ok(42) }).await.unwrap();
     assert_eq!(result, Ok(42), "step in execute mode should run closure");
 
     // Replay mode: step returns cached result without running closure.
-    let (mut ctx, calls) = MockDurableContext::new()
+    let (mut ctx, calls, _ops) = MockDurableContext::new()
         .with_step_result("validate", "42")
         .build()
         .await;
@@ -54,7 +54,7 @@ async fn step_parity_all_approaches_produce_identical_results() {
 async fn step_with_options_parity_retries_produce_identical_results() {
     use durable_lambda_core::types::StepOptions;
 
-    let (mut ctx, _calls) = MockDurableContext::new().build().await;
+    let (mut ctx, _calls, _ops) = MockDurableContext::new().build().await;
     let result: Result<i32, String> = ctx
         .step_with_options("charge", StepOptions::new().retries(3), || async {
             Ok(100)
@@ -74,14 +74,14 @@ async fn step_with_options_parity_retries_produce_identical_results() {
 
 #[tokio::test]
 async fn execution_mode_parity_executing_when_no_history() {
-    let (ctx, _) = MockDurableContext::new().build().await;
+    let (ctx, _, _) = MockDurableContext::new().build().await;
     assert_eq!(ctx.execution_mode(), ExecutionMode::Executing);
     assert!(!ctx.is_replaying());
 }
 
 #[tokio::test]
 async fn execution_mode_parity_replaying_when_history_present() {
-    let (ctx, _) = MockDurableContext::new()
+    let (ctx, _, _) = MockDurableContext::new()
         .with_step_result("op1", r#"{"Ok":1}"#)
         .build()
         .await;
@@ -95,7 +95,7 @@ async fn execution_mode_parity_replaying_when_history_present() {
 
 #[tokio::test]
 async fn query_parity_arn_and_checkpoint_token() {
-    let (ctx, _) = MockDurableContext::new().build().await;
+    let (ctx, _, _) = MockDurableContext::new().build().await;
     // MockDurableContext uses default "arn:aws:lambda:mock:000000000000:function:mock-function"
     // and "mock-checkpoint-token" — exact values depend on mock implementation.
     let arn = ctx.arn();
@@ -110,7 +110,7 @@ async fn query_parity_arn_and_checkpoint_token() {
 
 #[tokio::test]
 async fn child_context_parity_identical_results() {
-    let (mut ctx, _) = MockDurableContext::new().build().await;
+    let (mut ctx, _, _) = MockDurableContext::new().build().await;
 
     let result: i32 = ctx
         .child_context("sub_workflow", |mut child_ctx: DurableContext| async move {
@@ -131,7 +131,7 @@ async fn child_context_parity_identical_results() {
 
 #[tokio::test]
 async fn log_parity_all_methods_callable_without_panic() {
-    let (ctx, _) = MockDurableContext::new().build().await;
+    let (ctx, _, _) = MockDurableContext::new().build().await;
     // All 8 log methods should be callable without panicking.
     ctx.log("info message");
     ctx.log_with_data("info data", &serde_json::json!({"key": "value"}));

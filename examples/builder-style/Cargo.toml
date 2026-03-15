@@ -1,0 +1,56 @@
+[package]
+name = "builder-style-example"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "builder-basic-steps"
+path = "src/basic_steps.rs"
+
+[[bin]]
+name = "builder-step-retries"
+path = "src/step_retries.rs"
+
+[[bin]]
+name = "builder-typed-errors"
+path = "src/typed_errors.rs"
+
+[[bin]]
+name = "builder-waits"
+path = "src/waits.rs"
+
+[[bin]]
+name = "builder-callbacks"
+path = "src/callbacks.rs"
+
+[[bin]]
+name = "builder-invoke"
+path = "src/invoke.rs"
+
+[[bin]]
+name = "builder-parallel"
+path = "src/parallel.rs"
+
+[[bin]]
+name = "builder-map"
+path = "src/map.rs"
+
+[[bin]]
+name = "builder-child-contexts"
+path = "src/child_contexts.rs"
+
+[[bin]]
+name = "builder-replay-safe-logging"
+path = "src/replay_safe_logging.rs"
+
+[[bin]]
+name = "builder-combined-workflow"
+path = "src/combined_workflow.rs"
+
+[dependencies]
+durable-lambda-builder = { path = "../../crates/durable-lambda-builder" }
+durable-lambda-core = { path = "../../crates/durable-lambda-core" }
+serde_json = { workspace = true }
+serde = { workspace = true }
+tokio = { workspace = true }
+lambda_runtime = { workspace = true }

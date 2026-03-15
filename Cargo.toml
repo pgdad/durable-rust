@@ -8,7 +8,11 @@ members = [
     "crates/durable-lambda-builder",
     "crates/durable-lambda-testing",
     "examples/closure-style",
+    "examples/macro-style",
+    "examples/trait-style",
+    "examples/builder-style",
     "tests/parity",
+    "compliance/rust",
 ]
 
 [workspace.dependencies]

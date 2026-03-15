@@ -1,0 +1,8 @@
+# Python durable Lambda SDK for reference implementations.
+# Install: pip install -r requirements.txt
+#
+# These packages are used to generate reference checkpoint sequences.
+# Python workflows are NOT required for CI — their outputs are committed
+# as JSON fixtures in compliance/tests/fixtures/.
+aws-durable-execution-sdk-python
+aws-durable-execution-sdk-python-testing

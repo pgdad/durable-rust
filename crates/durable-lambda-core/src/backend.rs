@@ -94,6 +94,19 @@ pub struct RealBackend {
 
 impl RealBackend {
     /// Create a new `RealBackend` wrapping an `aws-sdk-lambda` client.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use aws_sdk_lambda::Client;
+    /// use durable_lambda_core::backend::RealBackend;
+    ///
+    /// # async fn example() {
+    /// let config = aws_config::load_defaults(aws_config::BehaviorVersion::latest()).await;
+    /// let client = Client::new(&config);
+    /// let backend = RealBackend::new(client);
+    /// # }
+    /// ```
     pub fn new(client: aws_sdk_lambda::Client) -> Self {
         Self { client }
     }

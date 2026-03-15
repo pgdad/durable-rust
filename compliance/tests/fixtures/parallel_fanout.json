@@ -1,0 +1,10 @@
+{
+  "workflow": "parallel_fanout",
+  "operations": [
+    {"type": "step", "name": "validate_input"},
+    {"type": "step", "name": "enrich_data"},
+    {"type": "step", "name": "score_data"},
+    {"type": "step", "name": "tag_data"},
+    {"type": "step", "name": "aggregate_results"}
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "workflow": "order_processing",
+  "operations": [
+    {"type": "step", "name": "validate_order"},
+    {"type": "step", "name": "charge_payment"},
+    {"type": "step", "name": "send_confirmation"}
+  ]
+}

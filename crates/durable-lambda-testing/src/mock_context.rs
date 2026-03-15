@@ -10,9 +10,8 @@ use aws_sdk_lambda::types::{
 };
 use durable_lambda_core::context::DurableContext;
 use durable_lambda_core::operation_id::OperationIdGenerator;
-use tokio::sync::Mutex;
 
-use crate::mock_backend::{CheckpointCall, MockBackend};
+use crate::mock_backend::{CheckpointRecorder, MockBackend, OperationRecorder};
 
 /// Builder for creating a [`DurableContext`] with pre-loaded step results.
 ///
@@ -30,7 +29,7 @@ use crate::mock_backend::{CheckpointCall, MockBackend};
 /// # async fn example() {
 /// use durable_lambda_testing::prelude::*;
 ///
-/// let (mut ctx, calls) = MockDurableContext::new()
+/// let (mut ctx, calls, _ops) = MockDurableContext::new()
 ///     .with_step_result("validate", r#"{"valid": true}"#)
 ///     .with_step_result("charge", r#"100"#)
 ///     .build()
@@ -61,7 +60,7 @@ impl MockDurableContext {
     /// # async fn example() {
     /// use durable_lambda_testing::prelude::*;
     ///
-    /// let (mut ctx, calls) = MockDurableContext::new()
+    /// let (mut ctx, calls, _ops) = MockDurableContext::new()
     ///     .with_step_result("my_step", r#""hello""#)
     ///     .build()
     ///     .await;
@@ -91,7 +90,7 @@ impl MockDurableContext {
     /// # async fn example() {
     /// use durable_lambda_testing::prelude::*;
     ///
-    /// let (mut ctx, _) = MockDurableContext::new()
+    /// let (mut ctx, _, _ops) = MockDurableContext::new()
     ///     .with_step_result("validate", r#"42"#)
     ///     .build()
     ///     .await;
@@ -134,7 +133,7 @@ impl MockDurableContext {
     /// # async fn example() {
     /// use durable_lambda_testing::prelude::*;
     ///
-    /// let (mut ctx, _) = MockDurableContext::new()
+    /// let (mut ctx, _, _ops) = MockDurableContext::new()
     ///     .with_step_error("charge", "PaymentError", r#""insufficient_funds""#)
     ///     .build()
     ///     .await;
@@ -179,7 +178,7 @@ impl MockDurableContext {
     /// # async fn example() {
     /// use durable_lambda_testing::prelude::*;
     ///
-    /// let (mut ctx, _) = MockDurableContext::new()
+    /// let (mut ctx, _, _ops) = MockDurableContext::new()
     ///     .with_step_result("validate", r#"42"#)
     ///     .with_wait("cooldown")
     ///     .with_step_result("charge", r#"100"#)
@@ -219,7 +218,7 @@ impl MockDurableContext {
     /// # async fn example() {
     /// use durable_lambda_testing::prelude::*;
     ///
-    /// let (mut ctx, _) = MockDurableContext::new()
+    /// let (mut ctx, _, _ops) = MockDurableContext::new()
     ///     .with_callback("approval", "cb-123", r#""approved""#)
     ///     .build()
     ///     .await;
@@ -259,7 +258,7 @@ impl MockDurableContext {
     /// # async fn example() {
     /// use durable_lambda_testing::prelude::*;
     ///
-    /// let (mut ctx, _) = MockDurableContext::new()
+    /// let (mut ctx, _, _ops) = MockDurableContext::new()
     ///     .with_invoke("call_processor", r#"{"status":"ok"}"#)
     ///     .build()
     ///     .await;
@@ -302,14 +301,14 @@ impl MockDurableContext {
     /// # async fn example() {
     /// use durable_lambda_testing::prelude::*;
     ///
-    /// let (mut ctx, calls) = MockDurableContext::new()
+    /// let (mut ctx, calls, _ops) = MockDurableContext::new()
     ///     .with_step_result("step1", r#"true"#)
     ///     .build()
     ///     .await;
     /// # }
     /// ```
-    pub async fn build(self) -> (DurableContext, Arc<Mutex<Vec<CheckpointCall>>>) {
-        let (backend, calls) = MockBackend::new("mock-token");
+    pub async fn build(self) -> (DurableContext, CheckpointRecorder, OperationRecorder) {
+        let (backend, calls, operations) = MockBackend::new("mock-token");
 
         let ctx = DurableContext::new(
             Arc::new(backend),
@@ -321,7 +320,7 @@ impl MockDurableContext {
         .await
         .expect("MockDurableContext::build should not fail");
 
-        (ctx, calls)
+        (ctx, calls, operations)
     }
 }
 
@@ -338,7 +337,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_mock_context_replays_step_result() {
-        let (mut ctx, calls) = MockDurableContext::new()
+        let (mut ctx, calls, _ops) = MockDurableContext::new()
             .with_step_result("validate", r#"42"#)
             .build()
             .await;
@@ -370,7 +369,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_mock_context_replays_multiple_steps() {
-        let (mut ctx, calls) = MockDurableContext::new()
+        let (mut ctx, calls, _ops) = MockDurableContext::new()
             .with_step_result("step1", r#""hello""#)
             .with_step_result("step2", r#""world""#)
             .build()
@@ -394,7 +393,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_mock_context_replays_step_error() {
-        let (mut ctx, _calls) = MockDurableContext::new()
+        let (mut ctx, _calls, _ops) = MockDurableContext::new()
             .with_step_error("charge", "PaymentError", r#""insufficient_funds""#)
             .build()
             .await;
@@ -409,7 +408,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_mock_context_executing_mode_when_empty() {
-        let (ctx, _calls) = MockDurableContext::new().build().await;
+        let (ctx, _calls, _ops) = MockDurableContext::new().build().await;
 
         assert!(!ctx.is_replaying());
         assert_eq!(
@@ -420,7 +419,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_mock_context_replaying_mode_with_operations() {
-        let (ctx, _calls) = MockDurableContext::new()
+        let (ctx, _calls, _ops) = MockDurableContext::new()
             .with_step_result("step1", r#"1"#)
             .build()
             .await;
@@ -436,7 +435,7 @@ mod tests {
     async fn test_mock_context_no_aws_credentials_needed() {
         // This test proves the mock works without any AWS env vars
         // by simply running successfully
-        let (mut ctx, _calls) = MockDurableContext::new()
+        let (mut ctx, _calls, _ops) = MockDurableContext::new()
             .with_step_result("test", r#"true"#)
             .build()
             .await;

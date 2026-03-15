@@ -57,13 +57,21 @@ pub struct HistoryEntry {
 /// ```
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum OperationType {
+    /// A checkpointed work unit with optional retries.
     Step,
+    /// A time-based suspension.
     Wait,
+    /// An external signal coordination point.
     Callback,
+    /// A durable Lambda-to-Lambda invocation.
     Invoke,
+    /// A fan-out of concurrent branches.
     Parallel,
+    /// A parallel collection processor.
     Map,
+    /// An isolated subflow with its own checkpoint namespace.
     ChildContext,
+    /// A replay-safe structured log entry.
     Log,
 }
 
@@ -207,11 +215,35 @@ impl StepOptions {
     }
 
     /// Return the configured retry count, if any.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use durable_lambda_core::types::StepOptions;
+    ///
+    /// let opts = StepOptions::new();
+    /// assert_eq!(opts.get_retries(), None);
+    ///
+    /// let opts = StepOptions::new().retries(3);
+    /// assert_eq!(opts.get_retries(), Some(3));
+    /// ```
     pub fn get_retries(&self) -> Option<u32> {
         self.retries
     }
 
     /// Return the configured backoff delay in seconds, if any.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use durable_lambda_core::types::StepOptions;
+    ///
+    /// let opts = StepOptions::new();
+    /// assert_eq!(opts.get_backoff_seconds(), None);
+    ///
+    /// let opts = StepOptions::new().backoff_seconds(5);
+    /// assert_eq!(opts.get_backoff_seconds(), Some(5));
+    /// ```
     pub fn get_backoff_seconds(&self) -> Option<i32> {
         self.backoff_seconds
     }
@@ -292,11 +324,35 @@ impl CallbackOptions {
     }
 
     /// Return the configured timeout in seconds.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use durable_lambda_core::types::CallbackOptions;
+    ///
+    /// let opts = CallbackOptions::new();
+    /// assert_eq!(opts.get_timeout_seconds(), 0);
+    ///
+    /// let opts = CallbackOptions::new().timeout_seconds(300);
+    /// assert_eq!(opts.get_timeout_seconds(), 300);
+    /// ```
     pub fn get_timeout_seconds(&self) -> i32 {
         self.timeout_seconds
     }
 
     /// Return the configured heartbeat timeout in seconds.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use durable_lambda_core::types::CallbackOptions;
+    ///
+    /// let opts = CallbackOptions::new();
+    /// assert_eq!(opts.get_heartbeat_timeout_seconds(), 0);
+    ///
+    /// let opts = CallbackOptions::new().heartbeat_timeout_seconds(30);
+    /// assert_eq!(opts.get_heartbeat_timeout_seconds(), 30);
+    /// ```
     pub fn get_heartbeat_timeout_seconds(&self) -> i32 {
         self.heartbeat_timeout_seconds
     }
@@ -419,6 +475,18 @@ impl MapOptions {
     }
 
     /// Return the configured batch size, if any.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use durable_lambda_core::types::MapOptions;
+    ///
+    /// let opts = MapOptions::new();
+    /// assert_eq!(opts.get_batch_size(), None);
+    ///
+    /// let opts = MapOptions::new().batch_size(10);
+    /// assert_eq!(opts.get_batch_size(), Some(10));
+    /// ```
     pub fn get_batch_size(&self) -> Option<usize> {
         self.batch_size
     }

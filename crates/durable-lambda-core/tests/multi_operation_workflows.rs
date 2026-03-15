@@ -12,7 +12,7 @@ use durable_lambda_testing::prelude::*;
 /// Tests: step → wait → step replay sequence.
 #[tokio::test]
 async fn test_step_wait_step_workflow_replays_correctly() {
-    let (mut ctx, calls) = MockDurableContext::new()
+    let (mut ctx, calls, _ops) = MockDurableContext::new()
         .with_step_result("validate", r#"{"order_id": 1, "valid": true}"#)
         .with_wait("cooldown")
         .with_step_result("charge", r#"100"#)
@@ -44,7 +44,7 @@ async fn test_step_wait_step_workflow_replays_correctly() {
 /// Tests: callback replay with deserialization.
 #[tokio::test]
 async fn test_callback_workflow_replays_correctly() {
-    let (mut ctx, calls) = MockDurableContext::new()
+    let (mut ctx, calls, _ops) = MockDurableContext::new()
         .with_callback("approval", "cb-server-42", r#""approved by alice""#)
         .build()
         .await;
@@ -68,7 +68,7 @@ async fn test_callback_workflow_replays_correctly() {
 /// Tests: invoke replay with deserialization.
 #[tokio::test]
 async fn test_invoke_workflow_replays_correctly() {
-    let (mut ctx, calls) = MockDurableContext::new()
+    let (mut ctx, calls, _ops) = MockDurableContext::new()
         .with_invoke("call_processor", r#"{"status": "processed", "amount": 99}"#)
         .build()
         .await;
@@ -94,7 +94,7 @@ async fn test_invoke_workflow_replays_correctly() {
 /// Tests: mixed-operation replay with correct operation ID sequencing.
 #[tokio::test]
 async fn test_full_epic2_workflow_replays_correctly() {
-    let (mut ctx, calls) = MockDurableContext::new()
+    let (mut ctx, calls, _ops) = MockDurableContext::new()
         .with_step_result("validate_order", r#"{"order_id": 42, "total": 99.99}"#)
         .with_wait("rate_limit_cooldown")
         .with_callback("manager_approval", "cb-mgr-1", r#""approved""#)
@@ -149,7 +149,7 @@ async fn test_full_epic2_workflow_replays_correctly() {
 /// from Replaying to Executing mode.
 #[tokio::test]
 async fn test_context_transitions_to_executing_after_full_replay() {
-    let (mut ctx, _) = MockDurableContext::new()
+    let (mut ctx, _, _ops) = MockDurableContext::new()
         .with_step_result("step1", r#"1"#)
         .with_wait("delay")
         .with_step_result("step2", r#"2"#)
@@ -180,7 +180,7 @@ async fn test_context_transitions_to_executing_after_full_replay() {
 /// Verify that step errors are replayed correctly in a mixed workflow.
 #[tokio::test]
 async fn test_step_error_in_mixed_workflow() {
-    let (mut ctx, calls) = MockDurableContext::new()
+    let (mut ctx, calls, _ops) = MockDurableContext::new()
         .with_step_result("validate", r#"true"#)
         .with_wait("delay")
         .with_step_error("charge", "PaymentError", r#""insufficient_funds""#)

@@ -4,11 +4,53 @@ version = "0.1.0"
 edition = "2021"
 
 [[bin]]
-name = "closure-style-example"
-path = "src/main.rs"
+name = "closure-basic-steps"
+path = "src/basic_steps.rs"
+
+[[bin]]
+name = "closure-step-retries"
+path = "src/step_retries.rs"
+
+[[bin]]
+name = "closure-typed-errors"
+path = "src/typed_errors.rs"
+
+[[bin]]
+name = "closure-waits"
+path = "src/waits.rs"
+
+[[bin]]
+name = "closure-callbacks"
+path = "src/callbacks.rs"
+
+[[bin]]
+name = "closure-invoke"
+path = "src/invoke.rs"
+
+[[bin]]
+name = "closure-parallel"
+path = "src/parallel.rs"
+
+[[bin]]
+name = "closure-map"
+path = "src/map.rs"
+
+[[bin]]
+name = "closure-child-contexts"
+path = "src/child_contexts.rs"
+
+[[bin]]
+name = "closure-replay-safe-logging"
+path = "src/replay_safe_logging.rs"
+
+[[bin]]
+name = "closure-combined-workflow"
+path = "src/combined_workflow.rs"
 
 [dependencies]
 durable-lambda-closure = { path = "../../crates/durable-lambda-closure" }
+durable-lambda-core = { path = "../../crates/durable-lambda-core" }
 serde_json = { workspace = true }
+serde = { workspace = true }
 tokio = { workspace = true }
 lambda_runtime = { workspace = true }

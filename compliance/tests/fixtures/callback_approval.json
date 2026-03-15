@@ -1,0 +1,10 @@
+{
+  "workflow": "callback_approval",
+  "operations": [
+    {"type": "step", "name": "submit_request"},
+    {"type": "callback", "name": "approval"},
+    {"type": "wait", "name": "approval_timeout"},
+    {"type": "step", "name": "process_approval"},
+    {"type": "step", "name": "finalize"}
+  ]
+}

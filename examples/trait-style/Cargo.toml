@@ -1,0 +1,57 @@
+[package]
+name = "trait-style-example"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "trait-basic-steps"
+path = "src/basic_steps.rs"
+
+[[bin]]
+name = "trait-step-retries"
+path = "src/step_retries.rs"
+
+[[bin]]
+name = "trait-typed-errors"
+path = "src/typed_errors.rs"
+
+[[bin]]
+name = "trait-waits"
+path = "src/waits.rs"
+
+[[bin]]
+name = "trait-callbacks"
+path = "src/callbacks.rs"
+
+[[bin]]
+name = "trait-invoke"
+path = "src/invoke.rs"
+
+[[bin]]
+name = "trait-parallel"
+path = "src/parallel.rs"
+
+[[bin]]
+name = "trait-map"
+path = "src/map.rs"
+
+[[bin]]
+name = "trait-child-contexts"
+path = "src/child_contexts.rs"
+
+[[bin]]
+name = "trait-replay-safe-logging"
+path = "src/replay_safe_logging.rs"
+
+[[bin]]
+name = "trait-combined-workflow"
+path = "src/combined_workflow.rs"
+
+[dependencies]
+durable-lambda-trait = { path = "../../crates/durable-lambda-trait" }
+durable-lambda-core = { path = "../../crates/durable-lambda-core" }
+serde_json = { workspace = true }
+serde = { workspace = true }
+tokio = { workspace = true }
+lambda_runtime = { workspace = true }
+async-trait = { workspace = true }
