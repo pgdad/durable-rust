@@ -10,7 +10,7 @@ async fn main() -> Result<(), lambda_runtime::Error> {
     durable_lambda_builder::handler(
         |event: serde_json::Value, mut ctx: BuilderContext| async move {
             let order_id = ctx
-                .step("extract_order_id", || {
+                .step("extract_order_id", move || {
                     let event = event.clone();
                     async move {
                         let id = event["order_id"].as_str().unwrap_or("unknown").to_string();

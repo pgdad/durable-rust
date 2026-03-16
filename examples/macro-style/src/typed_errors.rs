@@ -22,7 +22,7 @@ async fn handler(
     let amount: f64 = event["amount"].as_f64().unwrap_or(100.0);
 
     let payment_result: Result<String, PaymentError> = ctx
-        .step("process_payment", || async move {
+        .step("process_payment", move || async move {
             if amount > 1000.0 {
                 Err(PaymentError::InsufficientFunds {
                     balance: 500.0,

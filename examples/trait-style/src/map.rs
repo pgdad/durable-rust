@@ -29,9 +29,10 @@ impl DurableHandler for MapHandler {
                     Box<dyn Future<Output = Result<serde_json::Value, DurableError>> + Send>,
                 > {
                     Box::pin(async move {
+                        let order_id_for_step = order_id.clone();
                         let _r: Result<String, String> = child_ctx
-                            .step("process", || {
-                                let oid = order_id.clone();
+                            .step("process", move || {
+                                let oid = order_id_for_step.clone();
                                 async move { Ok(format!("processed_{oid}")) }
                             })
                             .await?;

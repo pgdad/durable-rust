@@ -21,7 +21,7 @@ async fn handler(
 
     // The step returns Result<String, PaymentError> — both sides are checkpointed.
     let payment_result: Result<String, PaymentError> = ctx
-        .step("process_payment", || async move {
+        .step("process_payment", move || async move {
             if amount > 1000.0 {
                 Err(PaymentError::InsufficientFunds {
                     balance: 500.0,

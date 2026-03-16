@@ -346,7 +346,7 @@ mod tests {
         let executed_clone = executed.clone();
 
         let result: Result<i32, String> = ctx
-            .step("validate", || {
+            .step("validate", move || {
                 let executed = executed_clone.clone();
                 async move {
                     executed.store(true, Ordering::SeqCst);

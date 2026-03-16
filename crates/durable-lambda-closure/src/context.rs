@@ -88,10 +88,10 @@ impl ClosureContext {
         f: F,
     ) -> Result<Result<T, E>, DurableError>
     where
-        T: Serialize + DeserializeOwned + Send,
-        E: Serialize + DeserializeOwned + Send,
-        F: FnOnce() -> Fut + Send,
-        Fut: Future<Output = Result<T, E>> + Send,
+        T: Serialize + DeserializeOwned + Send + 'static,
+        E: Serialize + DeserializeOwned + Send + 'static,
+        F: FnOnce() -> Fut + Send + 'static,
+        Fut: Future<Output = Result<T, E>> + Send + 'static,
     {
         self.inner.step(name, f).await
     }
@@ -135,10 +135,10 @@ impl ClosureContext {
         f: F,
     ) -> Result<Result<T, E>, DurableError>
     where
-        T: Serialize + DeserializeOwned + Send,
-        E: Serialize + DeserializeOwned + Send,
-        F: FnOnce() -> Fut + Send,
-        Fut: Future<Output = Result<T, E>> + Send,
+        T: Serialize + DeserializeOwned + Send + 'static,
+        E: Serialize + DeserializeOwned + Send + 'static,
+        F: FnOnce() -> Fut + Send + 'static,
+        Fut: Future<Output = Result<T, E>> + Send + 'static,
     {
         self.inner.step_with_options(name, options, f).await
     }
@@ -412,7 +412,7 @@ impl ClosureContext {
     ///     items,
     ///     MapOptions::new().batch_size(2),
     ///     |item: i32, mut child_ctx: DurableContext| async move {
-    ///         let r: Result<i32, String> = child_ctx.step("double", || async move { Ok(item * 2) }).await?;
+    ///         let r: Result<i32, String> = child_ctx.step("double", move || async move { Ok(item * 2) }).await?;
     ///         Ok(r.unwrap())
     ///     },
     /// ).await?;
@@ -608,10 +608,10 @@ impl DurableContextOps for ClosureContext {
         f: F,
     ) -> impl Future<Output = Result<Result<T, E>, DurableError>> + Send
     where
-        T: Serialize + DeserializeOwned + Send,
-        E: Serialize + DeserializeOwned + Send,
-        F: FnOnce() -> Fut + Send,
-        Fut: Future<Output = Result<T, E>> + Send,
+        T: Serialize + DeserializeOwned + Send + 'static,
+        E: Serialize + DeserializeOwned + Send + 'static,
+        F: FnOnce() -> Fut + Send + 'static,
+        Fut: Future<Output = Result<T, E>> + Send + 'static,
     {
         self.inner.step(name, f)
     }
@@ -623,10 +623,10 @@ impl DurableContextOps for ClosureContext {
         f: F,
     ) -> impl Future<Output = Result<Result<T, E>, DurableError>> + Send
     where
-        T: Serialize + DeserializeOwned + Send,
-        E: Serialize + DeserializeOwned + Send,
-        F: FnOnce() -> Fut + Send,
-        Fut: Future<Output = Result<T, E>> + Send,
+        T: Serialize + DeserializeOwned + Send + 'static,
+        E: Serialize + DeserializeOwned + Send + 'static,
+        F: FnOnce() -> Fut + Send + 'static,
+        Fut: Future<Output = Result<T, E>> + Send + 'static,
     {
         self.inner.step_with_options(name, options, f)
     }

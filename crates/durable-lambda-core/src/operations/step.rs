@@ -69,10 +69,10 @@ impl DurableContext {
         f: F,
     ) -> Result<Result<T, E>, DurableError>
     where
-        T: Serialize + DeserializeOwned + Send,
-        E: Serialize + DeserializeOwned + Send,
-        F: FnOnce() -> Fut + Send,
-        Fut: Future<Output = Result<T, E>> + Send,
+        T: Serialize + DeserializeOwned + Send + 'static,
+        E: Serialize + DeserializeOwned + Send + 'static,
+        F: FnOnce() -> Fut + Send + 'static,
+        Fut: Future<Output = Result<T, E>> + Send + 'static,
     {
         self.step_with_options(name, StepOptions::default(), f)
             .await
@@ -122,10 +122,10 @@ impl DurableContext {
         f: F,
     ) -> Result<Result<T, E>, DurableError>
     where
-        T: Serialize + DeserializeOwned + Send,
-        E: Serialize + DeserializeOwned + Send,
-        F: FnOnce() -> Fut + Send,
-        Fut: Future<Output = Result<T, E>> + Send,
+        T: Serialize + DeserializeOwned + Send + 'static,
+        E: Serialize + DeserializeOwned + Send + 'static,
+        F: FnOnce() -> Fut + Send + 'static,
+        Fut: Future<Output = Result<T, E>> + Send + 'static,
     {
         let op_id = self.replay_engine_mut().generate_operation_id();
 
@@ -210,8 +210,17 @@ impl DurableContext {
             1 // first attempt
         };
 
-        // Execute the closure.
-        let user_result = f().await;
+        // Execute the closure in a spawned task to catch panics.
+        // tokio::spawn catches panics as JoinError, converting them to
+        // DurableError::CheckpointFailed rather than unwinding through the caller.
+        let name_owned = name.to_string();
+        let handle = tokio::spawn(async move { f().await });
+        let user_result = handle.await.map_err(|join_err| {
+            DurableError::checkpoint_failed(
+                &name_owned,
+                std::io::Error::other(format!("step closure panicked: {join_err}")),
+            )
+        })?;
 
         // Checkpoint the result.
         match &user_result {
@@ -558,7 +567,7 @@ mod tests {
         }
 
         let result: Result<MyResult, String> = ctx
-            .step("my_step", || {
+            .step("my_step", move || {
                 let flag = closure_called_clone.clone();
                 async move {
                     flag.store(true, std::sync::atomic::Ordering::SeqCst);
@@ -966,7 +975,7 @@ mod tests {
 
         let options = StepOptions::new().retries(3);
         let result: Result<i32, String> = ctx
-            .step_with_options("replay_retry_step", options, || {
+            .step_with_options("replay_retry_step", options, move || {
                 let flag = closure_called_clone.clone();
                 async move {
                     flag.store(true, std::sync::atomic::Ordering::SeqCst);

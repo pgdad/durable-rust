@@ -59,7 +59,7 @@ impl DurableContext {
     ///     items,
     ///     MapOptions::new(),
     ///     |item: i32, mut child_ctx: DurableContext| async move {
-    ///         let r: Result<i32, String> = child_ctx.step("double", || async move { Ok(item * 2) }).await?;
+    ///         let r: Result<i32, String> = child_ctx.step("double", move || async move { Ok(item * 2) }).await?;
     ///         Ok(r.unwrap())
     ///     },
     /// ).await?;
@@ -446,7 +446,7 @@ mod tests {
                 MapOptions::new(),
                 |item: i32, mut child_ctx: DurableContext| async move {
                     let r: Result<i32, String> = child_ctx
-                        .step("double", || async move { Ok(item * 2) })
+                        .step("double", move || async move { Ok(item * 2) })
                         .await?;
                     Ok(r.unwrap())
                 },
@@ -561,7 +561,7 @@ mod tests {
                 MapOptions::new(),
                 |item: &str, mut child_ctx: DurableContext| async move {
                     let r: Result<String, String> = child_ctx
-                        .step("work", || async move { Ok(format!("result-{item}")) })
+                        .step("work", move || async move { Ok(format!("result-{item}")) })
                         .await?;
                     Ok(r.unwrap())
                 },

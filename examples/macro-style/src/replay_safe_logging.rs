@@ -15,9 +15,10 @@ async fn handler(
     ctx.log("Starting order processing");
     ctx.log_debug("Event payload received");
 
+    let event_for_step = event.clone();
     let order_id = ctx
-        .step("extract_order", || {
-            let event = event.clone();
+        .step("extract_order", move || {
+            let event = event_for_step.clone();
             async move {
                 Ok::<_, String>(event["order_id"].as_str().unwrap_or("unknown").to_string())
             }

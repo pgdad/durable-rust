@@ -23,7 +23,7 @@ async fn handler(
 
     // Step 1: Validate the order.
     let validation: Result<OrderValidation, String> = ctx
-        .step("validate_order", || {
+        .step("validate_order", move || {
             let event = event.clone();
             async move {
                 Ok(OrderValidation {

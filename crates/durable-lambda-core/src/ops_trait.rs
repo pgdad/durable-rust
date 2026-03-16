@@ -40,7 +40,7 @@ use crate::types::{
 /// use durable_lambda_core::error::DurableError;
 ///
 /// async fn process_order<C: DurableContextOps>(ctx: &mut C, order_id: u64) -> Result<(), DurableError> {
-///     let _result: Result<String, String> = ctx.step("validate", || async move {
+///     let _result: Result<String, String> = ctx.step("validate", move || async move {
 ///         Ok(format!("validated:{order_id}"))
 ///     }).await?;
 ///     ctx.log("order processed");
@@ -62,10 +62,10 @@ pub trait DurableContextOps {
         f: F,
     ) -> impl Future<Output = Result<Result<T, E>, DurableError>> + Send
     where
-        T: Serialize + DeserializeOwned + Send,
-        E: Serialize + DeserializeOwned + Send,
-        F: FnOnce() -> Fut + Send,
-        Fut: Future<Output = Result<T, E>> + Send;
+        T: Serialize + DeserializeOwned + Send + 'static,
+        E: Serialize + DeserializeOwned + Send + 'static,
+        F: FnOnce() -> Fut + Send + 'static,
+        Fut: Future<Output = Result<T, E>> + Send + 'static;
 
     /// Execute a named step with checkpointing and retry configuration.
     ///
@@ -78,10 +78,10 @@ pub trait DurableContextOps {
         f: F,
     ) -> impl Future<Output = Result<Result<T, E>, DurableError>> + Send
     where
-        T: Serialize + DeserializeOwned + Send,
-        E: Serialize + DeserializeOwned + Send,
-        F: FnOnce() -> Fut + Send,
-        Fut: Future<Output = Result<T, E>> + Send;
+        T: Serialize + DeserializeOwned + Send + 'static,
+        E: Serialize + DeserializeOwned + Send + 'static,
+        F: FnOnce() -> Fut + Send + 'static,
+        Fut: Future<Output = Result<T, E>> + Send + 'static;
 
     /// Suspend execution for the specified duration.
     ///
@@ -228,10 +228,10 @@ impl DurableContextOps for DurableContext {
         f: F,
     ) -> impl Future<Output = Result<Result<T, E>, DurableError>> + Send
     where
-        T: Serialize + DeserializeOwned + Send,
-        E: Serialize + DeserializeOwned + Send,
-        F: FnOnce() -> Fut + Send,
-        Fut: Future<Output = Result<T, E>> + Send,
+        T: Serialize + DeserializeOwned + Send + 'static,
+        E: Serialize + DeserializeOwned + Send + 'static,
+        F: FnOnce() -> Fut + Send + 'static,
+        Fut: Future<Output = Result<T, E>> + Send + 'static,
     {
         DurableContext::step(self, name, f)
     }
@@ -243,10 +243,10 @@ impl DurableContextOps for DurableContext {
         f: F,
     ) -> impl Future<Output = Result<Result<T, E>, DurableError>> + Send
     where
-        T: Serialize + DeserializeOwned + Send,
-        E: Serialize + DeserializeOwned + Send,
-        F: FnOnce() -> Fut + Send,
-        Fut: Future<Output = Result<T, E>> + Send,
+        T: Serialize + DeserializeOwned + Send + 'static,
+        E: Serialize + DeserializeOwned + Send + 'static,
+        F: FnOnce() -> Fut + Send + 'static,
+        Fut: Future<Output = Result<T, E>> + Send + 'static,
     {
         DurableContext::step_with_options(self, name, options, f)
     }

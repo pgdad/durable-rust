@@ -26,7 +26,7 @@ impl DurableHandler for CombinedHandler {
         ctx.log("Starting combined order workflow");
 
         let validation: Result<OrderValidation, String> = ctx
-            .step("validate_order", || {
+            .step("validate_order", move || {
                 let event = event.clone();
                 async move {
                     Ok(OrderValidation {

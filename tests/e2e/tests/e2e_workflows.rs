@@ -311,7 +311,7 @@ async fn map_processes_all_items_and_returns_ordered_results() {
             MapOptions::new(),
             |item: i32, mut child_ctx: DurableContext| async move {
                 let r: Result<i32, String> = child_ctx
-                    .step("double", || async move { Ok(item * 2) })
+                    .step("double", move || async move { Ok(item * 2) })
                     .await?;
                 Ok(r.unwrap())
             },
