@@ -27,7 +27,11 @@
   4. Step with retries(3) exhausts all 4 attempts then surfaces the final error to the caller
   5. Callback timeout, failure, invoke errors, and all-branch-failure in parallel each return typed errors
   6. Panic in step closure or parallel branch is caught and converted to DurableError, not process abort
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 01-01-PLAN.md — Single-operation error tests (replay mismatch, serialization, checkpoint, retry, callback, invoke)
+- [ ] 01-02-PLAN.md — Batch operation error tests (parallel all-fail, map position failures, parallel branch panic)
+- [ ] 01-03-PLAN.md — Step closure panic safety fix (production code + test)
 
 ### Phase 2: Boundary & Replay Engine Tests
 **Goal**: Edge cases and boundary conditions for all options, nesting depths, and replay engine semantics have explicit tests.
@@ -42,17 +46,21 @@
 **Plans**: TBD
 
 ### Phase 3: Shared Context Trait
-**Goal**: A single DurableContextOps trait defines all 44 context methods, implemented by all wrapper contexts, enabling generic handler code.
+**Goal**: A single DurableContextOps trait defines all context methods, implemented by all wrapper contexts, enabling generic handler code.
 **Depends on**: Nothing
 **Requirements**: ARCH-01, ARCH-02, ARCH-03, ARCH-04, ARCH-05, ARCH-06
 **Success Criteria** (what must be TRUE):
-  1. `DurableContextOps` trait exists in durable-lambda-core with all 44 methods
+  1. `DurableContextOps` trait exists in durable-lambda-core with all 21 methods
   2. ClosureContext, TraitContext, and BuilderContext each implement DurableContextOps
   3. A generic function `async fn logic<C: DurableContextOps>(ctx: &mut C)` compiles and runs with all 4 context types
   4. Handler boilerplate (AWS config, event extraction, context creation) lives in one shared function, not duplicated 4 times
   5. All existing tests pass without modification
   6. Parity tests verify generic handler produces identical results across all approaches
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 03-01-PLAN.md — Define DurableContextOps trait and implement for all 4 context types
+- [ ] 03-02-PLAN.md — Extract handler boilerplate into shared parse_invocation() function
+- [ ] 03-03-PLAN.md — Generic handler parity tests across all context types
 
 ### Phase 4: Input Validation & Error Codes
 **Goal**: Invalid configuration is caught at construction time, and all DurableError variants have stable programmatic codes.
@@ -138,9 +146,9 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Error Path Test Coverage | 0/TBD | Not started | - |
+| 1. Error Path Test Coverage | 0/3 | Planned | - |
 | 2. Boundary & Replay Engine Tests | 0/TBD | Not started | - |
-| 3. Shared Context Trait | 0/TBD | Not started | - |
+| 3. Shared Context Trait | 0/3 | Planned | - |
 | 4. Input Validation & Error Codes | 0/3 | Planned | - |
 | 5. Step Timeout & Conditional Retry | 0/TBD | Not started | - |
 | 6. Observability & Batch Checkpoint | 0/TBD | Not started | - |
