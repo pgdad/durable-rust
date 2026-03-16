@@ -32,6 +32,9 @@
 - [04-03] All 13 silent checkpoint_token if-let-Some sites replaced with ok_or_else error propagation — None token is an AWS API contract violation, not a normal case requiring silent skip
 - [04-03] Used std::io::ErrorKind::InvalidData as source error kind for checkpoint_failed when token is missing — fits "unexpected data format from API" semantic
 - [03-02] parse_invocation() as single extraction point for Lambda event envelope — all 4 handler crates (closure, trait, builder, macro) delegate to core/event.rs; InvocationData carries ARN, token, operations, marker, user_event
+- [03-01] Used native RPITIT async fn in traits (Rust 1.75+) instead of async_trait macro for DurableContextOps — enables static dispatch without boxing overhead
+- [03-01] P: Sync bound added to invoke trait method to satisfy Send on returned Future; inherent method only requires P: Serialize
+- [03-01] DurableContextOps defined in ops_trait module (not context module) to keep context.rs focused on the core struct
 
 ### Pending Todos
 - None — ready to begin Phase 1 execution

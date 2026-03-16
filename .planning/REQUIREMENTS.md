@@ -41,7 +41,7 @@
 - [ ] **ARCH-03**: TraitContext implements DurableContextOps via delegation
 - [ ] **ARCH-04**: BuilderContext implements DurableContextOps via delegation
 - [ ] **ARCH-05**: Generic handler functions accepting `impl DurableContextOps` work across all approaches
-- [ ] **ARCH-06**: Handler boilerplate extraction — shared setup_lambda_runtime() function
+- [x] **ARCH-06**: Handler boilerplate extraction — shared setup_lambda_runtime() function
 
 ### Features — Input Validation
 - [x] **FEAT-01**: StepOptions validates retries >= 0 and backoff_seconds >= 0
