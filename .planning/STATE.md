@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-last_updated: "2026-03-16T16:18:03.883Z"
+last_updated: "2026-03-16T16:23:17.303Z"
 progress:
   total_phases: 9
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 12
-  completed_plans: 11
+  completed_plans: 12
 ---
 
 # STATE.md
@@ -20,10 +20,10 @@ progress:
 
 ## Current Position
 - **Phase**: 02-boundary-replay-engine-tests
-- **Plan**: 02-02 complete
+- **Plan**: 02-03 complete (phase complete)
 - **Status**: Executing
-- **Last Activity**: 2026-03-16 — Completed 02-02 deep nesting boundary tests (TEST-17, TEST-18)
-- **Progress**: [█████████░] 92% 11/12 plans complete
+- **Last Activity**: 2026-03-16 — Completed 02-03 replay engine robustness tests (TEST-19, TEST-20, TEST-21, TEST-22)
+- **Progress**: [██████████] 100% 12/12 plans complete
 
 ## Performance Metrics
 - **Total Plans**: TBD (phases not yet planned into individual plans)
@@ -63,6 +63,8 @@ progress:
 - [02-01] Zero-branch parallel produces exactly 2 checkpoints (outer START + SUCCEED) with empty BatchResult
 - [02-02] filter_map(|item| item.result) used for Option<i32> aggregation in parallel results — Copy type, no .copied() needed
 - [02-02] values.sort() required before assert_eq! in test_parallel_in_child_in_parallel — tokio::spawn execution order is non-deterministic
+- [02-03] History gap test uses only 2 steps — after step2 executes (gap), engine transitions to Executing mode; step3 would not replay from pre-loaded history; documented as defined behavior
+- [02-03] CheckpointCall struct has no client_token field in mock_backend.rs — plan description was inaccurate; test written against the actual struct
 
 ### Pending Todos
 - None — ready to begin Phase 1 execution
@@ -71,6 +73,6 @@ progress:
 - None identified
 
 ## Session Continuity
-- **Last Session**: 2026-03-16 — Completed 02-02 deep nesting boundary tests (TEST-17, TEST-18)
-- **Stopped At**: Completed 02-boundary-replay-engine-tests/02-02-PLAN.md
-- **Next Action**: Continue with remaining plans per ROADMAP.md
+- **Last Session**: 2026-03-16 — Completed 02-03 replay engine robustness tests (TEST-19, TEST-20, TEST-21, TEST-22)
+- **Stopped At**: Completed 02-boundary-replay-engine-tests/02-03-PLAN.md
+- **Next Action**: Continue with remaining phases per ROADMAP.md

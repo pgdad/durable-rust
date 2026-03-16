@@ -5,7 +5,7 @@
 ## Phases
 
 - [ ] **Phase 1: Error Path Test Coverage** - Tests for failure scenarios, retries, panics, and checkpoint errors
-- [ ] **Phase 2: Boundary & Replay Engine Tests** - Edge case tests for options, nesting, operation names, and replay robustness
+- [x] **Phase 2: Boundary & Replay Engine Tests** - Edge case tests for options, nesting, operation names, and replay robustness (completed 2026-03-16)
 - [x] **Phase 3: Shared Context Trait** - Extract DurableContextOps trait to eliminate ~1,800 lines of duplicated delegation code (completed 2026-03-16)
 - [x] **Phase 4: Input Validation & Error Codes** - Validate options at construction, add structured error codes to DurableError (completed 2026-03-16)
 - [ ] **Phase 5: Step Timeout & Conditional Retry** - Per-step time limits and retry predicates for error-aware retry policies
@@ -151,7 +151,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Error Path Test Coverage | 0/3 | Planned | - |
-| 2. Boundary & Replay Engine Tests | 1/3 | In Progress|  |
+| 2. Boundary & Replay Engine Tests | 3/3 | Complete   | 2026-03-16 |
 | 3. Shared Context Trait | 3/3 | Complete   | 2026-03-16 |
 | 4. Input Validation & Error Codes | 3/3 | Complete   | 2026-03-16 |
 | 5. Step Timeout & Conditional Retry | 0/TBD | Not started | - |

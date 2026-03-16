@@ -25,10 +25,10 @@
 - [x] **TEST-18**: Nested parallel inside child context inside parallel (3-level nesting)
 
 ### Testing — Replay Engine Robustness
-- [ ] **TEST-19**: Deterministic replay — same history produces identical results across 100 runs
-- [ ] **TEST-20**: Duplicate operation IDs in history — behavior is defined
-- [ ] **TEST-21**: History gap — missing operation IDs between existing ones
-- [ ] **TEST-22**: Checkpoint token evolution — token changes after each checkpoint verified
+- [x] **TEST-19**: Deterministic replay — same history produces identical results across 100 runs
+- [x] **TEST-20**: Duplicate operation IDs in history — behavior is defined
+- [x] **TEST-21**: History gap — missing operation IDs between existing ones
+- [x] **TEST-22**: Checkpoint token evolution — token changes after each checkpoint verified
 
 ### Testing — Cross-Approach & Integration
 - [ ] **TEST-23**: Same workflow logic run through all 4 API styles produces identical operation sequences
