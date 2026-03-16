@@ -513,20 +513,20 @@ impl DurableError {
     /// ```
     pub fn code(&self) -> &'static str {
         match self {
-            Self::ReplayMismatch { .. }     => "REPLAY_MISMATCH",
-            Self::CheckpointFailed { .. }   => "CHECKPOINT_FAILED",
-            Self::Serialization { .. }      => "SERIALIZATION",
-            Self::Deserialization { .. }    => "DESERIALIZATION",
-            Self::AwsSdk(_)                 => "AWS_SDK",
-            Self::AwsSdkOperation(_)        => "AWS_SDK_OPERATION",
+            Self::ReplayMismatch { .. } => "REPLAY_MISMATCH",
+            Self::CheckpointFailed { .. } => "CHECKPOINT_FAILED",
+            Self::Serialization { .. } => "SERIALIZATION",
+            Self::Deserialization { .. } => "DESERIALIZATION",
+            Self::AwsSdk(_) => "AWS_SDK",
+            Self::AwsSdkOperation(_) => "AWS_SDK_OPERATION",
             Self::StepRetryScheduled { .. } => "STEP_RETRY_SCHEDULED",
-            Self::WaitSuspended { .. }      => "WAIT_SUSPENDED",
-            Self::CallbackSuspended { .. }  => "CALLBACK_SUSPENDED",
-            Self::CallbackFailed { .. }     => "CALLBACK_FAILED",
-            Self::InvokeSuspended { .. }    => "INVOKE_SUSPENDED",
-            Self::InvokeFailed { .. }       => "INVOKE_FAILED",
-            Self::ParallelFailed { .. }     => "PARALLEL_FAILED",
-            Self::MapFailed { .. }          => "MAP_FAILED",
+            Self::WaitSuspended { .. } => "WAIT_SUSPENDED",
+            Self::CallbackSuspended { .. } => "CALLBACK_SUSPENDED",
+            Self::CallbackFailed { .. } => "CALLBACK_FAILED",
+            Self::InvokeSuspended { .. } => "INVOKE_SUSPENDED",
+            Self::InvokeFailed { .. } => "INVOKE_FAILED",
+            Self::ParallelFailed { .. } => "PARALLEL_FAILED",
+            Self::MapFailed { .. } => "MAP_FAILED",
             Self::ChildContextFailed { .. } => "CHILD_CONTEXT_FAILED",
         }
     }
@@ -559,20 +559,50 @@ mod tests {
 
         // Construct all 14 testable variants (AwsSdk excluded — no public constructor).
         let variants: &[(DurableError, &str)] = &[
-            (DurableError::replay_mismatch("A", "B", 0), "REPLAY_MISMATCH"),
-            (DurableError::checkpoint_failed("op", io_err()), "CHECKPOINT_FAILED"),
-            (DurableError::serialization("T", serde_err()), "SERIALIZATION"),
-            (DurableError::deserialization("T", serde_err()), "DESERIALIZATION"),
-            (DurableError::aws_sdk_operation(io_err()), "AWS_SDK_OPERATION"),
-            (DurableError::step_retry_scheduled("op"), "STEP_RETRY_SCHEDULED"),
+            (
+                DurableError::replay_mismatch("A", "B", 0),
+                "REPLAY_MISMATCH",
+            ),
+            (
+                DurableError::checkpoint_failed("op", io_err()),
+                "CHECKPOINT_FAILED",
+            ),
+            (
+                DurableError::serialization("T", serde_err()),
+                "SERIALIZATION",
+            ),
+            (
+                DurableError::deserialization("T", serde_err()),
+                "DESERIALIZATION",
+            ),
+            (
+                DurableError::aws_sdk_operation(io_err()),
+                "AWS_SDK_OPERATION",
+            ),
+            (
+                DurableError::step_retry_scheduled("op"),
+                "STEP_RETRY_SCHEDULED",
+            ),
             (DurableError::wait_suspended("op"), "WAIT_SUSPENDED"),
-            (DurableError::callback_suspended("op", "cb-1"), "CALLBACK_SUSPENDED"),
-            (DurableError::callback_failed("op", "cb-1", "msg"), "CALLBACK_FAILED"),
+            (
+                DurableError::callback_suspended("op", "cb-1"),
+                "CALLBACK_SUSPENDED",
+            ),
+            (
+                DurableError::callback_failed("op", "cb-1", "msg"),
+                "CALLBACK_FAILED",
+            ),
             (DurableError::invoke_suspended("op"), "INVOKE_SUSPENDED"),
             (DurableError::invoke_failed("op", "msg"), "INVOKE_FAILED"),
-            (DurableError::parallel_failed("op", "msg"), "PARALLEL_FAILED"),
+            (
+                DurableError::parallel_failed("op", "msg"),
+                "PARALLEL_FAILED",
+            ),
             (DurableError::map_failed("op", "msg"), "MAP_FAILED"),
-            (DurableError::child_context_failed("op", "msg"), "CHILD_CONTEXT_FAILED"),
+            (
+                DurableError::child_context_failed("op", "msg"),
+                "CHILD_CONTEXT_FAILED",
+            ),
         ];
 
         let mut codes = HashSet::new();
@@ -589,7 +619,10 @@ mod tests {
 
         // Verify AWS_SDK code is also unique (compile-time exhaustive match guarantees it exists).
         // We add it manually to the uniqueness check.
-        assert!(!codes.contains("AWS_SDK"), "AWS_SDK code must be unique among all codes");
+        assert!(
+            !codes.contains("AWS_SDK"),
+            "AWS_SDK code must be unique among all codes"
+        );
     }
 
     // --- existing tests ---

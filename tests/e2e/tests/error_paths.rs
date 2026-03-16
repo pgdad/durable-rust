@@ -14,6 +14,7 @@
 //! - TEST-07: Invoke error returns [`DurableError::InvokeFailed`]
 //! - TEST-08: All parallel branches failing returns `Ok(BatchResult)` with all items Failed
 //! - TEST-09: Map item failures at first, middle, and last positions captured per-item
+//! - TEST-10: Panic in a step closure returns `Err(DurableError::CheckpointFailed)`
 //! - TEST-11: Panic in a parallel branch returns `Err(DurableError::ParallelFailed)`
 
 use std::future::Future;
@@ -34,6 +35,7 @@ use durable_lambda_core::context::DurableContext;
 use durable_lambda_core::error::DurableError;
 use durable_lambda_core::operation_id::OperationIdGenerator;
 use durable_lambda_core::types::{BatchItemStatus, MapOptions, ParallelOptions, StepOptions};
+use durable_lambda_testing::prelude::*;
 
 // ============================================================================
 // Shared mock backends
@@ -318,7 +320,10 @@ async fn test_callback_timeout_returns_callback_failed() {
 
     // Replay the callback registration — no checkpoint sent, uses cached op.
     let handle = ctx
-        .create_callback("approval", durable_lambda_core::types::CallbackOptions::new())
+        .create_callback(
+            "approval",
+            durable_lambda_core::types::CallbackOptions::new(),
+        )
         .await
         .expect("create_callback should succeed when op is in history");
 
@@ -387,7 +392,10 @@ async fn test_callback_explicit_failure_returns_callback_failed() {
     .expect("DurableContext::new should not fail");
 
     let handle = ctx
-        .create_callback("approval", durable_lambda_core::types::CallbackOptions::new())
+        .create_callback(
+            "approval",
+            durable_lambda_core::types::CallbackOptions::new(),
+        )
         .await
         .expect("create_callback should succeed when op is in history");
 
@@ -439,9 +447,7 @@ async fn test_invoke_error_returns_invoke_failed() {
         .status(OperationStatus::Failed)
         .name("call_processor")
         .start_timestamp(DateTime::from_secs(0))
-        .chained_invoke_details(
-            ChainedInvokeDetails::builder().error(error_obj).build(),
-        )
+        .chained_invoke_details(ChainedInvokeDetails::builder().error(error_obj).build())
         .build()
         .expect("failed to build failed ChainedInvoke Operation");
 
@@ -511,20 +517,18 @@ async fn test_parallel_all_branches_fail() {
     // Both branches return DurableError — these are captured as BatchItem::Failed,
     // not propagated as Err from parallel().
     type BranchFn = Box<
-        dyn FnOnce(DurableContext) -> Pin<Box<dyn Future<Output = Result<i32, DurableError>> + Send>>
+        dyn FnOnce(
+                DurableContext,
+            ) -> Pin<Box<dyn Future<Output = Result<i32, DurableError>> + Send>>
             + Send,
     >;
 
     let branches: Vec<BranchFn> = vec![
         Box::new(|_ctx: DurableContext| {
-            Box::pin(async move {
-                Err(DurableError::parallel_failed("b0", "branch 0 failed"))
-            })
+            Box::pin(async move { Err(DurableError::parallel_failed("b0", "branch 0 failed")) })
         }),
         Box::new(|_ctx: DurableContext| {
-            Box::pin(async move {
-                Err(DurableError::parallel_failed("b1", "branch 1 failed"))
-            })
+            Box::pin(async move { Err(DurableError::parallel_failed("b1", "branch 1 failed")) })
         }),
     ];
 
@@ -662,6 +666,41 @@ async fn test_map_item_failures_at_different_positions() {
 }
 
 // ============================================================================
+// TEST-10: Panic in a step closure returns Err(DurableError::CheckpointFailed)
+// ============================================================================
+
+/// Verify that a panic inside a step closure is caught by `tokio::spawn` and
+/// converted to `DurableError::CheckpointFailed`, not a process abort.
+///
+/// This contrasts with TEST-11 (parallel branch panic) to confirm that step
+/// closures also have panic boundaries. The error message must contain
+/// "panicked" so callers can distinguish a panic-originated checkpoint failure
+/// from a network or serialization failure.
+#[tokio::test]
+async fn test_step_closure_panic_returns_error() {
+    let (mut ctx, _calls, _ops) = MockDurableContext::new().build().await;
+
+    let result: Result<Result<i32, String>, DurableError> = ctx
+        .step("panicking_step", move || async {
+            panic!("deliberate panic in step closure");
+        })
+        .await;
+
+    // Should return Err(DurableError::CheckpointFailed) not crash the process.
+    let err = result.expect_err("step with panicking closure should return Err");
+    assert!(
+        matches!(err, DurableError::CheckpointFailed { .. }),
+        "expected CheckpointFailed from panic, got: {err:?}"
+    );
+    // Verify the error message mentions the panic.
+    let msg = err.to_string();
+    assert!(
+        msg.contains("panicked"),
+        "error message should mention panic: {msg}"
+    );
+}
+
+// ============================================================================
 // TEST-11: Panic in a parallel branch returns Err(DurableError::ParallelFailed)
 // ============================================================================
 
@@ -686,7 +725,9 @@ async fn test_parallel_branch_panic_returns_error() {
     .expect("DurableContext::new should succeed with passing mock backend");
 
     type BranchFn = Box<
-        dyn FnOnce(DurableContext) -> Pin<Box<dyn Future<Output = Result<i32, DurableError>> + Send>>
+        dyn FnOnce(
+                DurableContext,
+            ) -> Pin<Box<dyn Future<Output = Result<i32, DurableError>> + Send>>
             + Send,
     >;
 

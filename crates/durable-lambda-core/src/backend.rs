@@ -279,17 +279,19 @@ mod tests {
 
     #[test]
     fn is_retryable_detects_throttling() {
-        let err = DurableError::aws_sdk_operation(
-            io::Error::new(io::ErrorKind::Other, "Throttling: Rate exceeded"),
-        );
+        let err = DurableError::aws_sdk_operation(io::Error::new(
+            io::ErrorKind::Other,
+            "Throttling: Rate exceeded",
+        ));
         assert!(is_retryable_error(&err));
     }
 
     #[test]
     fn is_retryable_detects_timeout() {
-        let err = DurableError::aws_sdk_operation(
-            io::Error::new(io::ErrorKind::TimedOut, "connection timed out"),
-        );
+        let err = DurableError::aws_sdk_operation(io::Error::new(
+            io::ErrorKind::TimedOut,
+            "connection timed out",
+        ));
         assert!(is_retryable_error(&err));
     }
 
@@ -319,25 +321,26 @@ mod tests {
 
     #[test]
     fn is_retryable_detects_service_unavailable() {
-        let err = DurableError::aws_sdk_operation(
-            io::Error::new(io::ErrorKind::Other, "service unavailable"),
-        );
+        let err = DurableError::aws_sdk_operation(io::Error::new(
+            io::ErrorKind::Other,
+            "service unavailable",
+        ));
         assert!(is_retryable_error(&err));
     }
 
     #[test]
     fn is_retryable_detects_rate_exceeded() {
-        let err = DurableError::aws_sdk_operation(
-            io::Error::new(io::ErrorKind::Other, "rate exceeded"),
-        );
+        let err =
+            DurableError::aws_sdk_operation(io::Error::new(io::ErrorKind::Other, "rate exceeded"));
         assert!(is_retryable_error(&err));
     }
 
     #[test]
     fn is_retryable_detects_internal_server_error() {
-        let err = DurableError::aws_sdk_operation(
-            io::Error::new(io::ErrorKind::Other, "internal server error"),
-        );
+        let err = DurableError::aws_sdk_operation(io::Error::new(
+            io::ErrorKind::Other,
+            "internal server error",
+        ));
         assert!(is_retryable_error(&err));
     }
 

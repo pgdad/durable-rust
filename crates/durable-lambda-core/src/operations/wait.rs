@@ -80,15 +80,15 @@ impl DurableContext {
             )
             .await?;
 
-        let new_token = start_response
-            .checkpoint_token()
-            .ok_or_else(|| DurableError::checkpoint_failed(
+        let new_token = start_response.checkpoint_token().ok_or_else(|| {
+            DurableError::checkpoint_failed(
                 name,
                 std::io::Error::new(
                     std::io::ErrorKind::InvalidData,
                     "checkpoint response missing checkpoint_token",
                 ),
-            ))?;
+            )
+        })?;
         self.set_checkpoint_token(new_token.to_string());
 
         // Merge any new execution state from checkpoint response.

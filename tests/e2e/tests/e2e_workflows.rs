@@ -72,9 +72,7 @@ async fn execute_mode_step_error_is_checkpointed() {
     let (mut ctx, calls, ops) = MockDurableContext::new().build().await;
 
     let result: Result<i32, String> = ctx
-        .step("charge", || async {
-            Err("insufficient_funds".to_string())
-        })
+        .step("charge", || async { Err("insufficient_funds".to_string()) })
         .await
         .unwrap();
 
@@ -274,9 +272,7 @@ async fn parallel_with_mixed_success_and_failure() {
     let branches: Vec<BranchFn> = vec![
         Box::new(|_ctx| Box::pin(async move { Ok(42) })),
         Box::new(|_ctx| {
-            Box::pin(async move {
-                Err(DurableError::parallel_failed("branch", "branch 1 failed"))
-            })
+            Box::pin(async move { Err(DurableError::parallel_failed("branch", "branch 1 failed")) })
         }),
         Box::new(|_ctx| Box::pin(async move { Ok(99) })),
     ];
@@ -425,22 +421,16 @@ async fn nested_child_contexts() {
     let (mut ctx, _calls, _ops) = MockDurableContext::new().build().await;
 
     let result: i32 = ctx
-        .child_context(
-            "outer",
-            |mut outer_child: DurableContext| async move {
-                let inner_result: i32 = outer_child
-                    .child_context(
-                        "inner",
-                        |mut inner_child: DurableContext| async move {
-                            let r: Result<i32, String> =
-                                inner_child.step("deep", || async { Ok(7) }).await?;
-                            Ok(r.unwrap())
-                        },
-                    )
-                    .await?;
-                Ok(inner_result * 6)
-            },
-        )
+        .child_context("outer", |mut outer_child: DurableContext| async move {
+            let inner_result: i32 = outer_child
+                .child_context("inner", |mut inner_child: DurableContext| async move {
+                    let r: Result<i32, String> =
+                        inner_child.step("deep", || async { Ok(7) }).await?;
+                    Ok(r.unwrap())
+                })
+                .await?;
+            Ok(inner_result * 6)
+        })
         .await
         .unwrap();
 
@@ -535,17 +525,14 @@ async fn e2e_order_processing_pipeline() {
 
     // Step 3: Process payment in child context
     let payment: serde_json::Value = ctx
-        .child_context(
-            "payment",
-            |mut child_ctx: DurableContext| async move {
-                let charge: Result<serde_json::Value, String> = child_ctx
-                    .step("charge_card", || async {
-                        Ok(serde_json::json!({"tx_id": "TX-42", "status": "charged"}))
-                    })
-                    .await?;
-                Ok(charge.unwrap())
-            },
-        )
+        .child_context("payment", |mut child_ctx: DurableContext| async move {
+            let charge: Result<serde_json::Value, String> = child_ctx
+                .step("charge_card", || async {
+                    Ok(serde_json::json!({"tx_id": "TX-42", "status": "charged"}))
+                })
+                .await?;
+            Ok(charge.unwrap())
+        })
         .await
         .unwrap();
     assert_eq!(payment["status"], "charged");
@@ -578,9 +565,11 @@ async fn step_with_options_retries_configuration() {
 
     // Successful step with retry options configured
     let result: Result<i32, String> = ctx
-        .step_with_options("resilient_op", StepOptions::new().retries(3).backoff_seconds(5), || async {
-            Ok(42)
-        })
+        .step_with_options(
+            "resilient_op",
+            StepOptions::new().retries(3).backoff_seconds(5),
+            || async { Ok(42) },
+        )
         .await
         .unwrap();
 
@@ -678,16 +667,10 @@ async fn replay_step_wait_callback_invoke_in_sequence() {
         .build()
         .await;
 
-    let r1: Result<i32, String> = ctx
-        .step("s1", || async { panic!("replay") })
-        .await
-        .unwrap();
+    let r1: Result<i32, String> = ctx.step("s1", || async { panic!("replay") }).await.unwrap();
     assert_eq!(r1.unwrap(), 1);
 
-    let r2: Result<i32, String> = ctx
-        .step("s2", || async { panic!("replay") })
-        .await
-        .unwrap();
+    let r2: Result<i32, String> = ctx.step("s2", || async { panic!("replay") }).await.unwrap();
     assert_eq!(r2.unwrap(), 2);
 
     ctx.wait("delay", 10).await.unwrap();
@@ -709,10 +692,7 @@ async fn replay_step_wait_callback_invoke_in_sequence() {
         .unwrap();
     assert_eq!(invoke_result["result"], "ok");
 
-    let r3: Result<i32, String> = ctx
-        .step("s3", || async { panic!("replay") })
-        .await
-        .unwrap();
+    let r3: Result<i32, String> = ctx.step("s3", || async { panic!("replay") }).await.unwrap();
     assert_eq!(r3.unwrap(), 3);
 
     assert_no_checkpoints(&calls).await;
@@ -908,11 +888,7 @@ async fn map_inside_child_context() {
                     )
                     .await?;
 
-                let sum: i32 = result
-                    .results
-                    .iter()
-                    .filter_map(|r| r.result)
-                    .sum();
+                let sum: i32 = result.results.iter().filter_map(|r| r.result).sum();
                 Ok(sum)
             },
         )
@@ -931,35 +907,31 @@ async fn parallel_inside_child_context() {
     let (mut ctx, _calls, _ops) = MockDurableContext::new().build().await;
 
     let result: Vec<i32> = ctx
-        .child_context(
-            "parallel_sub",
-            |mut child_ctx: DurableContext| async move {
-                type BranchFn = Box<
-                    dyn FnOnce(
-                            DurableContext,
-                        )
-                            -> std::pin::Pin<
-                            Box<
-                                dyn std::future::Future<Output = Result<i32, DurableError>>
-                                    + Send,
-                            >,
-                        > + Send,
-                >;
+        .child_context("parallel_sub", |mut child_ctx: DurableContext| async move {
+            type BranchFn = Box<
+                dyn FnOnce(
+                        DurableContext,
+                    ) -> std::pin::Pin<
+                        Box<dyn std::future::Future<Output = Result<i32, DurableError>> + Send>,
+                    > + Send,
+            >;
 
-                let branches: Vec<BranchFn> = vec![
-                    Box::new(|_ctx| Box::pin(async move { Ok(10) })),
-                    Box::new(|_ctx| Box::pin(async move { Ok(20) })),
-                ];
+            let branches: Vec<BranchFn> = vec![
+                Box::new(|_ctx| Box::pin(async move { Ok(10) })),
+                Box::new(|_ctx| Box::pin(async move { Ok(20) })),
+            ];
 
-                let par_result = child_ctx
-                    .parallel("inner_parallel", branches, ParallelOptions::new())
-                    .await?;
+            let par_result = child_ctx
+                .parallel("inner_parallel", branches, ParallelOptions::new())
+                .await?;
 
-                let values: Vec<i32> =
-                    par_result.results.into_iter().filter_map(|r| r.result).collect();
-                Ok(values)
-            },
-        )
+            let values: Vec<i32> = par_result
+                .results
+                .into_iter()
+                .filter_map(|r| r.result)
+                .collect();
+            Ok(values)
+        })
         .await
         .unwrap();
 
