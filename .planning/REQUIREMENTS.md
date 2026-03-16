@@ -3,13 +3,13 @@
 ## v1 Requirements (this milestone)
 
 ### Testing — Error Paths & Failure Scenarios
-- [ ] **TEST-01**: Replay mismatch detection — step expects type A but history has type B returns DurableError::replay_mismatch
-- [ ] **TEST-02**: Serialization failure — step result type mismatch between closure return and history data
-- [ ] **TEST-03**: Checkpoint failure — AWS SDK error during checkpoint write (network timeout, invalid token)
-- [ ] **TEST-04**: Retry exhaustion — step with retries(3) fails all 4 attempts and returns final error
-- [ ] **TEST-05**: Callback timeout expiration — callback exceeds timeout_seconds and returns error
-- [ ] **TEST-06**: Callback explicit failure signal — callback receives failure from external system
-- [ ] **TEST-07**: Invoke error — target Lambda returns error payload
+- [x] **TEST-01**: Replay mismatch detection — step expects type A but history has type B returns DurableError::replay_mismatch
+- [x] **TEST-02**: Serialization failure — step result type mismatch between closure return and history data
+- [x] **TEST-03**: Checkpoint failure — AWS SDK error during checkpoint write (network timeout, invalid token)
+- [x] **TEST-04**: Retry exhaustion — step with retries(3) fails all 4 attempts and returns final error
+- [x] **TEST-05**: Callback timeout expiration — callback exceeds timeout_seconds and returns error
+- [x] **TEST-06**: Callback explicit failure signal — callback receives failure from external system
+- [x] **TEST-07**: Invoke error — target Lambda returns error payload
 - [ ] **TEST-08**: Parallel all-branches-fail — all parallel branches return errors
 - [ ] **TEST-09**: Map item failures at different positions — first, middle, last item failures
 - [ ] **TEST-10**: Step closure panic — panic in user closure does not crash context
