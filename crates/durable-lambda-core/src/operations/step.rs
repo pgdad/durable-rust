@@ -181,9 +181,16 @@ impl DurableContext {
                 )
                 .await?;
 
-            if let Some(token) = start_response.checkpoint_token() {
-                self.set_checkpoint_token(token.to_string());
-            }
+            let new_token = start_response
+                .checkpoint_token()
+                .ok_or_else(|| DurableError::checkpoint_failed(
+                    name,
+                    std::io::Error::new(
+                        std::io::ErrorKind::InvalidData,
+                        "checkpoint response missing checkpoint_token",
+                    ),
+                ))?;
+            self.set_checkpoint_token(new_token.to_string());
 
             // Merge any new execution state from checkpoint response.
             if let Some(new_state) = start_response.new_execution_state() {
@@ -232,9 +239,16 @@ impl DurableContext {
                     )
                     .await?;
 
-                if let Some(token) = response.checkpoint_token() {
-                    self.set_checkpoint_token(token.to_string());
-                }
+                let new_token = response
+                    .checkpoint_token()
+                    .ok_or_else(|| DurableError::checkpoint_failed(
+                        name,
+                        std::io::Error::new(
+                            std::io::ErrorKind::InvalidData,
+                            "checkpoint response missing checkpoint_token",
+                        ),
+                    ))?;
+                self.set_checkpoint_token(new_token.to_string());
             }
             Err(error) => {
                 let max_retries = options.get_retries().unwrap_or(0);
@@ -266,9 +280,16 @@ impl DurableContext {
                         )
                         .await?;
 
-                    if let Some(token) = response.checkpoint_token() {
-                        self.set_checkpoint_token(token.to_string());
-                    }
+                    let new_token = response
+                        .checkpoint_token()
+                        .ok_or_else(|| DurableError::checkpoint_failed(
+                            name,
+                            std::io::Error::new(
+                                std::io::ErrorKind::InvalidData,
+                                "checkpoint response missing checkpoint_token",
+                            ),
+                        ))?;
+                    self.set_checkpoint_token(new_token.to_string());
 
                     return Err(DurableError::step_retry_scheduled(name));
                 }
@@ -297,9 +318,16 @@ impl DurableContext {
                     .checkpoint(self.arn(), self.checkpoint_token(), vec![fail_update], None)
                     .await?;
 
-                if let Some(token) = response.checkpoint_token() {
-                    self.set_checkpoint_token(token.to_string());
-                }
+                let new_token = response
+                    .checkpoint_token()
+                    .ok_or_else(|| DurableError::checkpoint_failed(
+                        name,
+                        std::io::Error::new(
+                            std::io::ErrorKind::InvalidData,
+                            "checkpoint response missing checkpoint_token",
+                        ),
+                    ))?;
+                self.set_checkpoint_token(new_token.to_string());
             }
         }
 
