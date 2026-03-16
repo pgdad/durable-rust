@@ -1,7 +1,9 @@
-//! Error-path tests for single-operation failure scenarios.
+//! Error-path tests for single-operation and batch-operation failure scenarios.
 //!
 //! Prove that every single-operation failure mode surfaces the correct typed
-//! [`DurableError`] variant rather than a panic or silent swallow. Covers:
+//! [`DurableError`] variant rather than a panic or silent swallow. Also
+//! proves that batch-level failures (parallel/map) are captured per-item in
+//! [`BatchResult`] or propagated as typed errors when panics occur. Covers:
 //!
 //! - TEST-01: Replay mismatch (wrong operation status in history)
 //! - TEST-02: Deserialization type mismatch during replay
@@ -10,8 +12,13 @@
 //! - TEST-05: Callback timeout returns [`DurableError::CallbackFailed`]
 //! - TEST-06: Callback explicit failure signal returns [`DurableError::CallbackFailed`]
 //! - TEST-07: Invoke error returns [`DurableError::InvokeFailed`]
+//! - TEST-08: All parallel branches failing returns `Ok(BatchResult)` with all items Failed
+//! - TEST-09: Map item failures at first, middle, and last positions captured per-item
+//! - TEST-11: Panic in a parallel branch returns `Err(DurableError::ParallelFailed)`
 
+use std::future::Future;
 use std::io;
+use std::pin::Pin;
 use std::sync::Arc;
 
 use async_trait::async_trait;
@@ -26,7 +33,7 @@ use durable_lambda_core::backend::DurableBackend;
 use durable_lambda_core::context::DurableContext;
 use durable_lambda_core::error::DurableError;
 use durable_lambda_core::operation_id::OperationIdGenerator;
-use durable_lambda_core::types::StepOptions;
+use durable_lambda_core::types::{BatchItemStatus, MapOptions, ParallelOptions, StepOptions};
 
 // ============================================================================
 // Shared mock backends
@@ -474,5 +481,235 @@ async fn test_invoke_error_returns_invoke_failed() {
     assert!(
         msg.contains("target lambda crashed"),
         "error message should contain error data: {msg}"
+    );
+}
+
+// ============================================================================
+// TEST-08: All parallel branches failing — captured in BatchResult, not Err
+// ============================================================================
+
+/// Verify that when all parallel branches return `Err(DurableError::...)`,
+/// the outer `parallel()` call returns `Ok(BatchResult)` with every item
+/// having `BatchItemStatus::Failed`.
+///
+/// This is the key behavioral distinction: branch-level `DurableError` returns
+/// are captured per-item in the `BatchResult`. Only panics (JoinError) cause
+/// `parallel()` to return `Err(DurableError::ParallelFailed)`.
+#[tokio::test]
+async fn test_parallel_all_branches_fail() {
+    // Empty history → execute mode (no pre-loaded operations).
+    let mut ctx = DurableContext::new(
+        Arc::new(PassingMockBackend),
+        "arn:test".to_string(),
+        "initial-token".to_string(),
+        vec![],
+        None,
+    )
+    .await
+    .expect("DurableContext::new should succeed with passing mock backend");
+
+    // Both branches return DurableError — these are captured as BatchItem::Failed,
+    // not propagated as Err from parallel().
+    type BranchFn = Box<
+        dyn FnOnce(DurableContext) -> Pin<Box<dyn Future<Output = Result<i32, DurableError>> + Send>>
+            + Send,
+    >;
+
+    let branches: Vec<BranchFn> = vec![
+        Box::new(|_ctx: DurableContext| {
+            Box::pin(async move {
+                Err(DurableError::parallel_failed("b0", "branch 0 failed"))
+            })
+        }),
+        Box::new(|_ctx: DurableContext| {
+            Box::pin(async move {
+                Err(DurableError::parallel_failed("b1", "branch 1 failed"))
+            })
+        }),
+    ];
+
+    let result = ctx
+        .parallel("all_fail", branches, ParallelOptions::new())
+        .await;
+
+    // Must be Ok — branch-level errors do NOT propagate as Err from parallel().
+    let batch_result = result.expect(
+        "parallel() should return Ok(BatchResult) even when all branches return Err; \
+         branch errors are captured per-item, not propagated as DurableError",
+    );
+
+    assert_eq!(
+        batch_result.results.len(),
+        2,
+        "BatchResult should have one item per branch"
+    );
+
+    // Every item must be Failed with an error message.
+    for item in &batch_result.results {
+        assert_eq!(
+            item.status,
+            BatchItemStatus::Failed,
+            "item {} should be Failed but was {:?}",
+            item.index,
+            item.status
+        );
+        assert!(
+            item.error.is_some(),
+            "item {} should have an error message",
+            item.index
+        );
+        assert!(
+            item.result.is_none(),
+            "item {} should have no result value when Failed",
+            item.index
+        );
+    }
+}
+
+// ============================================================================
+// TEST-09: Map item failures at first, middle, and last positions
+// ============================================================================
+
+/// Verify that map item failures at the first (index 0), middle (index 2),
+/// and last (index 4) positions are each captured as `BatchItemStatus::Failed`
+/// with an error message, while the passing items (index 1, 3) are captured
+/// as `BatchItemStatus::Succeeded` with correct computed values.
+///
+/// This confirms that per-item error isolation works at all positions in the
+/// collection, not just a single hardcoded index.
+#[tokio::test]
+async fn test_map_item_failures_at_different_positions() {
+    // Empty history → execute mode.
+    let mut ctx = DurableContext::new(
+        Arc::new(PassingMockBackend),
+        "arn:test".to_string(),
+        "initial-token".to_string(),
+        vec![],
+        None,
+    )
+    .await
+    .expect("DurableContext::new should succeed with passing mock backend");
+
+    // Items 0, 2, 4 fail; items 1 and 3 succeed with value item * 10.
+    let items = vec![0i32, 1, 2, 3, 4];
+    let result = ctx
+        .map(
+            "position_test",
+            items,
+            MapOptions::new(),
+            |item: i32, _ctx: DurableContext| async move {
+                if item == 0 || item == 2 || item == 4 {
+                    Err(DurableError::map_failed(
+                        "item",
+                        format!("item {item} failed"),
+                    ))
+                } else {
+                    Ok(item * 10)
+                }
+            },
+        )
+        .await
+        .expect("map() should return Ok(BatchResult) even with per-item failures");
+
+    assert_eq!(
+        result.results.len(),
+        5,
+        "BatchResult should have one item per input"
+    );
+
+    // Items at index 0, 2, 4 should be Failed.
+    for failed_idx in [0usize, 2, 4] {
+        let item = &result.results[failed_idx];
+        assert_eq!(
+            item.status,
+            BatchItemStatus::Failed,
+            "item at index {failed_idx} should be Failed"
+        );
+        assert!(
+            item.error.is_some(),
+            "item at index {failed_idx} should have an error message"
+        );
+        assert!(
+            item.result.is_none(),
+            "item at index {failed_idx} should have no result when Failed"
+        );
+    }
+
+    // Items at index 1 and 3 should be Succeeded with item * 10.
+    let item1 = &result.results[1];
+    assert_eq!(
+        item1.status,
+        BatchItemStatus::Succeeded,
+        "item at index 1 should be Succeeded"
+    );
+    assert_eq!(
+        item1.result,
+        Some(10),
+        "item 1 (value=1) * 10 should equal 10"
+    );
+
+    let item3 = &result.results[3];
+    assert_eq!(
+        item3.status,
+        BatchItemStatus::Succeeded,
+        "item at index 3 should be Succeeded"
+    );
+    assert_eq!(
+        item3.result,
+        Some(30),
+        "item 3 (value=3) * 10 should equal 30"
+    );
+}
+
+// ============================================================================
+// TEST-11: Panic in a parallel branch returns Err(DurableError::ParallelFailed)
+// ============================================================================
+
+/// Verify that a panic inside a parallel branch causes `parallel()` to return
+/// `Err(DurableError::ParallelFailed)`, not a process abort.
+///
+/// `tokio::spawn` catches panics as `JoinError`. The parallel implementation
+/// converts the `JoinError` via `map_err` to `DurableError::ParallelFailed`
+/// and propagates it with `?`. This is distinct from TEST-08: branch `Err`
+/// returns are captured in `BatchResult`, but panics propagate as `Err`.
+#[tokio::test]
+async fn test_parallel_branch_panic_returns_error() {
+    // Empty history → execute mode.
+    let mut ctx = DurableContext::new(
+        Arc::new(PassingMockBackend),
+        "arn:test".to_string(),
+        "initial-token".to_string(),
+        vec![],
+        None,
+    )
+    .await
+    .expect("DurableContext::new should succeed with passing mock backend");
+
+    type BranchFn = Box<
+        dyn FnOnce(DurableContext) -> Pin<Box<dyn Future<Output = Result<i32, DurableError>> + Send>>
+            + Send,
+    >;
+
+    let branches: Vec<BranchFn> = vec![
+        // First branch succeeds normally.
+        Box::new(|_ctx: DurableContext| Box::pin(async move { Ok(42i32) })),
+        // Second branch panics — tokio catches this as JoinError.
+        Box::new(|_ctx: DurableContext| {
+            Box::pin(async move {
+                panic!("deliberate branch panic for testing");
+                #[allow(unreachable_code)]
+                Ok(0i32)
+            })
+        }),
+    ];
+
+    let result = ctx
+        .parallel("panic_test", branches, ParallelOptions::new())
+        .await;
+
+    // Must be Err(ParallelFailed) — panics propagate via JoinError, not BatchResult.
+    assert!(
+        matches!(result, Err(DurableError::ParallelFailed { .. })),
+        "expected Err(DurableError::ParallelFailed) when a branch panics, got: {result:?}"
     );
 }
