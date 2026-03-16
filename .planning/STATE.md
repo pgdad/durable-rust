@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-last_updated: "2026-03-16T14:39:39.315Z"
+last_updated: "2026-03-16T16:13:34.520Z"
 progress:
   total_phases: 9
   completed_phases: 3
   total_plans: 12
-  completed_plans: 9
+  completed_plans: 10
 ---
 
 # STATE.md
@@ -19,11 +19,11 @@ progress:
 **Current Focus**: v2 milestone — production hardening, test coverage, developer experience
 
 ## Current Position
-- **Phase**: 01-error-path-test-coverage
-- **Plan**: 01-03 complete (phase complete)
+- **Phase**: 02-boundary-replay-engine-tests
+- **Plan**: 02-01 complete
 - **Status**: Executing
-- **Last Activity**: 2026-03-16 — Completed 01-03 step closure panic safety + TEST-10 test
-- **Progress**: [████████░░] 75% 9/12 plans complete
+- **Last Activity**: 2026-03-16 — Completed 02-01 boundary_conditions.rs (13 tests, TEST-12 through TEST-16)
+- **Progress**: [████████░░] 83% 10/12 plans complete
 
 ## Performance Metrics
 - **Total Plans**: TBD (phases not yet planned into individual plans)
@@ -58,6 +58,9 @@ progress:
 - [01-03] Use DurableError::checkpoint_failed for step closure panics — panics are a form of failed checkpoint, not a new error category
 - [01-03] Step closure bounds now require 'static (same as parallel branches) — closures already move owned data per CLAUDE.md, practically always satisfied
 - [01-03] Panic message from JoinError Display contains "panicked" reliably — used as assertion keyword in test_step_closure_panic_returns_error
+- [02-01] DurableError::WaitSuspended is a struct variant requiring { .. } pattern match, not a unit variant
+- [02-01] BatchResult results must be sorted by index before value assertions — concurrent execution may reorder them
+- [02-01] Zero-branch parallel produces exactly 2 checkpoints (outer START + SUCCEED) with empty BatchResult
 
 ### Pending Todos
 - None — ready to begin Phase 1 execution
@@ -66,6 +69,6 @@ progress:
 - None identified
 
 ## Session Continuity
-- **Last Session**: 2026-03-16 — Completed 01-03 step closure panic safety (tokio::spawn) + TEST-10 error_paths test
-- **Stopped At**: Completed 01-error-path-test-coverage/01-03-PLAN.md (Phase 01 fully complete)
-- **Next Action**: Continue with Phase 02 (boundary/replay engine tests) per ROADMAP.md
+- **Last Session**: 2026-03-16 — Completed 02-01 boundary_conditions.rs (13 tests, TEST-12 through TEST-16)
+- **Stopped At**: Completed 02-boundary-replay-engine-tests/02-01-PLAN.md
+- **Next Action**: Continue with remaining Phase 02 plans (replay engine tests) per ROADMAP.md

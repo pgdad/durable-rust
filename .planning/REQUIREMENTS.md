@@ -16,11 +16,11 @@
 - [x] **TEST-11**: Parallel branch panic — panic in one branch doesn't affect others
 
 ### Testing — Boundary Conditions
-- [ ] **TEST-12**: Zero-duration wait — `wait("name", 0)` behavior
-- [ ] **TEST-13**: Map with batch_size edge cases — 0, 1, greater than collection size
-- [ ] **TEST-14**: Parallel with 0 branches and 1 branch
-- [ ] **TEST-15**: Operation names — empty string, unicode characters, 255+ characters
-- [ ] **TEST-16**: Negative option values — retries(-1), backoff_seconds(-1), timeout_seconds(0)
+- [x] **TEST-12**: Zero-duration wait — `wait("name", 0)` behavior
+- [x] **TEST-13**: Map with batch_size edge cases — 0, 1, greater than collection size
+- [x] **TEST-14**: Parallel with 0 branches and 1 branch
+- [x] **TEST-15**: Operation names — empty string, unicode characters, 255+ characters
+- [x] **TEST-16**: Negative option values — retries(-1), backoff_seconds(-1), timeout_seconds(0)
 - [ ] **TEST-17**: Deeply nested child contexts — 5+ levels
 - [ ] **TEST-18**: Nested parallel inside child context inside parallel (3-level nesting)
 

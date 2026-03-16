@@ -151,7 +151,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Error Path Test Coverage | 0/3 | Planned | - |
-| 2. Boundary & Replay Engine Tests | 0/3 | Planned | - |
+| 2. Boundary & Replay Engine Tests | 1/3 | In Progress|  |
 | 3. Shared Context Trait | 3/3 | Complete   | 2026-03-16 |
 | 4. Input Validation & Error Codes | 3/3 | Complete   | 2026-03-16 |
 | 5. Step Timeout & Conditional Retry | 0/TBD | Not started | - |
