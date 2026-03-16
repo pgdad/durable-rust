@@ -1,10 +1,29 @@
 # Milestones: durable-rust
 
-History of shipped milestones. Each entry records what was delivered, key decisions, and the design rationale preserved from planning artifacts.
-
----
-
 ## Milestone History
+
+<details>
+<summary>v1.1 — GSD Tooling Transition (shipped 2026-03-16)</summary>
+
+### v1.1 — GSD Tooling Transition
+
+**Shipped:** 2026-03-16
+**Phases:** 2 | **Plans:** 2 | **Tasks:** 5
+**Timeline:** 2 days (2026-03-14 → 2026-03-16)
+**Git stats:** 660 files changed, 2,915 insertions, 102,778 deletions
+
+**Key accomplishments:**
+- Established GSD planning infrastructure (PROJECT.md, MILESTONES.md, REQUIREMENTS.md, ROADMAP.md, STATE.md)
+- Captured v1.0 SDK as shipped milestone with 20 validated capabilities and 7 design decisions
+- Removed 545+ BMAD files across `_bmad/`, `_bmad-output/`, and `.claude/skills/bmad-*` in 4 atomic commits
+- Cleaned all functional `_bmad` references from planning documents
+- Verified zero Rust source changes throughout the tooling transition
+
+**Phases:**
+- Phase 1: GSD Infrastructure — verified all planning files, advanced state
+- Phase 2: BMAD Cleanup — 4 atomic removal commits, reference cleanup, final verification
+
+</details>
 
 <details>
 <summary>v1.0 — Initial SDK Release (shipped 2026-03-13)</summary>
@@ -75,12 +94,7 @@ All approach crates depend only on `durable-lambda-core` — no circular depende
 
 ## Active Milestone
 
-### v1.1 — GSD Tooling Transition (in progress)
-
-**Started:** 2026-03-16
-**Goal:** Migrate project management from BMAD tooling to GSD workflow infrastructure. Stand up `.planning/` GSD files; remove BMAD framework tooling and planning output directories.
-
-See `.planning/ROADMAP.md` for phase execution plan.
+None — run `/gsd:new-milestone` to start next milestone.
 
 ---
-*Last updated: 2026-03-16*
+*Last updated: 2026-03-16 after v1.1 completion*
