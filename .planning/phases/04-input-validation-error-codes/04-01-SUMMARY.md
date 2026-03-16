@@ -90,3 +90,9 @@ None - no external service configuration required.
 ## Next Phase Readiness
 - Input validation guards are in place for `types.rs`; `04-02` and `04-03` can proceed
 - The `retries` signature change (u32 -> i32) is complete; any callers using typed `u32` variables would need updating but all current callers use integer literals which coerce automatically
+
+## Self-Check: PASSED
+- FOUND: crates/durable-lambda-core/src/types.rs
+- FOUND: .planning/phases/04-input-validation-error-codes/04-01-SUMMARY.md
+- FOUND: commit 8bfd3d1 (test RED phase)
+- FOUND: commit 828fac5 (feat GREEN phase)
