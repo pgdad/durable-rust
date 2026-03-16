@@ -40,7 +40,7 @@
 - [x] **ARCH-02**: ClosureContext implements DurableContextOps via delegation
 - [x] **ARCH-03**: TraitContext implements DurableContextOps via delegation
 - [x] **ARCH-04**: BuilderContext implements DurableContextOps via delegation
-- [ ] **ARCH-05**: Generic handler functions accepting `impl DurableContextOps` work across all approaches
+- [x] **ARCH-05**: Generic handler functions accepting `impl DurableContextOps` work across all approaches
 - [x] **ARCH-06**: Handler boilerplate extraction — shared setup_lambda_runtime() function
 
 ### Features — Input Validation
