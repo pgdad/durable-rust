@@ -312,6 +312,141 @@ fn parameter_ordering_convention_documented() {
 }
 
 // ========================================================================
+// TEST-23: Step timeout and conditional retry parity
+// ========================================================================
+
+/// step_timeout_parity: DurableContext with timeout_seconds(1) fires on slow closure.
+///
+/// All 4 API styles (closure, trait, builder, macro) delegate to DurableContext.
+/// Proving DurableContext returns StepTimeout proves parity for all approaches.
+#[tokio::test]
+async fn step_timeout_parity_slow_closure_returns_step_timeout() {
+    use durable_lambda_core::error::DurableError;
+    use durable_lambda_core::types::StepOptions;
+
+    // Enable tokio's time control so the test runs instantly without real sleeps.
+    tokio::time::pause();
+
+    let (mut ctx, _calls, _ops) = MockDurableContext::new().build().await;
+
+    // Spawn the step call in the background so we can advance time concurrently.
+    let step_future = ctx.step_with_options::<i32, String, _, _>(
+        "slow_step",
+        StepOptions::new().timeout_seconds(1),
+        || async {
+            tokio::time::sleep(std::time::Duration::from_secs(60)).await;
+            Ok(42)
+        },
+    );
+
+    // Advance time past the 1-second timeout.
+    let result = tokio::select! {
+        r = step_future => r,
+        _ = async {
+            tokio::time::advance(std::time::Duration::from_secs(2)).await;
+            // Yield to let the step task observe the elapsed time.
+            tokio::task::yield_now().await;
+            // Return a future that never resolves so select! picks the step result.
+            std::future::pending::<()>().await
+        } => unreachable!()
+    };
+
+    match result {
+        Err(DurableError::StepTimeout { operation_name, .. }) => {
+            assert_eq!(
+                operation_name, "slow_step",
+                "StepTimeout should carry the operation name"
+            );
+        }
+        other => panic!("expected Err(StepTimeout), got: {other:?}"),
+    }
+}
+
+/// step_timeout_parity: DurableContext with timeout_seconds(5) and immediate closure returns Ok(Ok(value)).
+#[tokio::test]
+async fn step_timeout_parity_fast_closure_within_timeout_returns_ok() {
+    use durable_lambda_core::types::StepOptions;
+
+    let (mut ctx, _calls, _ops) = MockDurableContext::new().build().await;
+
+    let result: Result<i32, String> = ctx
+        .step_with_options("fast_step", StepOptions::new().timeout_seconds(5), || async {
+            Ok(42)
+        })
+        .await
+        .unwrap();
+
+    assert_eq!(
+        result,
+        Ok(42),
+        "fast closure within timeout should return Ok(Ok(value))"
+    );
+}
+
+/// conditional_retry_parity: DurableContext with retry_if returning false fails immediately.
+///
+/// When retry_if predicate returns false, the step fails without consuming retry budget.
+/// Decision [05-01]: predicate false causes immediate FAIL (FEAT-14).
+#[tokio::test]
+async fn conditional_retry_parity_predicate_false_fails_not_retries() {
+    use durable_lambda_core::error::DurableError;
+    use durable_lambda_core::types::StepOptions;
+
+    let (mut ctx, _calls, _ops) = MockDurableContext::new().build().await;
+
+    // retry_if predicate only accepts "transient" errors — "permanent" should not retry.
+    let opts = StepOptions::new()
+        .retries(2)
+        .retry_if(|e: &String| e.contains("transient"));
+
+    let result: Result<Result<i32, String>, DurableError> = ctx
+        .step_with_options("conditional_step", opts, || async {
+            Err::<i32, String>("permanent error".to_string())
+        })
+        .await;
+
+    // Predicate returns false for "permanent error" — step returns Ok(Err(...)), NOT StepRetryScheduled.
+    match result {
+        Ok(Err(msg)) => {
+            assert!(
+                msg.contains("permanent"),
+                "error message should be preserved: {msg}"
+            );
+        }
+        Err(DurableError::StepRetryScheduled { .. }) => {
+            panic!("predicate returned false — should NOT have scheduled retry");
+        }
+        other => panic!("expected Ok(Err(msg)), got: {other:?}"),
+    }
+}
+
+/// conditional_retry_parity: Without retry_if, all errors trigger retry (backward compatible).
+#[tokio::test]
+async fn conditional_retry_parity_no_predicate_retries_all_errors() {
+    use durable_lambda_core::error::DurableError;
+    use durable_lambda_core::types::StepOptions;
+
+    let (mut ctx, _calls, _ops) = MockDurableContext::new().build().await;
+
+    // No retry_if — default behavior retries any error.
+    let opts = StepOptions::new().retries(2);
+
+    let result: Result<Result<i32, String>, DurableError> = ctx
+        .step_with_options("retry_step", opts, || async {
+            Err::<i32, String>("any error".to_string())
+        })
+        .await;
+
+    // Without predicate, first failure schedules a retry.
+    match result {
+        Err(DurableError::StepRetryScheduled { operation_name, .. }) => {
+            assert_eq!(operation_name, "retry_step");
+        }
+        other => panic!("expected Err(StepRetryScheduled), got: {other:?}"),
+    }
+}
+
+// ========================================================================
 // Plan 03-03: Generic handler parity tests (ARCH-05 validation)
 // ========================================================================
 
