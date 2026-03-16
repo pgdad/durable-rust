@@ -588,11 +588,15 @@ async fn test_deterministic_replay_100_runs() {
             .await;
 
         let r1: Result<i32, String> = ctx
-            .step("step_a", || async { panic!("should not execute in replay") })
+            .step("step_a", || async {
+                panic!("should not execute in replay")
+            })
             .await
             .unwrap();
         let r2: Result<String, String> = ctx
-            .step("step_b", || async { panic!("should not execute in replay") })
+            .step("step_b", || async {
+                panic!("should not execute in replay")
+            })
             .await
             .unwrap();
 
@@ -710,10 +714,7 @@ async fn test_history_gap_triggers_execute_path() {
     assert_eq!(r1.unwrap(), 1);
 
     // Step 2: execute path — op2 NOT in history (gap)
-    let r2: Result<i32, String> = ctx
-        .step("step2", || async { Ok(222) })
-        .await
-        .unwrap();
+    let r2: Result<i32, String> = ctx.step("step2", || async { Ok(222) }).await.unwrap();
     assert_eq!(
         r2.unwrap(),
         222,
@@ -727,4 +728,54 @@ async fn test_history_gap_triggers_execute_path() {
         "step2 should have produced checkpoint calls (START + SUCCEED), got {}",
         captured.len()
     );
+}
+
+// ============================================================================
+// TEST-22: Checkpoint token evolution
+// ============================================================================
+
+/// Verify that the checkpoint token passed to each checkpoint call matches
+/// the token returned by the previous checkpoint response.
+///
+/// `MockBackend::new("mock-token")` always returns `"mock-token"` as the
+/// updated token. `MockDurableContext::build()` uses `"mock-checkpoint-token"`
+/// as the initial token. The evolution pattern proves the context correctly
+/// updates its token after each call and passes the updated value to the next.
+///
+/// Evolution:
+/// - Call 0 (s1 START):    uses initial token `"mock-checkpoint-token"`
+/// - Call 1 (s1 SUCCEED):  uses `"mock-token"` (returned by call 0)
+/// - Call 2 (s2 START):    uses `"mock-token"` (returned by call 1)
+/// - Call 3 (s2 SUCCEED):  uses `"mock-token"` (returned by call 2)
+#[tokio::test]
+async fn test_checkpoint_token_evolution() {
+    let (mut ctx, calls, _ops) = MockDurableContext::new().build().await;
+
+    // Execute two steps — each produces START + SUCCEED checkpoints
+    let _: Result<i32, String> = ctx.step("s1", || async { Ok(1) }).await.unwrap();
+    let _: Result<i32, String> = ctx.step("s2", || async { Ok(2) }).await.unwrap();
+
+    let captured = calls.lock().await;
+
+    // Should have 4 checkpoint calls: s1-START, s1-SUCCEED, s2-START, s2-SUCCEED
+    assert_eq!(
+        captured.len(),
+        4,
+        "expected 4 checkpoint calls, got {}",
+        captured.len()
+    );
+
+    // First checkpoint (s1 START) uses the initial token
+    assert_eq!(
+        captured[0].checkpoint_token, "mock-checkpoint-token",
+        "first checkpoint should use initial token"
+    );
+
+    // Subsequent checkpoints use the token returned by MockBackend ("mock-token")
+    for (i, call) in captured.iter().enumerate().skip(1) {
+        assert_eq!(
+            call.checkpoint_token, "mock-token",
+            "checkpoint {i} should use updated token from previous response"
+        );
+    }
 }
