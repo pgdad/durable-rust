@@ -509,3 +509,199 @@ fn all_context_types_implement_durable_context_ops() {
     assert_ops::<durable_lambda_trait::context::TraitContext>();
     assert_ops::<durable_lambda_builder::context::BuilderContext>();
 }
+
+// ========================================================================
+// TEST-24: Complex workflow parity — parallel + child + timeout
+// ========================================================================
+
+/// complex_workflow_parity: parallel containing a timeout step and a regular step.
+///
+/// This proves that parallel + timeout step combination works correctly end-to-end
+/// through DurableContext (shared by all 4 API styles).
+#[tokio::test]
+async fn complex_workflow_parity_parallel_with_timeout_step() {
+    use durable_lambda_core::error::DurableError;
+    use durable_lambda_core::types::{BatchItemStatus, CompletionReason, ParallelOptions, StepOptions};
+
+    type BranchFn = Box<
+        dyn FnOnce(
+            DurableContext,
+        ) -> std::pin::Pin<
+            Box<dyn std::future::Future<Output = Result<i32, DurableError>> + Send>,
+        > + Send,
+    >;
+
+    let (mut ctx, _calls, _ops) = MockDurableContext::new().build().await;
+
+    // Branch 1: step_with_options with a 5-second timeout — fast closure completes within.
+    // Branch 2: regular step returning a value.
+    // Both branches run concurrently via parallel().
+    let branches: Vec<BranchFn> = vec![
+        Box::new(|mut child_ctx: DurableContext| {
+            Box::pin(async move {
+                let r: Result<i32, String> = child_ctx
+                    .step_with_options(
+                        "fast",
+                        StepOptions::new().timeout_seconds(5),
+                        || async { Ok::<i32, String>(1) },
+                    )
+                    .await?;
+                Ok(r.unwrap())
+            })
+        }),
+        Box::new(|mut child_ctx: DurableContext| {
+            Box::pin(async move {
+                let r: Result<i32, String> = child_ctx
+                    .step("compute", || async { Ok::<i32, String>(2) })
+                    .await?;
+                Ok(r.unwrap())
+            })
+        }),
+    ];
+
+    let result = ctx
+        .parallel("mixed_parallel", branches, ParallelOptions::new())
+        .await
+        .unwrap();
+
+    assert_eq!(result.results.len(), 2, "parallel should have 2 branch results");
+    assert_eq!(
+        result.completion_reason,
+        CompletionReason::AllCompleted,
+        "all branches should complete"
+    );
+
+    // Sort by index before asserting (concurrent execution may reorder — decision [02-01]).
+    let mut results = result.results.clone();
+    results.sort_by_key(|item| item.index);
+
+    assert_eq!(results[0].status, BatchItemStatus::Succeeded);
+    assert_eq!(results[0].result, Some(1), "branch 0 (timeout step) should return 1");
+    assert_eq!(results[1].status, BatchItemStatus::Succeeded);
+    assert_eq!(results[1].result, Some(2), "branch 1 (regular step) should return 2");
+}
+
+// ========================================================================
+// TEST-25: BatchItemStatus verification
+// ========================================================================
+
+/// batch_item_status_verification: parallel with one success and one failure.
+///
+/// Verify BatchItemStatus::Succeeded for successful branches and
+/// BatchItemStatus::Failed for failed branches (per-item status).
+#[tokio::test]
+async fn batch_item_status_succeeded_and_failed_parallel() {
+    use durable_lambda_core::error::DurableError;
+    use durable_lambda_core::types::{BatchItemStatus, CompletionReason, ParallelOptions};
+
+    type BranchFn = Box<
+        dyn FnOnce(
+            DurableContext,
+        ) -> std::pin::Pin<
+            Box<dyn std::future::Future<Output = Result<i32, DurableError>> + Send>,
+        > + Send,
+    >;
+
+    let (mut ctx, _calls, _ops) = MockDurableContext::new().build().await;
+
+    let branches: Vec<BranchFn> = vec![
+        Box::new(|_ctx: DurableContext| Box::pin(async move { Ok(42i32) })),
+        Box::new(|_ctx: DurableContext| {
+            Box::pin(async move { Err(DurableError::parallel_failed("branch", "fail")) })
+        }),
+    ];
+
+    let result = ctx
+        .parallel("status_parallel", branches, ParallelOptions::new())
+        .await
+        .unwrap();
+
+    assert_eq!(result.results.len(), 2);
+    assert_eq!(result.completion_reason, CompletionReason::AllCompleted);
+
+    // Sort by index before asserting (concurrent execution may reorder — decision [02-01]).
+    let mut results = result.results.clone();
+    results.sort_by_key(|item| item.index);
+
+    assert_eq!(
+        results[0].status,
+        BatchItemStatus::Succeeded,
+        "branch 0 (Ok(42)) should be Succeeded"
+    );
+    assert_eq!(results[0].result, Some(42));
+    assert!(results[0].error.is_none());
+
+    assert_eq!(
+        results[1].status,
+        BatchItemStatus::Failed,
+        "branch 1 (Err) should be Failed"
+    );
+    assert!(results[1].result.is_none());
+    assert!(
+        results[1]
+            .error
+            .as_ref()
+            .unwrap()
+            .contains("fail"),
+        "error message should contain 'fail'"
+    );
+}
+
+/// batch_item_status_map_per_item: map over [1, 2, 3] with one failing item.
+///
+/// Verify that BatchItemStatus is correctly set per-item in map results:
+/// items 1 and 3 succeed, item 2 fails (closure returns Err).
+#[tokio::test]
+async fn batch_item_status_map_per_item() {
+    use durable_lambda_core::error::DurableError;
+    use durable_lambda_core::types::{BatchItemStatus, MapOptions};
+
+    let (mut ctx, _calls, _ops) = MockDurableContext::new().build().await;
+
+    let result = ctx
+        .map(
+            "status_map",
+            vec![1i32, 2, 3],
+            MapOptions::new(),
+            |item: i32, _child_ctx: DurableContext| async move {
+                if item == 2 {
+                    Err(DurableError::map_failed("item", "bad item"))
+                } else {
+                    Ok(item * 10)
+                }
+            },
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(result.results.len(), 3);
+
+    // Sort by index before asserting (concurrent execution may reorder — decision [02-01]).
+    let mut results = result.results.clone();
+    results.sort_by_key(|item| item.index);
+
+    assert_eq!(
+        results[0].status,
+        BatchItemStatus::Succeeded,
+        "item 1 (value 1) should Succeed"
+    );
+    assert_eq!(results[0].result, Some(10));
+
+    assert_eq!(
+        results[1].status,
+        BatchItemStatus::Failed,
+        "item 2 (value 2) should Fail"
+    );
+    assert!(results[1].result.is_none());
+    assert!(
+        results[1].error.as_ref().unwrap().contains("bad"),
+        "error should contain 'bad'"
+    );
+
+    assert_eq!(
+        results[2].status,
+        BatchItemStatus::Succeeded,
+        "item 3 (value 3) should Succeed"
+    );
+    assert_eq!(results[2].result, Some(30));
+}
