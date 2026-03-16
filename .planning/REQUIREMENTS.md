@@ -36,10 +36,10 @@
 - [ ] **TEST-25**: BatchItemStatus verification — per-item success/failure status checked in parallel/map results
 
 ### Architecture — Code Duplication Elimination
-- [ ] **ARCH-01**: DurableContextOps trait — shared trait with all 44 context methods
-- [ ] **ARCH-02**: ClosureContext implements DurableContextOps via delegation
-- [ ] **ARCH-03**: TraitContext implements DurableContextOps via delegation
-- [ ] **ARCH-04**: BuilderContext implements DurableContextOps via delegation
+- [x] **ARCH-01**: DurableContextOps trait — shared trait with all 44 context methods
+- [x] **ARCH-02**: ClosureContext implements DurableContextOps via delegation
+- [x] **ARCH-03**: TraitContext implements DurableContextOps via delegation
+- [x] **ARCH-04**: BuilderContext implements DurableContextOps via delegation
 - [ ] **ARCH-05**: Generic handler functions accepting `impl DurableContextOps` work across all approaches
 - [x] **ARCH-06**: Handler boilerplate extraction — shared setup_lambda_runtime() function
 

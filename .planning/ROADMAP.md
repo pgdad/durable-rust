@@ -58,7 +58,7 @@ Plans:
   6. Parity tests verify generic handler produces identical results across all approaches
 **Plans**: 3 plans
 Plans:
-- [ ] 03-01-PLAN.md — Define DurableContextOps trait and implement for all 4 context types
+- [x] 03-01-PLAN.md — Define DurableContextOps trait and implement for all 4 context types (completed 2026-03-16)
 - [ ] 03-02-PLAN.md — Extract handler boilerplate into shared parse_invocation() function
 - [ ] 03-03-PLAN.md — Generic handler parity tests across all context types
 

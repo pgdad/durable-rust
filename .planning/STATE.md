@@ -6,11 +6,11 @@
 **Current Focus**: v2 milestone — production hardening, test coverage, developer experience
 
 ## Current Position
-- **Phase**: 04-input-validation-error-codes
-- **Plan**: 04-03 complete, next plan TBD
+- **Phase**: 01-error-path-test-coverage
+- **Plan**: 01-01 complete, 01-02 next
 - **Status**: Executing
-- **Last Activity**: 2026-03-16 — Completed 04-03 defensive checkpoint_token error propagation across all 13 sites
-- **Progress**: ░░░░░░░░░░ 0/9 phases (Phase 4 in progress)
+- **Last Activity**: 2026-03-16 — Completed 01-01 error-path tests for single-operation failure scenarios
+- **Progress**: ░░░░░░░░░░ 0/9 phases (Phase 1 in progress)
 
 ## Performance Metrics
 - **Total Plans**: TBD (phases not yet planned into individual plans)
@@ -20,6 +20,9 @@
 ## Accumulated Context
 
 ### Recent Decisions
+- [01-01] OperationStatus::Cancelled used for replay mismatch test — it's a completed status (handled by check_result) but extract_step_result returns ReplayMismatch for it since it's neither Succeeded nor Failed
+- [01-01] PassingMockBackend and FailingMockBackend patterns established for error-path tests — tests pre-populate error state in Operation history rather than using MockDurableContext builder
+- [01-01] Direct DurableContext::new() construction used in error-path tests when specific non-standard statuses (TimedOut, Cancelled, Pending with attempt count) are needed
 - Comprehensive codebase audit identified ~1,800 lines of duplicated delegation code across 3 wrapper crates
 - Error path testing is the highest priority — almost no failure scenarios are currently tested
 - Phases 1-2 (testing) and Phases 3-4 (architecture/validation) can proceed in parallel
@@ -43,6 +46,6 @@
 - None identified
 
 ## Session Continuity
-- **Last Session**: 2026-03-16 — Completed 03-02 handler boilerplate extraction into parse_invocation()
-- **Stopped At**: Completed 03-shared-context-trait/03-02-PLAN.md
-- **Next Action**: Execute 03-03 plan (next in phase 03)
+- **Last Session**: 2026-03-16 — Completed 01-01 error-path tests for single-operation failure scenarios
+- **Stopped At**: Completed 01-error-path-test-coverage/01-01-PLAN.md
+- **Next Action**: Execute 01-02 plan (multi-operation error scenarios: parallel, map, panic)
