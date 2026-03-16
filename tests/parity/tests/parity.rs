@@ -11,6 +11,7 @@
 
 use durable_lambda_core::context::DurableContext;
 use durable_lambda_core::types::ExecutionMode;
+use durable_lambda_core::DurableContextOps;
 use durable_lambda_testing::prelude::*;
 
 // ========================================================================
@@ -308,4 +309,68 @@ fn parameter_ordering_convention_documented() {
     //
     // The macro approach passes DurableContext directly, which has the same
     // method signatures as the core context all wrappers delegate to.
+}
+
+// ========================================================================
+// Plan 03-03: Generic handler parity tests (ARCH-05 validation)
+// ========================================================================
+
+/// Generic workflow logic that works with any context implementing DurableContextOps.
+///
+/// This is the key test for ARCH-05: proving generic handler code compiles and
+/// runs correctly regardless of which concrete context type is supplied.
+///
+/// The execution mode is captured before the step runs so replay mode is visible
+/// even if the replay engine transitions to Executing after consuming all history.
+async fn generic_workflow_logic<C: DurableContextOps>(
+    ctx: &mut C,
+) -> Result<serde_json::Value, durable_lambda_core::error::DurableError> {
+    // Capture mode before any step — replay engine may transition after consuming history.
+    let initial_mode = ctx.execution_mode();
+    let step_result: Result<i32, String> = ctx.step("validate", || async { Ok(42) }).await?;
+    let value = step_result.unwrap();
+    ctx.log("validation complete");
+    Ok(serde_json::json!({"validated": value, "mode": format!("{:?}", initial_mode)}))
+}
+
+#[tokio::test]
+async fn generic_handler_works_with_durable_context_execute_mode() {
+    // DurableContext is one of the 4 context types. Passing it to a generic
+    // function bounded by C: DurableContextOps proves the bound is satisfied
+    // and that the delegation chain produces correct results.
+    let (mut ctx, _calls, _ops) = MockDurableContext::new().build().await;
+    let result = generic_workflow_logic(&mut ctx).await.unwrap();
+    assert_eq!(
+        result,
+        serde_json::json!({"validated": 42, "mode": "Executing"}),
+        "generic handler in execute mode should run closure and return correct result"
+    );
+}
+
+#[tokio::test]
+async fn generic_handler_works_with_durable_context_replay_mode() {
+    // Replay mode: the previously checkpointed result ("42") is returned
+    // without running the step closure, and no new checkpoints are made.
+    let (mut ctx, calls, _ops) = MockDurableContext::new()
+        .with_step_result("validate", "42")
+        .build()
+        .await;
+    let result = generic_workflow_logic(&mut ctx).await.unwrap();
+    assert_eq!(
+        result,
+        serde_json::json!({"validated": 42, "mode": "Replaying"}),
+        "generic handler in replay mode should return cached result without re-executing closure"
+    );
+    assert_no_checkpoints(&calls).await;
+}
+
+#[test]
+fn all_context_types_implement_durable_context_ops() {
+    // Compile-time proof that all 4 context types implement DurableContextOps.
+    // If any impl is missing, this test fails at compile time with a type error.
+    fn assert_ops<T: DurableContextOps>() {}
+    assert_ops::<durable_lambda_core::context::DurableContext>();
+    assert_ops::<durable_lambda_closure::context::ClosureContext>();
+    assert_ops::<durable_lambda_trait::context::TraitContext>();
+    assert_ops::<durable_lambda_builder::context::BuilderContext>();
 }
