@@ -110,7 +110,10 @@ Plans:
   3. batch_checkpoint() accepts multiple OperationUpdate items and makes a single AWS API call
   4. Sequential 5-step workflow in batch mode produces fewer checkpoint calls than individual mode
   5. Individual checkpoint mode still works (batch is opt-in, not mandatory)
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 06-01-PLAN.md — Tracing spans for all 7 operation types + span emission tests (FEAT-17, FEAT-18, FEAT-19, FEAT-20)
+- [ ] 06-02-PLAN.md — Batch checkpoint API, DurableContext batch mode, and checkpoint reduction tests (FEAT-21, FEAT-22, FEAT-23, FEAT-24)
 
 ### Phase 7: Saga / Compensation Pattern
 **Goal**: Users can register compensation closures that execute in reverse order when a workflow fails, with durable checkpointing of the rollback itself.
@@ -159,7 +162,7 @@ Plans:
 | 3. Shared Context Trait | 3/3 | Complete   | 2026-03-16 |
 | 4. Input Validation & Error Codes | 3/3 | Complete   | 2026-03-16 |
 | 5. Step Timeout & Conditional Retry | 3/3 | Complete   | 2026-03-16 |
-| 6. Observability & Batch Checkpoint | 0/TBD | Not started | - |
+| 6. Observability & Batch Checkpoint | 0/2 | Planned | - |
 | 7. Saga / Compensation Pattern | 0/TBD | Not started | - |
 | 8. Macro & Builder Improvements | 0/TBD | Not started | - |
 | 9. Documentation Overhaul | 0/TBD | Not started | - |
