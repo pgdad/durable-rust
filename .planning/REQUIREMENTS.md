@@ -9,9 +9,9 @@ Requirements for GSD Tooling Transition milestone. Each maps to roadmap phases.
 
 ### GSD Infrastructure
 
-- [ ] **GSD-01**: MILESTONES.md exists capturing v1.0 as shipped milestone with validated capabilities
-- [ ] **GSD-02**: REQUIREMENTS.md exists with REQ-IDs for all v1.1 scope items
-- [ ] **GSD-03**: ROADMAP.md exists with phased execution plan continuing from phase 1
+- [x] **GSD-01**: MILESTONES.md exists capturing v1.0 as shipped milestone with validated capabilities
+- [x] **GSD-02**: REQUIREMENTS.md exists with REQ-IDs for all v1.1 scope items
+- [x] **GSD-03**: ROADMAP.md exists with phased execution plan continuing from phase 1
 
 ### BMAD Cleanup
 
@@ -43,9 +43,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| GSD-01 | Phase 1 | Pending |
-| GSD-02 | Phase 1 | Pending |
-| GSD-03 | Phase 1 | Pending |
+| GSD-01 | Phase 1 | Complete |
+| GSD-02 | Phase 1 | Complete |
+| GSD-03 | Phase 1 | Complete |
 | BMAD-01 | Phase 2 | Pending |
 | BMAD-02 | Phase 2 | Pending |
 | BMAD-03 | Phase 2 | Pending |

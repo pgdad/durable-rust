@@ -30,7 +30,7 @@ Delivered under BMAD workflow. Full capability list in `.planning/MILESTONES.md`
   2. `.planning/REQUIREMENTS.md` exists with REQ-IDs for all 6 v1.1 scope items and a traceability table
   3. `.planning/ROADMAP.md` exists with phase definitions for v1.1 continuing from Phase 1
   4. `.planning/STATE.md` points to Phase 2 as the active position
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 
 Plans:
 - [ ] 01-01-PLAN.md — Verify GSD infrastructure and advance to Phase 2
@@ -55,5 +55,5 @@ Plans:
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 1. GSD Infrastructure | v1.1 | 0/1 | Not started | - |
+| 1. GSD Infrastructure | 1/1 | Complete   | 2026-03-16 | - |
 | 2. BMAD Cleanup | v1.1 | 0/1 | Not started | - |
