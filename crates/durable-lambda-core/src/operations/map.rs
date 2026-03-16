@@ -90,6 +90,7 @@ impl DurableContext {
             op.id = %op_id,
         );
         let _guard = span.enter();
+        tracing::trace!("durable_operation");
 
         // Replay path: check for completed outer map operation.
         if let Some(op) = self.replay_engine().check_result(&op_id) {
@@ -368,6 +369,7 @@ mod tests {
     };
     use aws_smithy_types::DateTime;
     use tokio::sync::Mutex;
+    use tracing_test::traced_test;
 
     use crate::backend::DurableBackend;
     use crate::context::DurableContext;
@@ -771,5 +773,34 @@ mod tests {
             assert_eq!(r.index, i);
             assert_eq!(r.result, Some((i + 1) as i32));
         }
+    }
+
+    // ─── span tests (FEAT-17) ─────────────────────────────────────────────
+
+    #[traced_test]
+    #[tokio::test]
+    async fn test_map_emits_span() {
+        let (backend, _calls) = MapMockBackend::new();
+        let mut ctx = DurableContext::new(
+            Arc::new(backend),
+            "arn:test".to_string(),
+            "tok".to_string(),
+            vec![],
+            None,
+        )
+        .await
+        .unwrap();
+        // empty items — returns empty BatchResult
+        let _ = ctx
+            .map(
+                "process",
+                Vec::<i32>::new(),
+                MapOptions::new(),
+                |item: i32, _ctx: DurableContext| async move { Ok(item) },
+            )
+            .await;
+        assert!(logs_contain("durable_operation"));
+        assert!(logs_contain("process"));
+        assert!(logs_contain("map"));
     }
 }

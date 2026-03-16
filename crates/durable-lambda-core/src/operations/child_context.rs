@@ -66,6 +66,7 @@ impl DurableContext {
             op.id = %op_id,
         );
         let _guard = span.enter();
+        tracing::trace!("durable_operation");
 
         // Replay path: check for completed outer child context operation.
         if let Some(op) = self.replay_engine().check_result(&op_id) {
@@ -212,6 +213,7 @@ mod tests {
     };
     use aws_smithy_types::DateTime;
     use tokio::sync::Mutex;
+    use tracing_test::traced_test;
 
     use crate::backend::DurableBackend;
     use crate::context::DurableContext;
@@ -583,5 +585,53 @@ mod tests {
         // No checkpoints during replay
         let captured = calls.lock().await;
         assert_eq!(captured.len(), 0);
+    }
+
+    // ─── span tests (FEAT-17, FEAT-18) ────────────────────────────────────
+
+    #[traced_test]
+    #[tokio::test]
+    async fn test_child_context_emits_span() {
+        let (backend, _calls) = ChildContextMockBackend::new();
+        let mut ctx = DurableContext::new(
+            Arc::new(backend),
+            "arn:test".to_string(),
+            "tok".to_string(),
+            vec![],
+            None,
+        )
+        .await
+        .unwrap();
+        let _ = ctx
+            .child_context("sub", |_child| async move { Ok::<i32, DurableError>(1) })
+            .await;
+        assert!(logs_contain("durable_operation"));
+        assert!(logs_contain("sub"));
+        assert!(logs_contain("child_context"));
+    }
+
+    #[traced_test]
+    #[tokio::test]
+    async fn test_child_context_span_hierarchy() {
+        let (backend, _calls) = ChildContextMockBackend::new();
+        let mut ctx = DurableContext::new(
+            Arc::new(backend),
+            "arn:test".to_string(),
+            "tok".to_string(),
+            vec![],
+            None,
+        )
+        .await
+        .unwrap();
+        let _ = ctx
+            .child_context("parent_flow", |mut child| async move {
+                let _: Result<i32, String> = child.step("inner_step", || async { Ok(42) }).await?;
+                Ok::<_, DurableError>(1)
+            })
+            .await;
+        assert!(logs_contain("child_context"));
+        assert!(logs_contain("parent_flow"));
+        assert!(logs_contain("inner_step"));
+        assert!(logs_contain("step"));
     }
 }

@@ -138,6 +138,7 @@ impl DurableContext {
             op.id = %op_id,
         );
         let _guard = span.enter();
+        tracing::trace!("durable_operation");
 
         // Check if we have a completed result (replay path).
         if let Some(operation) = self.replay_engine().check_result(&op_id) {
@@ -448,6 +449,7 @@ mod tests {
     use aws_smithy_types::DateTime;
     use serde::{Deserialize, Serialize};
     use tokio::sync::Mutex;
+    use tracing_test::traced_test;
 
     use crate::backend::DurableBackend;
     use crate::context::DurableContext;
@@ -1452,5 +1454,44 @@ mod tests {
             "error message should mention missing checkpoint_token, got: {}",
             err_msg
         );
+    }
+
+    // ─── span tests (FEAT-17, FEAT-19) ────────────────────────────────────
+
+    #[traced_test]
+    #[tokio::test]
+    async fn test_step_emits_span() {
+        let (backend, _calls) = MockBackend::new("tok");
+        let mut ctx = DurableContext::new(
+            Arc::new(backend),
+            "arn:test".to_string(),
+            "tok".to_string(),
+            vec![],
+            None,
+        )
+        .await
+        .unwrap();
+        let _: Result<i32, String> = ctx.step("validate", || async { Ok(42) }).await.unwrap();
+        assert!(logs_contain("durable_operation"));
+        assert!(logs_contain("validate"));
+        assert!(logs_contain("step"));
+    }
+
+    #[traced_test]
+    #[tokio::test]
+    async fn test_span_includes_op_id() {
+        let (backend, _calls) = MockBackend::new("tok");
+        let mut ctx = DurableContext::new(
+            Arc::new(backend),
+            "arn:test".to_string(),
+            "tok".to_string(),
+            vec![],
+            None,
+        )
+        .await
+        .unwrap();
+        let _: Result<i32, String> = ctx.step("id_check", || async { Ok(42) }).await.unwrap();
+        assert!(logs_contain("durable_operation"));
+        assert!(logs_contain("op.id"));
     }
 }

@@ -90,6 +90,7 @@ impl DurableContext {
             op.id = %op_id,
         );
         let _guard = span.enter();
+        tracing::trace!("durable_operation");
 
         // Replay path: check for completed outer parallel operation.
         if let Some(op) = self.replay_engine().check_result(&op_id) {
@@ -353,6 +354,7 @@ mod tests {
     };
     use aws_smithy_types::DateTime;
     use tokio::sync::Mutex;
+    use tracing_test::traced_test;
 
     use crate::backend::DurableBackend;
     use crate::context::DurableContext;
@@ -727,5 +729,40 @@ mod tests {
             .as_ref()
             .unwrap()
             .contains("intentional failure"));
+    }
+
+    // ─── span tests (FEAT-17) ─────────────────────────────────────────────
+
+    #[traced_test]
+    #[tokio::test]
+    async fn test_parallel_emits_span() {
+        let (backend, _calls) = ParallelMockBackend::new();
+        let mut ctx = DurableContext::new(
+            Arc::new(backend),
+            "arn:test".to_string(),
+            "tok".to_string(),
+            vec![],
+            None,
+        )
+        .await
+        .unwrap();
+        // empty branches — returns empty BatchResult
+        type BranchFn = Box<
+            dyn FnOnce(
+                    DurableContext,
+                ) -> std::pin::Pin<
+                    Box<
+                        dyn std::future::Future<Output = Result<i32, crate::error::DurableError>>
+                            + Send,
+                    >,
+                > + Send,
+        >;
+        let branches: Vec<BranchFn> = vec![];
+        let _ = ctx
+            .parallel("batch", branches, ParallelOptions::new())
+            .await;
+        assert!(logs_contain("durable_operation"));
+        assert!(logs_contain("batch"));
+        assert!(logs_contain("parallel"));
     }
 }

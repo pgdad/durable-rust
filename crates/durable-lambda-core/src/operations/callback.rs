@@ -67,6 +67,7 @@ impl DurableContext {
             op.id = %op_id,
         );
         let _guard = span.enter();
+        tracing::trace!("durable_operation");
 
         // Check if operation exists in history (any status — not just completed).
         if let Some(op) = self.replay_engine().get_operation(&op_id) {
@@ -270,6 +271,7 @@ mod tests {
     };
     use aws_smithy_types::DateTime;
     use tokio::sync::Mutex;
+    use tracing_test::traced_test;
 
     use crate::backend::DurableBackend;
     use crate::context::DurableContext;
@@ -629,5 +631,30 @@ mod tests {
             msg.contains("cb-pending-1"),
             "should contain callback_id: {msg}"
         );
+    }
+
+    // ─── span tests (FEAT-17) ─────────────────────────────────────────────
+
+    #[traced_test]
+    #[tokio::test]
+    async fn test_callback_emits_span() {
+        let op_id = first_op_id();
+        // Return an operation with callback_id so create_callback succeeds
+        let response_op =
+            make_callback_op(&op_id, OperationStatus::Started, "cb-span-test", None, None);
+        let (backend, _calls) = CallbackMockBackend::new("tok", response_op);
+        let mut ctx = DurableContext::new(
+            Arc::new(backend),
+            "arn:test".to_string(),
+            "tok".to_string(),
+            vec![],
+            None,
+        )
+        .await
+        .unwrap();
+        let _ = ctx.create_callback("notify", CallbackOptions::new()).await;
+        assert!(logs_contain("durable_operation"));
+        assert!(logs_contain("notify"));
+        assert!(logs_contain("callback"));
     }
 }

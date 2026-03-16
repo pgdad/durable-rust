@@ -57,6 +57,7 @@ impl DurableContext {
             op.id = %op_id,
         );
         let _guard = span.enter();
+        tracing::trace!("durable_operation");
 
         // Check if we have a completed result (replay path).
         if self.replay_engine().check_result(&op_id).is_some() {
@@ -130,6 +131,7 @@ mod tests {
     };
     use aws_smithy_types::DateTime;
     use tokio::sync::Mutex;
+    use tracing_test::traced_test;
 
     use crate::backend::DurableBackend;
     use crate::context::DurableContext;
@@ -351,5 +353,27 @@ mod tests {
         // START checkpoint was still sent.
         let captured = calls.lock().await;
         assert_eq!(captured.len(), 1, "START checkpoint sent");
+    }
+
+    // ─── span tests (FEAT-17) ─────────────────────────────────────────────
+
+    #[traced_test]
+    #[tokio::test]
+    async fn test_wait_emits_span() {
+        let (backend, _calls) = MockBackend::new("tok");
+        let mut ctx = DurableContext::new(
+            Arc::new(backend),
+            "arn:test".to_string(),
+            "tok".to_string(),
+            vec![],
+            None,
+        )
+        .await
+        .unwrap();
+        // wait returns WaitSuspended — that's expected; span is emitted before suspension
+        let _ = ctx.wait("cooldown", 30).await;
+        assert!(logs_contain("durable_operation"));
+        assert!(logs_contain("cooldown"));
+        assert!(logs_contain("wait"));
     }
 }

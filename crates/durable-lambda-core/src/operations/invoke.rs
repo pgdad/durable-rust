@@ -82,6 +82,7 @@ impl DurableContext {
             op.id = %op_id,
         );
         let _guard = span.enter();
+        tracing::trace!("durable_operation");
 
         // Replay path: check for completed result (SUCCEEDED/FAILED/TIMED_OUT/etc).
         if let Some(op) = self.replay_engine().check_result(&op_id) {
@@ -221,6 +222,7 @@ mod tests {
     };
     use aws_smithy_types::DateTime;
     use tokio::sync::Mutex;
+    use tracing_test::traced_test;
 
     use crate::backend::DurableBackend;
     use crate::context::DurableContext;
@@ -508,5 +510,29 @@ mod tests {
         // START checkpoint was still sent.
         let captured = calls.lock().await;
         assert_eq!(captured.len(), 1, "START checkpoint sent");
+    }
+
+    // ─── span tests (FEAT-17) ─────────────────────────────────────────────
+
+    #[traced_test]
+    #[tokio::test]
+    async fn test_invoke_emits_span() {
+        let (backend, _calls) = InvokeMockBackend::new("tok", None);
+        let mut ctx = DurableContext::new(
+            Arc::new(backend),
+            "arn:test".to_string(),
+            "tok".to_string(),
+            vec![],
+            None,
+        )
+        .await
+        .unwrap();
+        // invoke returns InvokeSuspended — that's expected; span is emitted before suspension
+        let _ = ctx
+            .invoke::<serde_json::Value, _>("target", "my-lambda", &serde_json::json!({}))
+            .await;
+        assert!(logs_contain("durable_operation"));
+        assert!(logs_contain("target"));
+        assert!(logs_contain("invoke"));
     }
 }
