@@ -53,7 +53,7 @@
 - [x] **FEAT-05**: DurableError gains `.code() -> &str` for programmatic error matching
 - [x] **FEAT-06**: Each DurableError variant returns a unique, stable error code
 - [x] **FEAT-07**: Backend retry detection uses structured error codes instead of string matching
-- [ ] **FEAT-08**: Checkpoint token None assumption replaced with defensive error handling
+- [x] **FEAT-08**: Checkpoint token None assumption replaced with defensive error handling
 
 ### Features — Step Timeout
 - [ ] **FEAT-09**: StepOptions gains `.timeout_seconds(u64)` field
