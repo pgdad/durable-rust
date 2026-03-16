@@ -33,35 +33,22 @@ pub(crate) fn expand_durable_execution(func: ItemFn) -> Result<TokenStream, Erro
                     async move {
                         let (payload, _lambda_ctx) = event.into_parts();
 
-                        let durable_execution_arn = payload["DurableExecutionArn"]
-                            .as_str()
-                            .ok_or("missing DurableExecutionArn in event")?
-                            .to_string();
-
-                        let checkpoint_token = payload["CheckpointToken"]
-                            .as_str()
-                            .ok_or("missing CheckpointToken in event")?
-                            .to_string();
-
-                        let initial_state = &payload["InitialExecutionState"];
-
-                        let operations =
-                            ::durable_lambda_core::event::parse_operations(initial_state);
-
-                        let next_marker = initial_state["NextMarker"]
-                            .as_str()
-                            .filter(|s| !s.is_empty())
-                            .map(|s| s.to_string());
-
-                        let user_event =
-                            ::durable_lambda_core::event::extract_user_event(initial_state);
+                        let invocation =
+                            ::durable_lambda_core::event::parse_invocation(&payload)
+                                .map_err(|e| {
+                                    ::std::boxed::Box::<
+                                        dyn ::std::error::Error
+                                            + ::std::marker::Send
+                                            + ::std::marker::Sync,
+                                    >::from(e)
+                                })?;
 
                         let durable_ctx = ::durable_lambda_core::context::DurableContext::new(
                             backend,
-                            durable_execution_arn,
-                            checkpoint_token,
-                            operations,
-                            next_marker,
+                            invocation.durable_execution_arn,
+                            invocation.checkpoint_token,
+                            invocation.operations,
+                            invocation.next_marker,
                         )
                         .await
                         .map_err(|e| {
@@ -71,7 +58,7 @@ pub(crate) fn expand_durable_execution(func: ItemFn) -> Result<TokenStream, Erro
                                 >
                         })?;
 
-                        let result = #fn_name(user_event, durable_ctx).await.map_err(|e| {
+                        let result = #fn_name(invocation.user_event, durable_ctx).await.map_err(|e| {
                             ::std::boxed::Box::new(e)
                                 as ::std::boxed::Box<
                                     dyn ::std::error::Error + ::std::marker::Send + ::std::marker::Sync,
@@ -143,12 +130,8 @@ mod tests {
             "should reference the handler function"
         );
         assert!(
-            tokens.contains("parse_operations"),
-            "should call parse_operations"
-        );
-        assert!(
-            tokens.contains("extract_user_event"),
-            "should call extract_user_event"
+            tokens.contains("parse_invocation"),
+            "should call parse_invocation"
         );
     }
 

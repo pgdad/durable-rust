@@ -11,7 +11,7 @@ use std::sync::Arc;
 use durable_lambda_core::backend::RealBackend;
 use durable_lambda_core::context::DurableContext;
 use durable_lambda_core::error::DurableError;
-use durable_lambda_core::event::{extract_user_event, parse_operations};
+use durable_lambda_core::event::parse_invocation;
 use lambda_runtime::{service_fn, LambdaEvent};
 
 use crate::context::BuilderContext;
@@ -125,37 +125,17 @@ where
             async move {
                 let (payload, _lambda_ctx) = event.into_parts();
 
-                // Extract durable execution envelope from the Lambda event.
-                let durable_execution_arn = payload["DurableExecutionArn"]
-                    .as_str()
-                    .ok_or("missing DurableExecutionArn in event")?
-                    .to_string();
-
-                let checkpoint_token = payload["CheckpointToken"]
-                    .as_str()
-                    .ok_or("missing CheckpointToken in event")?
-                    .to_string();
-
-                let initial_state = &payload["InitialExecutionState"];
-
-                // Parse operations from the initial execution state.
-                let operations = parse_operations(initial_state);
-
-                let next_marker = initial_state["NextMarker"]
-                    .as_str()
-                    .filter(|s| !s.is_empty())
-                    .map(|s| s.to_string());
-
-                // Extract user event payload from the first EXECUTION operation.
-                let user_event = extract_user_event(initial_state);
+                // Parse all durable execution fields from the Lambda event.
+                let invocation = parse_invocation(&payload)
+                    .map_err(Box::<dyn std::error::Error + Send + Sync>::from)?;
 
                 // Create DurableContext and wrap in BuilderContext.
                 let durable_ctx = DurableContext::new(
                     backend,
-                    durable_execution_arn,
-                    checkpoint_token,
-                    operations,
-                    next_marker,
+                    invocation.durable_execution_arn,
+                    invocation.checkpoint_token,
+                    invocation.operations,
+                    invocation.next_marker,
                 )
                 .await
                 .map_err(|e| Box::new(e) as Box<dyn std::error::Error + Send + Sync>)?;
@@ -163,7 +143,7 @@ where
                 let builder_ctx = BuilderContext::new(durable_ctx);
 
                 // Call the user handler with owned context.
-                let result = handler(user_event, builder_ctx)
+                let result = handler(invocation.user_event, builder_ctx)
                     .await
                     .map_err(|e| Box::new(e) as Box<dyn std::error::Error + Send + Sync>)?;
 
