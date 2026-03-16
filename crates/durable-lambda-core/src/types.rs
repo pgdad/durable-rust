@@ -3,6 +3,8 @@
 //! Export the core data types that all SDK components share:
 //! [`HistoryEntry`], [`OperationType`], [`ExecutionMode`], and [`CheckpointResult`].
 
+use std::sync::Arc;
+
 use serde::{Deserialize, Serialize};
 
 /// Represent a single entry from the durable execution history log.
@@ -159,11 +161,32 @@ pub enum CheckpointResult<T, E> {
 ///
 /// // Retry up to 3 times with 5-second backoff.
 /// let opts = StepOptions::new().retries(3).backoff_seconds(5);
+///
+/// // Per-step timeout of 10 seconds.
+/// let opts = StepOptions::new().timeout_seconds(10);
+///
+/// // Only retry transient errors.
+/// let opts = StepOptions::new()
+///     .retries(3)
+///     .retry_if(|e: &String| e.contains("transient"));
 /// ```
-#[derive(Debug, Clone, Default)]
+#[derive(Clone, Default)]
 pub struct StepOptions {
     retries: Option<u32>,
     backoff_seconds: Option<i32>,
+    timeout_seconds: Option<u64>,
+    retry_if: Option<Arc<dyn Fn(&dyn std::any::Any) -> bool + Send + Sync>>,
+}
+
+impl std::fmt::Debug for StepOptions {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("StepOptions")
+            .field("retries", &self.retries)
+            .field("backoff_seconds", &self.backoff_seconds)
+            .field("timeout_seconds", &self.timeout_seconds)
+            .field("retry_if", &self.retry_if.as_ref().map(|_| "<predicate>"))
+            .finish()
+    }
 }
 
 impl StepOptions {
@@ -267,6 +290,110 @@ impl StepOptions {
     /// ```
     pub fn get_backoff_seconds(&self) -> Option<i32> {
         self.backoff_seconds
+    }
+
+    /// Set the maximum execution time in seconds for this step.
+    ///
+    /// If the step closure does not complete within this duration, the step
+    /// returns [`DurableError::StepTimeout`] immediately and the spawned task
+    /// is aborted. The timeout applies only to the closure execution, not to
+    /// checkpoint I/O.
+    ///
+    /// Must be a positive value (greater than zero).
+    ///
+    /// # Panics
+    ///
+    /// Panics if `seconds` is 0.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use durable_lambda_core::types::StepOptions;
+    ///
+    /// let opts = StepOptions::new().timeout_seconds(30);
+    /// assert_eq!(opts.get_timeout_seconds(), Some(30));
+    /// ```
+    pub fn timeout_seconds(mut self, seconds: u64) -> Self {
+        assert!(
+            seconds > 0,
+            "StepOptions::timeout_seconds: seconds must be > 0, got {}",
+            seconds
+        );
+        self.timeout_seconds = Some(seconds);
+        self
+    }
+
+    /// Set a predicate to determine whether a step error should be retried.
+    ///
+    /// When a step fails, the predicate receives a reference to the error value
+    /// (type-erased). If the predicate returns `false`, the step fails immediately
+    /// without consuming the retry budget. If the predicate returns `true` (or if
+    /// no predicate is set), retries proceed normally.
+    ///
+    /// The type parameter `E` must match the error type used in `step_with_options`.
+    /// If the downcast fails (wrong type), the predicate conservatively returns
+    /// `false`.
+    ///
+    /// The predicate is stored in an `Arc` so `StepOptions` remains `Clone`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use durable_lambda_core::types::StepOptions;
+    ///
+    /// // Only retry errors that contain "transient".
+    /// let opts = StepOptions::new()
+    ///     .retries(3)
+    ///     .retry_if(|e: &String| e.contains("transient"));
+    /// assert!(opts.get_retry_if().is_some());
+    /// ```
+    pub fn retry_if<E, P>(mut self, predicate: P) -> Self
+    where
+        E: 'static,
+        P: Fn(&E) -> bool + Send + Sync + 'static,
+    {
+        self.retry_if = Some(Arc::new(move |any_err: &dyn std::any::Any| {
+            any_err
+                .downcast_ref::<E>()
+                .map_or(false, |e| predicate(e))
+        }));
+        self
+    }
+
+    /// Return the configured step timeout in seconds, if any.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use durable_lambda_core::types::StepOptions;
+    ///
+    /// let opts = StepOptions::new();
+    /// assert_eq!(opts.get_timeout_seconds(), None);
+    ///
+    /// let opts = StepOptions::new().timeout_seconds(10);
+    /// assert_eq!(opts.get_timeout_seconds(), Some(10));
+    /// ```
+    pub fn get_timeout_seconds(&self) -> Option<u64> {
+        self.timeout_seconds
+    }
+
+    /// Return a reference to the retry predicate, if one has been configured.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use durable_lambda_core::types::StepOptions;
+    ///
+    /// let opts = StepOptions::new();
+    /// assert!(opts.get_retry_if().is_none());
+    ///
+    /// let opts = StepOptions::new().retry_if(|e: &String| e.contains("transient"));
+    /// assert!(opts.get_retry_if().is_some());
+    /// ```
+    pub fn get_retry_if(
+        &self,
+    ) -> Option<&Arc<dyn Fn(&dyn std::any::Any) -> bool + Send + Sync>> {
+        self.retry_if.as_ref()
     }
 }
 
@@ -831,5 +958,59 @@ mod tests {
     fn map_options_accepts_positive_batch() {
         let opts = MapOptions::new().batch_size(1);
         assert_eq!(opts.get_batch_size(), Some(1));
+    }
+
+    // --- StepOptions timeout_seconds tests (TDD RED) ---
+
+    #[test]
+    fn step_options_timeout_seconds_stores_value() {
+        let opts = StepOptions::new().timeout_seconds(5);
+        assert_eq!(opts.get_timeout_seconds(), Some(5));
+    }
+
+    #[test]
+    fn step_options_timeout_seconds_default_is_none() {
+        let opts = StepOptions::new();
+        assert_eq!(opts.get_timeout_seconds(), None);
+    }
+
+    #[test]
+    #[should_panic(expected = "StepOptions::timeout_seconds: seconds must be > 0, got 0")]
+    fn step_options_timeout_seconds_rejects_zero() {
+        StepOptions::new().timeout_seconds(0);
+    }
+
+    #[test]
+    fn step_options_retry_if_stores_predicate() {
+        let opts = StepOptions::new().retry_if(|e: &String| e.contains("transient"));
+        assert!(opts.get_retry_if().is_some());
+    }
+
+    #[test]
+    fn step_options_with_retry_if_is_clone() {
+        let opts = StepOptions::new().retry_if(|e: &String| e.contains("transient"));
+        let cloned = opts.clone();
+        // If retry_if is Some in original, it must also be Some in clone.
+        assert!(cloned.get_retry_if().is_some());
+    }
+
+    #[test]
+    fn step_options_debug_shows_predicate_placeholder() {
+        let opts = StepOptions::new().retry_if(|e: &String| e.contains("transient"));
+        let debug_str = format!("{opts:?}");
+        assert!(
+            debug_str.contains("<predicate>"),
+            "Debug output should show '<predicate>' when retry_if is set, got: {debug_str}"
+        );
+    }
+
+    #[test]
+    fn step_options_debug_shows_none_when_no_predicate() {
+        let opts = StepOptions::new();
+        let debug_str = format!("{opts:?}");
+        assert!(
+            debug_str.contains("None"),
+            "Debug output should show 'None' when retry_if is not set, got: {debug_str}"
+        );
     }
 }

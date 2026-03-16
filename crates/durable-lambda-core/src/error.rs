@@ -178,6 +178,26 @@ pub enum DurableError {
         operation_name: String,
         error_message: String,
     },
+
+    /// A step exceeded its configured timeout.
+    ///
+    /// The step closure did not complete within the duration configured via
+    /// [`StepOptions::timeout_seconds`](crate::types::StepOptions::timeout_seconds).
+    /// The spawned task is aborted and this error is returned immediately.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use durable_lambda_core::error::DurableError;
+    ///
+    /// let err = DurableError::step_timeout("my_op");
+    /// assert!(err.to_string().contains("my_op"));
+    /// assert!(err.to_string().contains("timed out"));
+    /// assert_eq!(err.code(), "STEP_TIMEOUT");
+    /// ```
+    #[error("step timed out for operation '{operation_name}'")]
+    #[non_exhaustive]
+    StepTimeout { operation_name: String },
 }
 
 impl DurableError {
@@ -497,6 +517,25 @@ impl DurableError {
         }
     }
 
+    /// Create a step timeout error.
+    ///
+    /// Use when a step closure exceeds the configured `timeout_seconds` duration.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use durable_lambda_core::error::DurableError;
+    ///
+    /// let err = DurableError::step_timeout("my_op");
+    /// assert!(err.to_string().contains("my_op"));
+    /// assert_eq!(err.code(), "STEP_TIMEOUT");
+    /// ```
+    pub fn step_timeout(operation_name: impl Into<String>) -> Self {
+        Self::StepTimeout {
+            operation_name: operation_name.into(),
+        }
+    }
+
     /// Return a stable, programmatic error code for this error variant.
     ///
     /// Codes are SCREAMING_SNAKE_CASE and stable across versions.
@@ -528,6 +567,7 @@ impl DurableError {
             Self::ParallelFailed { .. } => "PARALLEL_FAILED",
             Self::MapFailed { .. } => "MAP_FAILED",
             Self::ChildContextFailed { .. } => "CHILD_CONTEXT_FAILED",
+            Self::StepTimeout { .. } => "STEP_TIMEOUT",
         }
     }
 }
@@ -557,7 +597,7 @@ mod tests {
         let serde_err = || serde_json::from_str::<i32>("bad").unwrap_err();
         let io_err = || std::io::Error::new(std::io::ErrorKind::Other, "test");
 
-        // Construct all 14 testable variants (AwsSdk excluded — no public constructor).
+        // Construct all 15 testable variants (AwsSdk excluded — no public constructor).
         let variants: &[(DurableError, &str)] = &[
             (
                 DurableError::replay_mismatch("A", "B", 0),
@@ -603,6 +643,7 @@ mod tests {
                 DurableError::child_context_failed("op", "msg"),
                 "CHILD_CONTEXT_FAILED",
             ),
+            (DurableError::step_timeout("op"), "STEP_TIMEOUT"),
         ];
 
         let mut codes = HashSet::new();
@@ -622,6 +663,28 @@ mod tests {
         assert!(
             !codes.contains("AWS_SDK"),
             "AWS_SDK code must be unique among all codes"
+        );
+    }
+
+    // --- StepTimeout tests (TDD RED) ---
+
+    #[test]
+    fn step_timeout_error_code() {
+        let err = DurableError::step_timeout("my_op");
+        assert_eq!(err.code(), "STEP_TIMEOUT");
+    }
+
+    #[test]
+    fn step_timeout_display_contains_op_and_timed_out() {
+        let err = DurableError::step_timeout("my_op");
+        let msg = err.to_string();
+        assert!(
+            msg.contains("my_op"),
+            "display should contain operation name, got: {msg}"
+        );
+        assert!(
+            msg.contains("timed out"),
+            "display should contain 'timed out', got: {msg}"
         );
     }
 
