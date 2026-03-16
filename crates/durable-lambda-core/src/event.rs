@@ -143,6 +143,103 @@ pub fn parse_operation_status(s: &str) -> Option<OperationStatus> {
     }
 }
 
+/// Structured data extracted from a durable Lambda invocation payload.
+///
+/// Contains all fields needed to construct a [`DurableContext`](crate::context::DurableContext):
+/// the execution ARN, checkpoint token, initial operations, pagination marker,
+/// and the user's original event payload.
+///
+/// # Examples
+///
+/// ```
+/// let payload = serde_json::json!({
+///     "DurableExecutionArn": "arn:aws:lambda:us-east-1:123:durable-execution/test",
+///     "CheckpointToken": "tok-1",
+///     "InitialExecutionState": {
+///         "Operations": [],
+///         "NextMarker": ""
+///     }
+/// });
+/// let data = durable_lambda_core::event::parse_invocation(&payload).unwrap();
+/// assert_eq!(data.durable_execution_arn, "arn:aws:lambda:us-east-1:123:durable-execution/test");
+/// ```
+#[derive(Debug)]
+pub struct InvocationData {
+    /// The durable execution ARN from the event envelope.
+    pub durable_execution_arn: String,
+    /// The initial checkpoint token from the event envelope.
+    pub checkpoint_token: String,
+    /// Parsed operations from InitialExecutionState.
+    pub operations: Vec<aws_sdk_lambda::types::Operation>,
+    /// Pagination marker for additional operations pages (None if all loaded).
+    pub next_marker: Option<String>,
+    /// The user's original event payload extracted from the Execution operation.
+    pub user_event: serde_json::Value,
+}
+
+/// Parse all durable execution fields from a Lambda event payload.
+///
+/// Extracts ARN, checkpoint token, initial operations, pagination marker,
+/// and user event from the standard durable Lambda event envelope.
+///
+/// # Arguments
+///
+/// * `payload` - The raw Lambda event payload as JSON
+///
+/// # Errors
+///
+/// Returns `Err(&'static str)` if `DurableExecutionArn` or `CheckpointToken`
+/// is missing from the payload.
+///
+/// # Examples
+///
+/// ```
+/// let payload = serde_json::json!({
+///     "DurableExecutionArn": "arn:aws:lambda:us-east-1:123:durable-execution/test",
+///     "CheckpointToken": "tok-1",
+///     "InitialExecutionState": {
+///         "Operations": [{
+///             "Id": "exec-1",
+///             "Type": "Execution",
+///             "Status": "Started",
+///             "ExecutionDetails": { "InputPayload": "{\"order_id\": 42}" }
+///         }]
+///     }
+/// });
+/// let data = durable_lambda_core::event::parse_invocation(&payload).unwrap();
+/// assert_eq!(data.checkpoint_token, "tok-1");
+/// assert_eq!(data.user_event["order_id"], 42);
+/// ```
+pub fn parse_invocation(payload: &serde_json::Value) -> Result<InvocationData, &'static str> {
+    let durable_execution_arn = payload["DurableExecutionArn"]
+        .as_str()
+        .ok_or("missing DurableExecutionArn in event")?
+        .to_string();
+
+    let checkpoint_token = payload["CheckpointToken"]
+        .as_str()
+        .ok_or("missing CheckpointToken in event")?
+        .to_string();
+
+    let initial_state = &payload["InitialExecutionState"];
+    let operations = parse_operations(initial_state);
+
+    let next_marker = initial_state["NextMarker"]
+        .as_str()
+        .filter(|s| !s.is_empty())
+        .map(|s| s.to_string());
+
+    let user_event = extract_user_event(initial_state);
+
+    Ok(InvocationData {
+        durable_execution_arn,
+        checkpoint_token,
+        operations,
+        next_marker,
+        user_event,
+    })
+}
+
 /// Extract the user's original event payload from the `InitialExecutionState`.
 ///
 /// The first operation with type `EXECUTION` contains the user's input payload
@@ -325,5 +422,81 @@ mod tests {
         });
         let event = extract_user_event(&state);
         assert_eq!(event["key"], "value");
+    }
+
+    #[test]
+    fn parse_invocation_valid_complete_payload() {
+        let payload = serde_json::json!({
+            "DurableExecutionArn": "arn:aws:lambda:us-east-1:123:durable-execution/test",
+            "CheckpointToken": "tok-abc",
+            "InitialExecutionState": {
+                "Operations": [{
+                    "Id": "exec-1",
+                    "Type": "Execution",
+                    "Status": "Started",
+                    "ExecutionDetails": { "InputPayload": "{\"order_id\": 99}" }
+                }],
+                "NextMarker": "page-2"
+            }
+        });
+        let data = parse_invocation(&payload).unwrap();
+        assert_eq!(
+            data.durable_execution_arn,
+            "arn:aws:lambda:us-east-1:123:durable-execution/test"
+        );
+        assert_eq!(data.checkpoint_token, "tok-abc");
+        assert_eq!(data.operations.len(), 1);
+        assert_eq!(data.next_marker, Some("page-2".to_string()));
+        assert_eq!(data.user_event["order_id"], 99);
+    }
+
+    #[test]
+    fn parse_invocation_missing_arn_returns_error() {
+        let payload = serde_json::json!({
+            "CheckpointToken": "tok-1",
+            "InitialExecutionState": { "Operations": [] }
+        });
+        let result = parse_invocation(&payload);
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err(), "missing DurableExecutionArn in event");
+    }
+
+    #[test]
+    fn parse_invocation_missing_token_returns_error() {
+        let payload = serde_json::json!({
+            "DurableExecutionArn": "arn:aws:lambda:us-east-1:123:durable-execution/test",
+            "InitialExecutionState": { "Operations": [] }
+        });
+        let result = parse_invocation(&payload);
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err(), "missing CheckpointToken in event");
+    }
+
+    #[test]
+    fn parse_invocation_empty_next_marker_produces_none() {
+        let payload = serde_json::json!({
+            "DurableExecutionArn": "arn:aws:lambda:us-east-1:123:durable-execution/test",
+            "CheckpointToken": "tok-1",
+            "InitialExecutionState": {
+                "Operations": [],
+                "NextMarker": ""
+            }
+        });
+        let data = parse_invocation(&payload).unwrap();
+        assert_eq!(data.next_marker, None);
+    }
+
+    #[test]
+    fn parse_invocation_nonempty_next_marker_produces_some() {
+        let payload = serde_json::json!({
+            "DurableExecutionArn": "arn:aws:lambda:us-east-1:123:durable-execution/test",
+            "CheckpointToken": "tok-1",
+            "InitialExecutionState": {
+                "Operations": [],
+                "NextMarker": "cursor-xyz"
+            }
+        });
+        let data = parse_invocation(&payload).unwrap();
+        assert_eq!(data.next_marker, Some("cursor-xyz".to_string()));
     }
 }
