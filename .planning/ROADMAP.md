@@ -1,0 +1,59 @@
+# Roadmap: durable-rust
+
+## Milestones
+
+- ✅ **v1.0 Initial SDK Release** - Shipped 2026-03-13 (see MILESTONES.md)
+- 🚧 **v1.1 GSD Tooling Transition** - Phases 1-2 (in progress)
+
+## Phases
+
+<details>
+<summary>✅ v1.0 Initial SDK Release - SHIPPED 2026-03-13</summary>
+
+Delivered under BMAD workflow. Full capability list in `.planning/MILESTONES.md`.
+
+20 capabilities shipped: replay engine, 8 durable operations, 4 API styles, MockDurableContext testing framework, Python compliance suite, 28 e2e tests, 44 examples, migration guide, container deployment.
+
+</details>
+
+### 🚧 v1.1 GSD Tooling Transition (In Progress)
+
+**Milestone Goal:** Migrate project management from BMAD tooling to GSD workflow infrastructure. No Rust source changes. Result: a clean repo with `.planning/` fully populated and no `_bmad*` directories.
+
+#### Phase 1: GSD Infrastructure
+
+**Goal**: All GSD planning files exist and the v1.0 milestone history is preserved before any BMAD artifacts are deleted.
+**Depends on**: Nothing (first phase)
+**Requirements**: GSD-01, GSD-02, GSD-03
+**Success Criteria** (what must be TRUE):
+  1. `.planning/MILESTONES.md` exists with v1.0 entry documenting all 20 delivered capabilities and key design decisions
+  2. `.planning/REQUIREMENTS.md` exists with REQ-IDs for all 6 v1.1 scope items and a traceability table
+  3. `.planning/ROADMAP.md` exists with phase definitions for v1.1 continuing from Phase 1
+  4. `.planning/STATE.md` points to Phase 2 as the active position
+**Plans**: TBD
+
+Plans:
+- [ ] 01-01: Create MILESTONES.md with v1.0 history, create ROADMAP.md and update STATE.md
+
+#### Phase 2: BMAD Cleanup
+
+**Goal**: All BMAD artifacts removed from the repository in two dedicated commits, leaving zero orphaned references.
+**Depends on**: Phase 1
+**Requirements**: BMAD-01, BMAD-02, BMAD-03
+**Success Criteria** (what must be TRUE):
+  1. `_bmad-output/` directory no longer exists in the repository (removed via `git rm -r` in a dedicated commit)
+  2. `_bmad/` directory no longer exists in the repository (removed via `git rm -r` in a separate dedicated commit)
+  3. `grep -r "_bmad" .` (excluding `.git/`) returns no matches in any tracked file
+**Plans**: TBD
+
+Plans:
+- [ ] 02-01: Remove _bmad-output/ in dedicated commit, remove _bmad/ in dedicated commit, verify zero orphaned references
+
+## Progress
+
+**Execution Order:** Phase 1 → Phase 2
+
+| Phase | Milestone | Plans Complete | Status | Completed |
+|-------|-----------|----------------|--------|-----------|
+| 1. GSD Infrastructure | v1.1 | 0/1 | Not started | - |
+| 2. BMAD Cleanup | v1.1 | 0/1 | Not started | - |

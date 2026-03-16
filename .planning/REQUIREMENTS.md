@@ -43,18 +43,18 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| GSD-01 | — | Pending |
-| GSD-02 | — | Pending |
-| GSD-03 | — | Pending |
-| BMAD-01 | — | Pending |
-| BMAD-02 | — | Pending |
-| BMAD-03 | — | Pending |
+| GSD-01 | Phase 1 | Pending |
+| GSD-02 | Phase 1 | Pending |
+| GSD-03 | Phase 1 | Pending |
+| BMAD-01 | Phase 2 | Pending |
+| BMAD-02 | Phase 2 | Pending |
+| BMAD-03 | Phase 2 | Pending |
 
 **Coverage:**
 - v1.1 requirements: 6 total
-- Mapped to phases: 0
-- Unmapped: 6 ⚠️
+- Mapped to phases: 6
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-03-16*
-*Last updated: 2026-03-16 after initial definition*
+*Last updated: 2026-03-16 after roadmap creation*
