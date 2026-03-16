@@ -184,6 +184,12 @@ impl StepOptions {
     ///
     /// When a step fails and retries remain, the SDK sends a RETRY checkpoint
     /// and the server re-invokes the function after the backoff delay.
+    /// Zero retries is valid and means the step will not be retried. Must be
+    /// non-negative.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `count` is negative.
     ///
     /// # Examples
     ///
@@ -192,15 +198,25 @@ impl StepOptions {
     ///
     /// let opts = StepOptions::new().retries(3);
     /// ```
-    pub fn retries(mut self, count: u32) -> Self {
-        self.retries = Some(count);
+    pub fn retries(mut self, count: i32) -> Self {
+        assert!(
+            count >= 0,
+            "StepOptions::retries: count must be >= 0, got {}",
+            count
+        );
+        self.retries = Some(count as u32);
         self
     }
 
     /// Set the delay in seconds between retry attempts.
     ///
     /// If not set, the server uses its default delay (typically 0 for
-    /// immediate retry).
+    /// immediate retry). Zero is valid and means immediate retry. Must be
+    /// non-negative.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `seconds` is negative.
     ///
     /// # Examples
     ///
@@ -210,6 +226,11 @@ impl StepOptions {
     /// let opts = StepOptions::new().retries(3).backoff_seconds(5);
     /// ```
     pub fn backoff_seconds(mut self, seconds: i32) -> Self {
+        assert!(
+            seconds >= 0,
+            "StepOptions::backoff_seconds: seconds must be >= 0, got {}",
+            seconds
+        );
         self.backoff_seconds = Some(seconds);
         self
     }
@@ -291,7 +312,12 @@ impl CallbackOptions {
     /// Set the overall timeout in seconds for the callback.
     ///
     /// If no success/failure signal arrives before this deadline, the server
-    /// marks the callback as timed out. `0` means no timeout (default).
+    /// marks the callback as timed out. Must be a positive value. To use no
+    /// timeout, omit this setter entirely.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `seconds` is 0 or negative.
     ///
     /// # Examples
     ///
@@ -301,6 +327,11 @@ impl CallbackOptions {
     /// let opts = CallbackOptions::new().timeout_seconds(300);
     /// ```
     pub fn timeout_seconds(mut self, seconds: i32) -> Self {
+        assert!(
+            seconds > 0,
+            "CallbackOptions::timeout_seconds: seconds must be > 0, got {}",
+            seconds
+        );
         self.timeout_seconds = seconds;
         self
     }
@@ -308,8 +339,12 @@ impl CallbackOptions {
     /// Set the heartbeat timeout in seconds.
     ///
     /// External systems must send periodic heartbeat signals within this
-    /// interval to keep the callback alive. `0` means no heartbeat
-    /// requirement (default).
+    /// interval to keep the callback alive. Must be a positive value. To use
+    /// no heartbeat requirement, omit this setter entirely.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `seconds` is 0 or negative.
     ///
     /// # Examples
     ///
@@ -319,6 +354,11 @@ impl CallbackOptions {
     /// let opts = CallbackOptions::new().heartbeat_timeout_seconds(30);
     /// ```
     pub fn heartbeat_timeout_seconds(mut self, seconds: i32) -> Self {
+        assert!(
+            seconds > 0,
+            "CallbackOptions::heartbeat_timeout_seconds: seconds must be > 0, got {}",
+            seconds
+        );
         self.heartbeat_timeout_seconds = seconds;
         self
     }
@@ -460,7 +500,11 @@ impl MapOptions {
     ///
     /// Each batch of items executes concurrently, but batches themselves
     /// run sequentially — the next batch starts only after the previous
-    /// batch completes.
+    /// batch completes. Must be a positive value.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `size` is 0.
     ///
     /// # Examples
     ///
@@ -470,6 +514,11 @@ impl MapOptions {
     /// let opts = MapOptions::new().batch_size(5);
     /// ```
     pub fn batch_size(mut self, size: usize) -> Self {
+        assert!(
+            size > 0,
+            "MapOptions::batch_size: size must be > 0, got {}",
+            size
+        );
         self.batch_size = Some(size);
         self
     }
