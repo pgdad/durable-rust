@@ -33,21 +33,21 @@ Delivered under BMAD workflow. Full capability list in `.planning/MILESTONES.md`
 **Plans:** 1/1 plans complete
 
 Plans:
-- [ ] 01-01-PLAN.md — Verify GSD infrastructure and advance to Phase 2
+- [x] 01-01-PLAN.md — Verify GSD infrastructure and advance to Phase 2
 
 #### Phase 2: BMAD Cleanup
 
-**Goal**: All BMAD artifacts removed from the repository in two dedicated commits, leaving zero orphaned references.
+**Goal**: All BMAD artifacts removed from the repository in four dedicated commits, leaving zero orphaned references.
 **Depends on**: Phase 1
 **Requirements**: BMAD-01, BMAD-02, BMAD-03
 **Success Criteria** (what must be TRUE):
   1. `_bmad-output/` directory no longer exists in the repository (removed via `git rm -r` in a dedicated commit)
   2. `_bmad/` directory no longer exists in the repository (removed via `git rm -r` in a separate dedicated commit)
   3. `grep -r "_bmad" .` (excluding `.git/`) returns no matches in any tracked file
-**Plans**: TBD
+**Plans:** 1 plan
 
 Plans:
-- [ ] 02-01: Remove _bmad-output/ in dedicated commit, remove _bmad/ in dedicated commit, verify zero orphaned references
+- [ ] 02-01-PLAN.md — Remove BMAD directories and clean references in 4 atomic commits
 
 ## Progress
 
