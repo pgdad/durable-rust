@@ -59,13 +59,13 @@
 - [x] **FEAT-09**: StepOptions gains `.timeout_seconds(u64)` field
 - [x] **FEAT-10**: Step closure wrapped in tokio::time::timeout when timeout set
 - [x] **FEAT-11**: Step exceeding timeout returns DurableError::step_timeout with operation name
-- [ ] **FEAT-12**: Tests for step timeout (exceeds, completes within, zero timeout)
+- [x] **FEAT-12**: Tests for step timeout (exceeds, completes within, zero timeout)
 
 ### Features — Conditional Retry
 - [x] **FEAT-13**: StepOptions gains `.retry_if(Fn(&E) -> bool)` predicate
 - [x] **FEAT-14**: Retry only when predicate returns true; non-matching errors fail immediately
 - [x] **FEAT-15**: Default predicate (no retry_if) retries all errors (backward compatible)
-- [ ] **FEAT-16**: Tests for conditional retry (transient retries, non-transient fails fast)
+- [x] **FEAT-16**: Tests for conditional retry (transient retries, non-transient fails fast)
 
 ### Features — Operation Observability
 - [ ] **FEAT-17**: Each operation wrapped in tracing::span with operation name, type, and ID fields

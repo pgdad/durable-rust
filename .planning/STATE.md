@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-last_updated: "2026-03-16T17:38:24.035Z"
+last_updated: "2026-03-16T17:45:27.038Z"
 progress:
   total_phases: 9
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 15
-  completed_plans: 13
+  completed_plans: 15
 ---
 
 # STATE.md
@@ -20,10 +20,10 @@ progress:
 
 ## Current Position
 - **Phase**: 05-step-timeout-conditional-retry
-- **Plan**: 05-01 complete
+- **Plan**: 05-02 complete
 - **Status**: Executing
-- **Last Activity**: 2026-03-16 — Completed 05-01 step timeout and conditional retry infrastructure
-- **Progress**: [█████████░] 87% 13/15 plans complete
+- **Last Activity**: 2026-03-16 — Completed 05-02 e2e tests for step timeout and conditional retry
+- **Progress**: [█████████░] 93% 14/15 plans complete
 
 ## Performance Metrics
 - **Total Plans**: TBD (phases not yet planned into individual plans)
@@ -69,6 +69,8 @@ progress:
 - [05-01] retry_if predicate returning false causes immediate FAIL without consuming retry budget (FEAT-14 — predicate checked before retry budget)
 - [05-01] No retry_if predicate defaults to retrying all errors (backward compatible behavior preserved)
 - [05-01] StepTimeout uses tokio::time::timeout on &mut JoinHandle with handle.abort() on expiry; no checkpoint sent on timeout
+- [05-02] All 7 e2e tests written in one pass — Tasks 1 and 2 share commit abe339f; implementation was complete from Plan 01
+- [05-02] #[non_exhaustive] struct variants require { field, .. } in external crate pattern matches — fixed at compile time
 
 ### Pending Todos
 - None — ready to begin Phase 1 execution
@@ -77,6 +79,6 @@ progress:
 - None identified
 
 ## Session Continuity
-- **Last Session**: 2026-03-16 — Completed 05-01 step timeout and conditional retry (FEAT-09, FEAT-10, FEAT-11, FEAT-13, FEAT-14, FEAT-15)
-- **Stopped At**: Completed 05-step-timeout-conditional-retry/05-01-PLAN.md
-- **Next Action**: Continue with Plan 05-02 per ROADMAP.md
+- **Last Session**: 2026-03-16 — Completed 05-02 e2e tests for step timeout (FEAT-12) and conditional retry (FEAT-16)
+- **Stopped At**: Completed 05-step-timeout-conditional-retry/05-02-PLAN.md
+- **Next Action**: Continue with Phase 06 per ROADMAP.md
