@@ -20,10 +20,10 @@ progress:
 
 ## Current Position
 - **Phase**: 05-step-timeout-conditional-retry
-- **Plan**: 05-02 complete
+- **Plan**: 05-03 complete (phase complete)
 - **Status**: Executing
-- **Last Activity**: 2026-03-16 — Completed 05-02 e2e tests for step timeout and conditional retry
-- **Progress**: [█████████░] 93% 14/15 plans complete
+- **Last Activity**: 2026-03-16 — Completed 05-03 parity tests for step timeout, conditional retry, complex workflow, and BatchItemStatus
+- **Progress**: [██████████] 100% 15/15 plans complete
 
 ## Performance Metrics
 - **Total Plans**: TBD (phases not yet planned into individual plans)
@@ -71,6 +71,8 @@ progress:
 - [05-01] StepTimeout uses tokio::time::timeout on &mut JoinHandle with handle.abort() on expiry; no checkpoint sent on timeout
 - [05-02] All 7 e2e tests written in one pass — Tasks 1 and 2 share commit abe339f; implementation was complete from Plan 01
 - [05-02] #[non_exhaustive] struct variants require { field, .. } in external crate pattern matches — fixed at compile time
+- [05-03] Used tokio::time::pause() + advance() for step timeout parity test — proves timeout fires without real sleep delay, keeping test suite fast
+- [05-03] BranchFn type alias required in parallel parity tests — inline Box::new closures without type alias cannot coerce Box::pin return to Pin<Box<dyn Future + Send>>
 
 ### Pending Todos
 - None — ready to begin Phase 1 execution
@@ -79,6 +81,6 @@ progress:
 - None identified
 
 ## Session Continuity
-- **Last Session**: 2026-03-16 — Completed 05-02 e2e tests for step timeout (FEAT-12) and conditional retry (FEAT-16)
-- **Stopped At**: Completed 05-step-timeout-conditional-retry/05-02-PLAN.md
-- **Next Action**: Continue with Phase 06 per ROADMAP.md
+- **Last Session**: 2026-03-16 — Completed 05-03 parity tests for TEST-23, TEST-24, TEST-25
+- **Stopped At**: Completed 05-step-timeout-conditional-retry/05-03-PLAN.md
+- **Next Action**: Phase 05 complete — continue with Phase 06 per ROADMAP.md

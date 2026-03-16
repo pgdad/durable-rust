@@ -31,9 +31,9 @@
 - [x] **TEST-22**: Checkpoint token evolution — token changes after each checkpoint verified
 
 ### Testing — Cross-Approach & Integration
-- [ ] **TEST-23**: Same workflow logic run through all 4 API styles produces identical operation sequences
-- [ ] **TEST-24**: Complex workflow parity — parallel + map + child_context across all approaches
-- [ ] **TEST-25**: BatchItemStatus verification — per-item success/failure status checked in parallel/map results
+- [x] **TEST-23**: Same workflow logic run through all 4 API styles produces identical operation sequences
+- [x] **TEST-24**: Complex workflow parity — parallel + map + child_context across all approaches
+- [x] **TEST-25**: BatchItemStatus verification — per-item success/failure status checked in parallel/map results
 
 ### Architecture — Code Duplication Elimination
 - [x] **ARCH-01**: DurableContextOps trait — shared trait with all 44 context methods
