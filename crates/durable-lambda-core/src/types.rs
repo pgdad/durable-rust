@@ -709,4 +709,78 @@ mod tests {
             assert_eq!(entry, deserialized);
         }
     }
+
+    // --- StepOptions validation tests ---
+
+    #[test]
+    #[should_panic(expected = "StepOptions::retries: count must be >= 0, got -1")]
+    fn step_options_rejects_negative_retries() {
+        StepOptions::new().retries(-1);
+    }
+
+    #[test]
+    fn step_options_accepts_zero_retries() {
+        let opts = StepOptions::new().retries(0);
+        assert_eq!(opts.get_retries(), Some(0));
+    }
+
+    #[test]
+    fn step_options_accepts_positive_retries() {
+        let opts = StepOptions::new().retries(3);
+        assert_eq!(opts.get_retries(), Some(3));
+    }
+
+    #[test]
+    #[should_panic(expected = "StepOptions::backoff_seconds: seconds must be >= 0, got -1")]
+    fn step_options_rejects_negative_backoff() {
+        StepOptions::new().backoff_seconds(-1);
+    }
+
+    #[test]
+    fn step_options_accepts_zero_backoff() {
+        let opts = StepOptions::new().backoff_seconds(0);
+        assert_eq!(opts.get_backoff_seconds(), Some(0));
+    }
+
+    // --- CallbackOptions validation tests ---
+
+    #[test]
+    #[should_panic(expected = "CallbackOptions::timeout_seconds: seconds must be > 0, got 0")]
+    fn callback_options_rejects_zero_timeout() {
+        CallbackOptions::new().timeout_seconds(0);
+    }
+
+    #[test]
+    fn callback_options_accepts_positive_timeout() {
+        let opts = CallbackOptions::new().timeout_seconds(1);
+        assert_eq!(opts.get_timeout_seconds(), 1);
+    }
+
+    #[test]
+    #[should_panic(
+        expected = "CallbackOptions::heartbeat_timeout_seconds: seconds must be > 0, got 0"
+    )]
+    fn callback_options_rejects_zero_heartbeat() {
+        CallbackOptions::new().heartbeat_timeout_seconds(0);
+    }
+
+    #[test]
+    fn callback_options_accepts_positive_heartbeat() {
+        let opts = CallbackOptions::new().heartbeat_timeout_seconds(1);
+        assert_eq!(opts.get_heartbeat_timeout_seconds(), 1);
+    }
+
+    // --- MapOptions validation tests ---
+
+    #[test]
+    #[should_panic(expected = "MapOptions::batch_size: size must be > 0, got 0")]
+    fn map_options_rejects_zero_batch() {
+        MapOptions::new().batch_size(0);
+    }
+
+    #[test]
+    fn map_options_accepts_positive_batch() {
+        let opts = MapOptions::new().batch_size(1);
+        assert_eq!(opts.get_batch_size(), Some(1));
+    }
 }
