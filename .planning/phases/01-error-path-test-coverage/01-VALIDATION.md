@@ -38,19 +38,19 @@ created: 2026-03-16
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 01-01-01 | 01 | 1 | TEST-01 | unit | `cargo test -p e2e-tests error_paths::replay_mismatch` | ❌ W0 | ⬜ pending |
-| 01-01-02 | 01 | 1 | TEST-02 | unit | `cargo test -p e2e-tests error_paths::serialization_mismatch` | ❌ W0 | ⬜ pending |
-| 01-01-03 | 01 | 1 | TEST-03 | unit | `cargo test -p e2e-tests error_paths::checkpoint_failure` | ❌ W0 | ⬜ pending |
-| 01-01-04 | 01 | 1 | TEST-04 | unit | `cargo test -p e2e-tests error_paths::retry_exhaustion` | ❌ W0 | ⬜ pending |
-| 01-01-05 | 01 | 1 | TEST-05 | unit | `cargo test -p e2e-tests error_paths::callback_timeout` | ❌ W0 | ⬜ pending |
-| 01-01-06 | 01 | 1 | TEST-06 | unit | `cargo test -p e2e-tests error_paths::callback_failure` | ❌ W0 | ⬜ pending |
-| 01-01-07 | 01 | 1 | TEST-07 | unit | `cargo test -p e2e-tests error_paths::invoke_failure` | ❌ W0 | ⬜ pending |
-| 01-02-01 | 02 | 1 | TEST-08 | integration | `cargo test -p e2e-tests error_paths::parallel_all_fail` | ❌ W0 | ⬜ pending |
-| 01-02-02 | 02 | 1 | TEST-09 | integration | `cargo test -p e2e-tests error_paths::map_item_failures` | ❌ W0 | ⬜ pending |
-| 01-02-03 | 02 | 1 | TEST-10 | unit+fix | `cargo test -p e2e-tests error_paths::step_closure_panic` | ❌ W0 | ⬜ pending |
-| 01-02-04 | 02 | 1 | TEST-11 | integration | `cargo test -p e2e-tests error_paths::parallel_branch_panic` | ❌ W0 | ⬜ pending |
+| 01-01-01 | 01 | 1 | TEST-01 | unit | `cargo test -p e2e-tests error_paths::replay_mismatch` | -- W0 | pending |
+| 01-01-02 | 01 | 1 | TEST-02 | unit | `cargo test -p e2e-tests error_paths::serialization_mismatch` | -- W0 | pending |
+| 01-01-03 | 01 | 1 | TEST-03 | unit | `cargo test -p e2e-tests error_paths::checkpoint_failure` | -- W0 | pending |
+| 01-01-04 | 01 | 1 | TEST-04 | unit | `cargo test -p e2e-tests error_paths::retry_exhaustion` | -- W0 | pending |
+| 01-01-05 | 01 | 1 | TEST-05 | unit | `cargo test -p e2e-tests error_paths::callback_timeout` | -- W0 | pending |
+| 01-01-06 | 01 | 1 | TEST-06 | unit | `cargo test -p e2e-tests error_paths::callback_failure` | -- W0 | pending |
+| 01-01-07 | 01 | 1 | TEST-07 | unit | `cargo test -p e2e-tests error_paths::invoke_failure` | -- W0 | pending |
+| 01-02-01 | 02 | 2 | TEST-08 | integration | `cargo test -p e2e-tests error_paths::parallel_all_fail` | -- W0 | pending |
+| 01-02-02 | 02 | 2 | TEST-09 | integration | `cargo test -p e2e-tests error_paths::map_item_failures` | -- W0 | pending |
+| 01-02-03 | 02 | 2 | TEST-11 | integration | `cargo test -p e2e-tests error_paths::parallel_branch_panic` | -- W0 | pending |
+| 01-03-01 | 03 | 3 | TEST-10 | unit+fix | `cargo test -p e2e-tests error_paths::step_closure_panic` | -- W0 | pending |
 
-*Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
+*Status: pending / green / red / flaky*
 
 ---
 
