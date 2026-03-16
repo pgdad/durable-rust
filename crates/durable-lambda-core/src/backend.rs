@@ -136,16 +136,32 @@ fn backoff_delay(attempt: u32) -> Duration {
     Duration::from_millis(jittered)
 }
 
-/// Check if an AWS SDK error is retryable (throttling or server error).
+/// Check if an error is retryable (only AWS transient errors qualify).
+///
+/// Only `AwsSdkOperation` and `AwsSdk` errors can represent transient AWS
+/// failures. All other `DurableError` variants (replay mismatches,
+/// serialization errors, etc.) are deterministic and must not be retried.
 fn is_retryable_error(err: &DurableError) -> bool {
-    let msg = err.to_string().to_lowercase();
-    msg.contains("throttl")
-        || msg.contains("rate exceeded")
-        || msg.contains("too many requests")
-        || msg.contains("service unavailable")
-        || msg.contains("internal server error")
-        || msg.contains("timed out")
-        || msg.contains("timeout")
+    match err {
+        DurableError::AwsSdkOperation(source) => {
+            let msg = source.to_string().to_lowercase();
+            msg.contains("throttl")
+                || msg.contains("rate exceeded")
+                || msg.contains("too many requests")
+                || msg.contains("service unavailable")
+                || msg.contains("internal server error")
+                || msg.contains("timed out")
+                || msg.contains("timeout")
+        }
+        DurableError::AwsSdk(sdk_err) => {
+            let msg = sdk_err.to_string().to_lowercase();
+            msg.contains("throttl")
+                || msg.contains("service unavailable")
+                || msg.contains("timed out")
+        }
+        // All other variants are deterministic errors -- never retry.
+        _ => false,
+    }
 }
 
 #[async_trait::async_trait]
@@ -229,6 +245,7 @@ impl DurableBackend for RealBackend {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::io;
     use std::sync::Arc;
 
     #[test]
@@ -258,20 +275,20 @@ mod tests {
         }
     }
 
+    // --- TDD RED: new behavior tests for variant-based retry detection ---
+
     #[test]
     fn is_retryable_detects_throttling() {
-        let err = DurableError::checkpoint_failed(
-            "test",
-            std::io::Error::new(std::io::ErrorKind::Other, "Throttling: Rate exceeded"),
+        let err = DurableError::aws_sdk_operation(
+            io::Error::new(io::ErrorKind::Other, "Throttling: Rate exceeded"),
         );
         assert!(is_retryable_error(&err));
     }
 
     #[test]
     fn is_retryable_detects_timeout() {
-        let err = DurableError::checkpoint_failed(
-            "test",
-            std::io::Error::new(std::io::ErrorKind::TimedOut, "connection timed out"),
+        let err = DurableError::aws_sdk_operation(
+            io::Error::new(io::ErrorKind::TimedOut, "connection timed out"),
         );
         assert!(is_retryable_error(&err));
     }
@@ -279,6 +296,54 @@ mod tests {
     #[test]
     fn is_retryable_rejects_non_transient() {
         let err = DurableError::replay_mismatch("Step", "Wait", 0);
+        assert!(!is_retryable_error(&err));
+    }
+
+    #[test]
+    fn is_retryable_ignores_checkpoint_failed_with_throttle() {
+        // KEY behavior change: CheckpointFailed with "Throttling" must NOT be retried.
+        // Previously the string-scanning impl would retry this incorrectly.
+        let err = DurableError::checkpoint_failed(
+            "test",
+            io::Error::new(io::ErrorKind::Other, "Throttling: Rate exceeded"),
+        );
+        assert!(!is_retryable_error(&err));
+    }
+
+    #[test]
+    fn is_retryable_ignores_serialization_errors() {
+        let serde_err = serde_json::from_str::<i32>("bad").unwrap_err();
+        let err = DurableError::serialization("MyType", serde_err);
+        assert!(!is_retryable_error(&err));
+    }
+
+    #[test]
+    fn is_retryable_detects_service_unavailable() {
+        let err = DurableError::aws_sdk_operation(
+            io::Error::new(io::ErrorKind::Other, "service unavailable"),
+        );
+        assert!(is_retryable_error(&err));
+    }
+
+    #[test]
+    fn is_retryable_detects_rate_exceeded() {
+        let err = DurableError::aws_sdk_operation(
+            io::Error::new(io::ErrorKind::Other, "rate exceeded"),
+        );
+        assert!(is_retryable_error(&err));
+    }
+
+    #[test]
+    fn is_retryable_detects_internal_server_error() {
+        let err = DurableError::aws_sdk_operation(
+            io::Error::new(io::ErrorKind::Other, "internal server error"),
+        );
+        assert!(is_retryable_error(&err));
+    }
+
+    #[test]
+    fn is_retryable_rejects_callback_failed() {
+        let err = DurableError::callback_failed("op", "cb-1", "external system rejected");
         assert!(!is_retryable_error(&err));
     }
 }
