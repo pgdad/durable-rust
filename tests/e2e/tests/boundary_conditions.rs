@@ -350,3 +350,216 @@ fn test_negative_backoff_panics() {
 fn test_zero_callback_timeout_panics() {
     CallbackOptions::new().timeout_seconds(0);
 }
+
+// ============================================================================
+// TEST-17: 5-level nested child contexts
+// ============================================================================
+
+/// Verify that 5 levels of nested `child_context` calls all execute correctly
+/// with no operation ID collisions at any nesting depth.
+///
+/// Each level runs a step and the innermost level's value (5) propagates
+/// back up through the nesting chain. All 5 levels completing without panic
+/// proves that the blake2b namespacing at each depth produces unique IDs.
+#[tokio::test]
+async fn test_five_level_nested_child_contexts() {
+    let (mut ctx, calls, _ops) = MockDurableContext::new().build().await;
+
+    let result: i32 = ctx
+        .child_context("level1", |mut l1| async move {
+            let r1: Result<i32, String> = l1.step("l1_step", || async { Ok(1i32) }).await?;
+            assert_eq!(r1.unwrap(), 1);
+
+            let inner: i32 = l1
+                .child_context("level2", |mut l2| async move {
+                    let r2: Result<i32, String> = l2.step("l2_step", || async { Ok(2i32) }).await?;
+                    assert_eq!(r2.unwrap(), 2);
+
+                    let inner: i32 = l2
+                        .child_context("level3", |mut l3| async move {
+                            let r3: Result<i32, String> =
+                                l3.step("l3_step", || async { Ok(3i32) }).await?;
+                            assert_eq!(r3.unwrap(), 3);
+
+                            let inner: i32 = l3
+                                .child_context("level4", |mut l4| async move {
+                                    let r4: Result<i32, String> =
+                                        l4.step("l4_step", || async { Ok(4i32) }).await?;
+                                    assert_eq!(r4.unwrap(), 4);
+
+                                    let inner: i32 = l4
+                                        .child_context("level5", |mut l5| async move {
+                                            let r5: Result<i32, String> =
+                                                l5.step("l5_step", || async { Ok(5i32) }).await?;
+                                            Ok(r5.unwrap())
+                                        })
+                                        .await?;
+                                    Ok(inner)
+                                })
+                                .await?;
+                            Ok(inner)
+                        })
+                        .await?;
+                    Ok(inner)
+                })
+                .await?;
+            Ok(inner)
+        })
+        .await
+        .unwrap();
+
+    // The innermost level's value (5) should propagate all the way back.
+    assert_eq!(result, 5, "deepest level value should propagate back up");
+
+    // Verify checkpoints were produced — at minimum 10 Context checkpoints
+    // (START + SUCCEED for each of the 5 child_context levels) plus step checkpoints.
+    let captured = calls.lock().await;
+    assert!(
+        captured.len() >= 10,
+        "expected at least 10 checkpoints from 5 levels of child_context, got {}",
+        captured.len()
+    );
+}
+
+// ============================================================================
+// TEST-18: 3-level parallel-in-child-in-parallel
+// ============================================================================
+
+/// Verify that 3-level nesting (parallel > child_context > parallel) completes
+/// correctly with no operation ID collisions across nesting levels or branches.
+///
+/// Structure:
+/// - Level 1: outer `parallel` with 2 branches (branch_a, branch_b)
+/// - Level 2: each branch creates a `child_context`
+/// - Level 3: each child_context runs an inner `parallel` with 2 steps
+///
+/// Expected results (sorted): branch_a sums 10+20=30, branch_b sums 100+200=300.
+#[tokio::test]
+async fn test_parallel_in_child_in_parallel() {
+    let (mut ctx, _calls, _ops) = MockDurableContext::new().build().await;
+
+    type OuterBranch = Box<
+        dyn FnOnce(
+                DurableContext,
+            ) -> Pin<Box<dyn Future<Output = Result<i32, DurableError>> + Send>>
+            + Send,
+    >;
+
+    let branches: Vec<OuterBranch> = vec![
+        Box::new(|mut branch_ctx: DurableContext| {
+            Box::pin(async move {
+                // Level 2: child context inside parallel branch a
+                let child_result: i32 = branch_ctx
+                    .child_context("child_a", |mut child_ctx| async move {
+                        // Level 3: inner parallel inside child context a
+                        type InnerBranch = Box<
+                            dyn FnOnce(
+                                    DurableContext,
+                                ) -> Pin<
+                                    Box<dyn Future<Output = Result<i32, DurableError>> + Send>,
+                                > + Send,
+                        >;
+                        let inner_branches: Vec<InnerBranch> = vec![
+                            Box::new(|mut inner_ctx: DurableContext| {
+                                Box::pin(async move {
+                                    let r: Result<i32, String> =
+                                        inner_ctx.step("inner_a1", || async { Ok(10i32) }).await?;
+                                    Ok(r.unwrap())
+                                })
+                            }),
+                            Box::new(|mut inner_ctx: DurableContext| {
+                                Box::pin(async move {
+                                    let r: Result<i32, String> =
+                                        inner_ctx.step("inner_a2", || async { Ok(20i32) }).await?;
+                                    Ok(r.unwrap())
+                                })
+                            }),
+                        ];
+                        let inner_result = child_ctx
+                            .parallel("inner_parallel_a", inner_branches, ParallelOptions::new())
+                            .await?;
+                        let sum: i32 = inner_result
+                            .results
+                            .iter()
+                            .filter_map(|item| item.result)
+                            .sum();
+                        Ok(sum)
+                    })
+                    .await?;
+                Ok(child_result)
+            })
+        }),
+        Box::new(|mut branch_ctx: DurableContext| {
+            Box::pin(async move {
+                // Level 2: child context inside parallel branch b
+                let child_result: i32 = branch_ctx
+                    .child_context("child_b", |mut child_ctx| async move {
+                        // Level 3: inner parallel inside child context b
+                        type InnerBranch = Box<
+                            dyn FnOnce(
+                                    DurableContext,
+                                ) -> Pin<
+                                    Box<dyn Future<Output = Result<i32, DurableError>> + Send>,
+                                > + Send,
+                        >;
+                        let inner_branches: Vec<InnerBranch> = vec![
+                            Box::new(|mut inner_ctx: DurableContext| {
+                                Box::pin(async move {
+                                    let r: Result<i32, String> =
+                                        inner_ctx.step("inner_b1", || async { Ok(100i32) }).await?;
+                                    Ok(r.unwrap())
+                                })
+                            }),
+                            Box::new(|mut inner_ctx: DurableContext| {
+                                Box::pin(async move {
+                                    let r: Result<i32, String> =
+                                        inner_ctx.step("inner_b2", || async { Ok(200i32) }).await?;
+                                    Ok(r.unwrap())
+                                })
+                            }),
+                        ];
+                        let inner_result = child_ctx
+                            .parallel("inner_parallel_b", inner_branches, ParallelOptions::new())
+                            .await?;
+                        let sum: i32 = inner_result
+                            .results
+                            .iter()
+                            .filter_map(|item| item.result)
+                            .sum();
+                        Ok(sum)
+                    })
+                    .await?;
+                Ok(child_result)
+            })
+        }),
+    ];
+
+    let result = ctx
+        .parallel("outer_parallel", branches, ParallelOptions::new())
+        .await
+        .unwrap();
+
+    // Outer parallel has 2 branches — both should succeed.
+    assert_eq!(
+        result.results.len(),
+        2,
+        "outer parallel should have 2 results"
+    );
+    for item in &result.results {
+        assert_eq!(
+            item.status,
+            BatchItemStatus::Succeeded,
+            "all outer branches should have Succeeded status"
+        );
+    }
+
+    // Collect and sort results — tokio::spawn execution order is non-deterministic.
+    let mut values: Vec<i32> = result
+        .results
+        .iter()
+        .filter_map(|item| item.result)
+        .collect();
+    values.sort();
+    // Branch a: 10 + 20 = 30, Branch b: 100 + 200 = 300
+    assert_eq!(values, vec![30, 300], "branch sums should be [30, 300]");
+}
