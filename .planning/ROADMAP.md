@@ -162,7 +162,7 @@ Plans:
 | 3. Shared Context Trait | 3/3 | Complete   | 2026-03-16 |
 | 4. Input Validation & Error Codes | 3/3 | Complete   | 2026-03-16 |
 | 5. Step Timeout & Conditional Retry | 3/3 | Complete   | 2026-03-16 |
-| 6. Observability & Batch Checkpoint | 0/2 | Planned | - |
+| 6. Observability & Batch Checkpoint | 1/2 | In Progress|  |
 | 7. Saga / Compensation Pattern | 0/TBD | Not started | - |
 | 8. Macro & Builder Improvements | 0/TBD | Not started | - |
 | 9. Documentation Overhaul | 0/TBD | Not started | - |

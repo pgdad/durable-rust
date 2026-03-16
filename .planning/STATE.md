@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-last_updated: "2026-03-16T17:50:36.340Z"
+last_updated: "2026-03-16T19:08:10.407Z"
 progress:
   total_phases: 9
   completed_phases: 5
-  total_plans: 15
-  completed_plans: 15
+  total_plans: 17
+  completed_plans: 16
 ---
 
 # STATE.md
@@ -19,11 +19,11 @@ progress:
 **Current Focus**: v2 milestone — production hardening, test coverage, developer experience
 
 ## Current Position
-- **Phase**: 05-step-timeout-conditional-retry
-- **Plan**: 05-03 complete (phase complete)
+- **Phase**: 06-observability-batch-checkpoint
+- **Plan**: 06-01 complete
 - **Status**: Executing
-- **Last Activity**: 2026-03-16 — Completed 05-03 parity tests for step timeout, conditional retry, complex workflow, and BatchItemStatus
-- **Progress**: [██████████] 100% 15/15 plans complete
+- **Last Activity**: 2026-03-16 — Completed 06-01 tracing spans for all 7 durable operations
+- **Progress**: [█████████░] 94% 16/17 plans complete
 
 ## Performance Metrics
 - **Total Plans**: TBD (phases not yet planned into individual plans)
@@ -73,6 +73,9 @@ progress:
 - [05-02] #[non_exhaustive] struct variants require { field, .. } in external crate pattern matches — fixed at compile time
 - [05-03] Used tokio::time::pause() + advance() for step timeout parity test — proves timeout fires without real sleep delay, keeping test suite fast
 - [05-03] BranchFn type alias required in parallel parity tests — inline Box::new closures without type alias cannot coerce Box::pin return to Pin<Box<dyn Future + Send>>
+- [06-01] span.enter() guard pattern used (not .instrument()) because &mut self async methods can't move body into async block for .instrument()
+- [06-01] tracing::trace!("durable_operation") required inside each span for tracing_test logs_contain() detection — events needed, not just span creation
+- [06-01] Span tests use per-file MockBackend instead of MockDurableContext — avoids type conflicts when durable_lambda_testing used as dev-dep of durable_lambda_core
 
 ### Pending Todos
 - None — ready to begin Phase 1 execution
@@ -81,6 +84,6 @@ progress:
 - None identified
 
 ## Session Continuity
-- **Last Session**: 2026-03-16 — Completed 05-03 parity tests for TEST-23, TEST-24, TEST-25
-- **Stopped At**: Completed 05-step-timeout-conditional-retry/05-03-PLAN.md
-- **Next Action**: Phase 05 complete — continue with Phase 06 per ROADMAP.md
+- **Last Session**: 2026-03-16 — Completed 06-01 tracing spans for all 7 durable operations + 9 span tests
+- **Stopped At**: Completed 06-observability-batch-checkpoint/06-01-PLAN.md
+- **Next Action**: Continue with 06-02 per ROADMAP.md

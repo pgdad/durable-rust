@@ -68,10 +68,10 @@
 - [x] **FEAT-16**: Tests for conditional retry (transient retries, non-transient fails fast)
 
 ### Features — Operation Observability
-- [ ] **FEAT-17**: Each operation wrapped in tracing::span with operation name, type, and ID fields
-- [ ] **FEAT-18**: Parent-child span hierarchy matches context nesting
-- [ ] **FEAT-19**: Span enters on operation start, exits on completion
-- [ ] **FEAT-20**: Tests verify spans are emitted with correct fields
+- [x] **FEAT-17**: Each operation wrapped in tracing::span with operation name, type, and ID fields
+- [x] **FEAT-18**: Parent-child span hierarchy matches context nesting
+- [x] **FEAT-19**: Span enters on operation start, exits on completion
+- [x] **FEAT-20**: Tests verify spans are emitted with correct fields
 
 ### Features — Batch Checkpoint API
 - [ ] **FEAT-21**: DurableBackend gains batch_checkpoint() accepting Vec<OperationUpdate>
