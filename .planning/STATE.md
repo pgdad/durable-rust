@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-last_updated: "2026-03-16T14:17:13.845Z"
+last_updated: "2026-03-16T14:18:38.881Z"
 progress:
   total_phases: 9
   completed_phases: 2
   total_plans: 9
-  completed_plans: 7
+  completed_plans: 8
 ---
 
 # STATE.md
@@ -19,11 +19,11 @@ progress:
 **Current Focus**: v2 milestone — production hardening, test coverage, developer experience
 
 ## Current Position
-- **Phase**: 03-shared-context-trait
-- **Plan**: 03-03 complete (phase complete)
+- **Phase**: 01-error-path-test-coverage
+- **Plan**: 01-02 complete (phase complete)
 - **Status**: Executing
-- **Last Activity**: 2026-03-16 — Completed 03-03 generic handler parity tests for ARCH-05
-- **Progress**: [████████░░] 78% 7/9 plans complete
+- **Last Activity**: 2026-03-16 — Completed 01-02 batch operation error-path tests (TEST-08, TEST-09, TEST-11)
+- **Progress**: [█████████░] 89% 8/9 plans complete
 
 ## Performance Metrics
 - **Total Plans**: TBD (phases not yet planned into individual plans)
@@ -53,6 +53,8 @@ progress:
 - [03-01] DurableContextOps defined in ops_trait module (not context module) to keep context.rs focused on the core struct
 - [03-03] Capture execution_mode() at function entry before step calls — replay engine transitions to Executing after consuming history, so post-step mode check shows Executing even in replay scenarios
 - [03-03] Use assert_ops::<T>() compile-time pattern instead of test-only pub constructors on wrapper contexts — no test surface added to library API
+- [01-02] Panic test (TEST-11) uses #[allow(unreachable_code)] after panic! macro to satisfy type inference for the Ok arm in the branch closure
+- [01-02] Map closure parameter order is item-first (|item: I, ctx: DurableContext|) matching map() signature FnOnce(I, DurableContext) — distinct from parallel's FnOnce(DurableContext)
 
 ### Pending Todos
 - None — ready to begin Phase 1 execution
@@ -61,6 +63,6 @@ progress:
 - None identified
 
 ## Session Continuity
-- **Last Session**: 2026-03-16 — Completed 03-03 generic handler parity tests for ARCH-05
-- **Stopped At**: Completed 03-shared-context-trait/03-03-PLAN.md
+- **Last Session**: 2026-03-16 — Completed 01-02 batch operation error-path tests for TEST-08, TEST-09, TEST-11
+- **Stopped At**: Completed 01-error-path-test-coverage/01-02-PLAN.md
 - **Next Action**: Continue with remaining phases per ROADMAP.md

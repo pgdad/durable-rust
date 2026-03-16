@@ -10,10 +10,10 @@
 - [x] **TEST-05**: Callback timeout expiration — callback exceeds timeout_seconds and returns error
 - [x] **TEST-06**: Callback explicit failure signal — callback receives failure from external system
 - [x] **TEST-07**: Invoke error — target Lambda returns error payload
-- [ ] **TEST-08**: Parallel all-branches-fail — all parallel branches return errors
-- [ ] **TEST-09**: Map item failures at different positions — first, middle, last item failures
+- [x] **TEST-08**: Parallel all-branches-fail — all parallel branches return errors
+- [x] **TEST-09**: Map item failures at different positions — first, middle, last item failures
 - [ ] **TEST-10**: Step closure panic — panic in user closure does not crash context
-- [ ] **TEST-11**: Parallel branch panic — panic in one branch doesn't affect others
+- [x] **TEST-11**: Parallel branch panic — panic in one branch doesn't affect others
 
 ### Testing — Boundary Conditions
 - [ ] **TEST-12**: Zero-duration wait — `wait("name", 0)` behavior
