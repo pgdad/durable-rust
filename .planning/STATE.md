@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-last_updated: "2026-03-16T14:26:00.555Z"
+last_updated: "2026-03-16T14:39:39.315Z"
 progress:
   total_phases: 9
-  completed_phases: 2
-  total_plans: 9
-  completed_plans: 8
+  completed_phases: 3
+  total_plans: 12
+  completed_plans: 9
 ---
 
 # STATE.md
@@ -20,10 +20,10 @@ progress:
 
 ## Current Position
 - **Phase**: 01-error-path-test-coverage
-- **Plan**: 01-02 complete (phase complete)
+- **Plan**: 01-03 complete (phase complete)
 - **Status**: Executing
-- **Last Activity**: 2026-03-16 — Completed 01-02 batch operation error-path tests (TEST-08, TEST-09, TEST-11)
-- **Progress**: [█████████░] 89% 8/9 plans complete
+- **Last Activity**: 2026-03-16 — Completed 01-03 step closure panic safety + TEST-10 test
+- **Progress**: [████████░░] 75% 9/12 plans complete
 
 ## Performance Metrics
 - **Total Plans**: TBD (phases not yet planned into individual plans)
@@ -55,6 +55,9 @@ progress:
 - [03-03] Use assert_ops::<T>() compile-time pattern instead of test-only pub constructors on wrapper contexts — no test surface added to library API
 - [01-02] Panic test (TEST-11) uses #[allow(unreachable_code)] after panic! macro to satisfy type inference for the Ok arm in the branch closure
 - [01-02] Map closure parameter order is item-first (|item: I, ctx: DurableContext|) matching map() signature FnOnce(I, DurableContext) — distinct from parallel's FnOnce(DurableContext)
+- [01-03] Use DurableError::checkpoint_failed for step closure panics — panics are a form of failed checkpoint, not a new error category
+- [01-03] Step closure bounds now require 'static (same as parallel branches) — closures already move owned data per CLAUDE.md, practically always satisfied
+- [01-03] Panic message from JoinError Display contains "panicked" reliably — used as assertion keyword in test_step_closure_panic_returns_error
 
 ### Pending Todos
 - None — ready to begin Phase 1 execution
@@ -63,6 +66,6 @@ progress:
 - None identified
 
 ## Session Continuity
-- **Last Session**: 2026-03-16 — Completed 01-02 batch operation error-path tests for TEST-08, TEST-09, TEST-11
-- **Stopped At**: Completed 01-error-path-test-coverage/01-02-PLAN.md
-- **Next Action**: Continue with remaining phases per ROADMAP.md
+- **Last Session**: 2026-03-16 — Completed 01-03 step closure panic safety (tokio::spawn) + TEST-10 error_paths test
+- **Stopped At**: Completed 01-error-path-test-coverage/01-03-PLAN.md (Phase 01 fully complete)
+- **Next Action**: Continue with Phase 02 (boundary/replay engine tests) per ROADMAP.md

@@ -12,7 +12,7 @@
 - [x] **TEST-07**: Invoke error — target Lambda returns error payload
 - [x] **TEST-08**: Parallel all-branches-fail — all parallel branches return errors
 - [x] **TEST-09**: Map item failures at different positions — first, middle, last item failures
-- [ ] **TEST-10**: Step closure panic — panic in user closure does not crash context
+- [x] **TEST-10**: Step closure panic — panic in user closure does not crash context
 - [x] **TEST-11**: Parallel branch panic — panic in one branch doesn't affect others
 
 ### Testing — Boundary Conditions
