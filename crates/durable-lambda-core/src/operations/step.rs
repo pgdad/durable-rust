@@ -181,15 +181,15 @@ impl DurableContext {
                 )
                 .await?;
 
-            let new_token = start_response
-                .checkpoint_token()
-                .ok_or_else(|| DurableError::checkpoint_failed(
+            let new_token = start_response.checkpoint_token().ok_or_else(|| {
+                DurableError::checkpoint_failed(
                     name,
                     std::io::Error::new(
                         std::io::ErrorKind::InvalidData,
                         "checkpoint response missing checkpoint_token",
                     ),
-                ))?;
+                )
+            })?;
             self.set_checkpoint_token(new_token.to_string());
 
             // Merge any new execution state from checkpoint response.
@@ -239,15 +239,15 @@ impl DurableContext {
                     )
                     .await?;
 
-                let new_token = response
-                    .checkpoint_token()
-                    .ok_or_else(|| DurableError::checkpoint_failed(
+                let new_token = response.checkpoint_token().ok_or_else(|| {
+                    DurableError::checkpoint_failed(
                         name,
                         std::io::Error::new(
                             std::io::ErrorKind::InvalidData,
                             "checkpoint response missing checkpoint_token",
                         ),
-                    ))?;
+                    )
+                })?;
                 self.set_checkpoint_token(new_token.to_string());
             }
             Err(error) => {
@@ -280,15 +280,15 @@ impl DurableContext {
                         )
                         .await?;
 
-                    let new_token = response
-                        .checkpoint_token()
-                        .ok_or_else(|| DurableError::checkpoint_failed(
+                    let new_token = response.checkpoint_token().ok_or_else(|| {
+                        DurableError::checkpoint_failed(
                             name,
                             std::io::Error::new(
                                 std::io::ErrorKind::InvalidData,
                                 "checkpoint response missing checkpoint_token",
                             ),
-                        ))?;
+                        )
+                    })?;
                     self.set_checkpoint_token(new_token.to_string());
 
                     return Err(DurableError::step_retry_scheduled(name));
@@ -318,15 +318,15 @@ impl DurableContext {
                     .checkpoint(self.arn(), self.checkpoint_token(), vec![fail_update], None)
                     .await?;
 
-                let new_token = response
-                    .checkpoint_token()
-                    .ok_or_else(|| DurableError::checkpoint_failed(
+                let new_token = response.checkpoint_token().ok_or_else(|| {
+                    DurableError::checkpoint_failed(
                         name,
                         std::io::Error::new(
                             std::io::ErrorKind::InvalidData,
                             "checkpoint response missing checkpoint_token",
                         ),
-                    ))?;
+                    )
+                })?;
                 self.set_checkpoint_token(new_token.to_string());
             }
         }
@@ -1160,6 +1160,79 @@ mod tests {
         assert_eq!(
             captured[1].updates[0].action(),
             &aws_sdk_lambda::types::OperationAction::Fail
+        );
+    }
+
+    /// Mock backend that returns checkpoint responses WITHOUT a checkpoint_token,
+    /// simulating an AWS API contract violation.
+    struct NoneTokenMockBackend;
+
+    #[async_trait::async_trait]
+    impl DurableBackend for NoneTokenMockBackend {
+        async fn checkpoint(
+            &self,
+            _arn: &str,
+            _checkpoint_token: &str,
+            _updates: Vec<OperationUpdate>,
+            _client_token: Option<&str>,
+        ) -> Result<CheckpointDurableExecutionOutput, DurableError> {
+            // Return a checkpoint response with NO checkpoint_token set
+            Ok(CheckpointDurableExecutionOutput::builder().build())
+        }
+
+        async fn get_execution_state(
+            &self,
+            _arn: &str,
+            _checkpoint_token: &str,
+            _next_marker: &str,
+            _max_items: i32,
+        ) -> Result<GetDurableExecutionStateOutput, DurableError> {
+            Ok(GetDurableExecutionStateOutput::builder().build().unwrap())
+        }
+    }
+
+    #[tokio::test]
+    async fn checkpoint_none_token_returns_error() {
+        let backend = Arc::new(NoneTokenMockBackend);
+
+        let mut ctx = DurableContext::new(
+            backend,
+            "arn:test".to_string(),
+            "initial-token".to_string(),
+            vec![], // empty history = executing mode
+            None,
+        )
+        .await
+        .unwrap();
+
+        // Attempt a step -- the first checkpoint (START) will return None token
+        // step() returns Result<Result<T, E>, DurableError>; when START checkpoint fails,
+        // the outer Result is Err(DurableError::CheckpointFailed).
+        let result: Result<Result<i32, String>, DurableError> =
+            ctx.step("test_step", || async { Ok(42) }).await;
+
+        // Must be an error, not a silent success with stale token
+        let err = result
+            .expect_err("step should fail when checkpoint response has None checkpoint_token");
+
+        // Verify it's specifically a CheckpointFailed error
+        match &err {
+            DurableError::CheckpointFailed { operation_name, .. } => {
+                assert!(
+                    operation_name.contains("test_step"),
+                    "error should reference the operation name, got: {}",
+                    operation_name
+                );
+            }
+            other => panic!("expected DurableError::CheckpointFailed, got: {:?}", other),
+        }
+
+        // Verify the error message mentions the missing token
+        let err_msg = err.to_string();
+        assert!(
+            err_msg.contains("checkpoint response missing checkpoint_token"),
+            "error message should mention missing checkpoint_token, got: {}",
+            err_msg
         );
     }
 }
