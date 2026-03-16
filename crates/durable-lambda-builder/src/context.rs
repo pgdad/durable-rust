@@ -8,6 +8,7 @@ use std::future::Future;
 
 use durable_lambda_core::context::DurableContext;
 use durable_lambda_core::error::DurableError;
+use durable_lambda_core::ops_trait::DurableContextOps;
 use durable_lambda_core::types::{
     BatchResult, CallbackHandle, CallbackOptions, ExecutionMode, MapOptions, ParallelOptions,
     StepOptions,
@@ -602,6 +603,164 @@ impl BuilderContext {
     /// # }
     /// ```
     pub fn log_error_with_data(&self, message: &str, data: &serde_json::Value) {
+        self.inner.log_error_with_data(message, data);
+    }
+}
+
+impl DurableContextOps for BuilderContext {
+    fn step<T, E, F, Fut>(
+        &mut self,
+        name: &str,
+        f: F,
+    ) -> impl Future<Output = Result<Result<T, E>, DurableError>> + Send
+    where
+        T: Serialize + DeserializeOwned + Send,
+        E: Serialize + DeserializeOwned + Send,
+        F: FnOnce() -> Fut + Send,
+        Fut: Future<Output = Result<T, E>> + Send,
+    {
+        self.inner.step(name, f)
+    }
+
+    fn step_with_options<T, E, F, Fut>(
+        &mut self,
+        name: &str,
+        options: StepOptions,
+        f: F,
+    ) -> impl Future<Output = Result<Result<T, E>, DurableError>> + Send
+    where
+        T: Serialize + DeserializeOwned + Send,
+        E: Serialize + DeserializeOwned + Send,
+        F: FnOnce() -> Fut + Send,
+        Fut: Future<Output = Result<T, E>> + Send,
+    {
+        self.inner.step_with_options(name, options, f)
+    }
+
+    fn wait(
+        &mut self,
+        name: &str,
+        duration_secs: i32,
+    ) -> impl Future<Output = Result<(), DurableError>> + Send {
+        self.inner.wait(name, duration_secs)
+    }
+
+    fn create_callback(
+        &mut self,
+        name: &str,
+        options: CallbackOptions,
+    ) -> impl Future<Output = Result<CallbackHandle, DurableError>> + Send {
+        self.inner.create_callback(name, options)
+    }
+
+    fn invoke<T, P>(
+        &mut self,
+        name: &str,
+        function_name: &str,
+        payload: &P,
+    ) -> impl Future<Output = Result<T, DurableError>> + Send
+    where
+        T: DeserializeOwned + Send,
+        P: Serialize + Sync,
+    {
+        self.inner.invoke(name, function_name, payload)
+    }
+
+    fn parallel<T, F, Fut>(
+        &mut self,
+        name: &str,
+        branches: Vec<F>,
+        options: ParallelOptions,
+    ) -> impl Future<Output = Result<BatchResult<T>, DurableError>> + Send
+    where
+        T: Serialize + DeserializeOwned + Send + 'static,
+        F: FnOnce(DurableContext) -> Fut + Send + 'static,
+        Fut: Future<Output = Result<T, DurableError>> + Send + 'static,
+    {
+        self.inner.parallel(name, branches, options)
+    }
+
+    fn child_context<T, F, Fut>(
+        &mut self,
+        name: &str,
+        f: F,
+    ) -> impl Future<Output = Result<T, DurableError>> + Send
+    where
+        T: Serialize + DeserializeOwned + Send,
+        F: FnOnce(DurableContext) -> Fut + Send,
+        Fut: Future<Output = Result<T, DurableError>> + Send,
+    {
+        self.inner.child_context(name, f)
+    }
+
+    fn map<T, I, F, Fut>(
+        &mut self,
+        name: &str,
+        items: Vec<I>,
+        options: MapOptions,
+        f: F,
+    ) -> impl Future<Output = Result<BatchResult<T>, DurableError>> + Send
+    where
+        T: Serialize + DeserializeOwned + Send + 'static,
+        I: Send + 'static,
+        F: FnOnce(I, DurableContext) -> Fut + Send + 'static + Clone,
+        Fut: Future<Output = Result<T, DurableError>> + Send + 'static,
+    {
+        self.inner.map(name, items, options, f)
+    }
+
+    fn callback_result<T: DeserializeOwned>(
+        &self,
+        handle: &CallbackHandle,
+    ) -> Result<T, DurableError> {
+        self.inner.callback_result(handle)
+    }
+
+    fn execution_mode(&self) -> ExecutionMode {
+        self.inner.execution_mode()
+    }
+
+    fn is_replaying(&self) -> bool {
+        self.inner.is_replaying()
+    }
+
+    fn arn(&self) -> &str {
+        self.inner.arn()
+    }
+
+    fn checkpoint_token(&self) -> &str {
+        self.inner.checkpoint_token()
+    }
+
+    fn log(&self, message: &str) {
+        self.inner.log(message);
+    }
+
+    fn log_with_data(&self, message: &str, data: &serde_json::Value) {
+        self.inner.log_with_data(message, data);
+    }
+
+    fn log_debug(&self, message: &str) {
+        self.inner.log_debug(message);
+    }
+
+    fn log_warn(&self, message: &str) {
+        self.inner.log_warn(message);
+    }
+
+    fn log_error(&self, message: &str) {
+        self.inner.log_error(message);
+    }
+
+    fn log_debug_with_data(&self, message: &str, data: &serde_json::Value) {
+        self.inner.log_debug_with_data(message, data);
+    }
+
+    fn log_warn_with_data(&self, message: &str, data: &serde_json::Value) {
+        self.inner.log_warn_with_data(message, data);
+    }
+
+    fn log_error_with_data(&self, message: &str, data: &serde_json::Value) {
         self.inner.log_error_with_data(message, data);
     }
 }

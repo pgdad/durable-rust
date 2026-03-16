@@ -31,6 +31,7 @@
 pub use crate::context::ClosureContext;
 pub use crate::handler::run;
 pub use durable_lambda_core::error::DurableError;
+pub use durable_lambda_core::ops_trait::DurableContextOps;
 pub use durable_lambda_core::types::{
     BatchItem, BatchItemStatus, BatchResult, CallbackHandle, CallbackOptions, CheckpointResult,
     CompletionReason, ExecutionMode, MapOptions, ParallelOptions, StepOptions,

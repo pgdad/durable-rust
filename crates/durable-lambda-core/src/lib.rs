@@ -9,10 +9,10 @@ pub mod replay;
 pub mod types;
 
 pub use backend::{DurableBackend, RealBackend};
-pub use ops_trait::DurableContextOps;
 pub use context::DurableContext;
 pub use error::DurableError;
 pub use operation_id::OperationIdGenerator;
+pub use ops_trait::DurableContextOps;
 pub use replay::ReplayEngine;
 pub use types::{
     BatchItem, BatchItemStatus, BatchResult, CallbackHandle, CallbackOptions, CheckpointResult,
