@@ -496,6 +496,40 @@ impl DurableError {
             error_message: error_message.into(),
         }
     }
+
+    /// Return a stable, programmatic error code for this error variant.
+    ///
+    /// Codes are SCREAMING_SNAKE_CASE and stable across versions.
+    /// Use these for programmatic error matching instead of parsing
+    /// display messages.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use durable_lambda_core::error::DurableError;
+    ///
+    /// let err = DurableError::replay_mismatch("Step", "Wait", 0);
+    /// assert_eq!(err.code(), "REPLAY_MISMATCH");
+    /// ```
+    pub fn code(&self) -> &'static str {
+        match self {
+            Self::ReplayMismatch { .. }     => "REPLAY_MISMATCH",
+            Self::CheckpointFailed { .. }   => "CHECKPOINT_FAILED",
+            Self::Serialization { .. }      => "SERIALIZATION",
+            Self::Deserialization { .. }    => "DESERIALIZATION",
+            Self::AwsSdk(_)                 => "AWS_SDK",
+            Self::AwsSdkOperation(_)        => "AWS_SDK_OPERATION",
+            Self::StepRetryScheduled { .. } => "STEP_RETRY_SCHEDULED",
+            Self::WaitSuspended { .. }      => "WAIT_SUSPENDED",
+            Self::CallbackSuspended { .. }  => "CALLBACK_SUSPENDED",
+            Self::CallbackFailed { .. }     => "CALLBACK_FAILED",
+            Self::InvokeSuspended { .. }    => "INVOKE_SUSPENDED",
+            Self::InvokeFailed { .. }       => "INVOKE_FAILED",
+            Self::ParallelFailed { .. }     => "PARALLEL_FAILED",
+            Self::MapFailed { .. }          => "MAP_FAILED",
+            Self::ChildContextFailed { .. } => "CHILD_CONTEXT_FAILED",
+        }
+    }
 }
 
 impl From<aws_sdk_lambda::Error> for DurableError {
@@ -507,7 +541,58 @@ impl From<aws_sdk_lambda::Error> for DurableError {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::collections::HashSet;
     use std::error::Error;
+
+    // --- TDD RED: .code() method tests ---
+
+    #[test]
+    fn error_code_replay_mismatch() {
+        let err = DurableError::replay_mismatch("A", "B", 0);
+        assert_eq!(err.code(), "REPLAY_MISMATCH");
+    }
+
+    #[test]
+    fn all_error_variants_have_unique_codes() {
+        let serde_err = || serde_json::from_str::<i32>("bad").unwrap_err();
+        let io_err = || std::io::Error::new(std::io::ErrorKind::Other, "test");
+
+        // Construct all 14 testable variants (AwsSdk excluded — no public constructor).
+        let variants: &[(DurableError, &str)] = &[
+            (DurableError::replay_mismatch("A", "B", 0), "REPLAY_MISMATCH"),
+            (DurableError::checkpoint_failed("op", io_err()), "CHECKPOINT_FAILED"),
+            (DurableError::serialization("T", serde_err()), "SERIALIZATION"),
+            (DurableError::deserialization("T", serde_err()), "DESERIALIZATION"),
+            (DurableError::aws_sdk_operation(io_err()), "AWS_SDK_OPERATION"),
+            (DurableError::step_retry_scheduled("op"), "STEP_RETRY_SCHEDULED"),
+            (DurableError::wait_suspended("op"), "WAIT_SUSPENDED"),
+            (DurableError::callback_suspended("op", "cb-1"), "CALLBACK_SUSPENDED"),
+            (DurableError::callback_failed("op", "cb-1", "msg"), "CALLBACK_FAILED"),
+            (DurableError::invoke_suspended("op"), "INVOKE_SUSPENDED"),
+            (DurableError::invoke_failed("op", "msg"), "INVOKE_FAILED"),
+            (DurableError::parallel_failed("op", "msg"), "PARALLEL_FAILED"),
+            (DurableError::map_failed("op", "msg"), "MAP_FAILED"),
+            (DurableError::child_context_failed("op", "msg"), "CHILD_CONTEXT_FAILED"),
+        ];
+
+        let mut codes = HashSet::new();
+        for (err, expected_code) in variants {
+            let actual = err.code();
+            assert_eq!(
+                actual, *expected_code,
+                "Expected code {:?} for variant but got {:?}",
+                expected_code, actual
+            );
+            let inserted = codes.insert(actual);
+            assert!(inserted, "Duplicate error code found: {:?}", actual);
+        }
+
+        // Verify AWS_SDK code is also unique (compile-time exhaustive match guarantees it exists).
+        // We add it manually to the uniqueness check.
+        assert!(!codes.contains("AWS_SDK"), "AWS_SDK code must be unique among all codes");
+    }
+
+    // --- existing tests ---
 
     #[test]
     fn replay_mismatch_display() {
