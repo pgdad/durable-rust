@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: GSD Tooling Transition
 status: planning
-stopped_at: Phase 2 context gathered
-last_updated: "2026-03-16T12:49:32.660Z"
+stopped_at: Completed 02-bmad-cleanup 02-01-PLAN.md
+last_updated: "2026-03-16T13:12:15.812Z"
 last_activity: 2026-03-16 — Phase 1 complete; GSD infrastructure verified
 progress:
   total_phases: 2
-  completed_phases: 1
-  total_plans: 1
-  completed_plans: 1
+  completed_phases: 2
+  total_plans: 2
+  completed_plans: 2
   percent: 100
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-16)
 
 **Core value:** Every durable operation behaves identically to the Python SDK — zero behavioral divergence
-**Current focus:** v1.1 GSD Tooling Transition — Phase 1: GSD Infrastructure
+**Current focus:** v1.1 GSD Tooling Transition — Complete
 
 ## Current Position
 
 Phase: 2 of 2 (BMAD Cleanup)
-Plan: 0 of 1 in current phase
-Status: Ready to plan
-Last activity: 2026-03-16 — Phase 1 complete; GSD infrastructure verified
+Plan: 1 of 1 in current phase
+Status: Complete
+Last activity: 2026-03-16 — Phase 2 complete; BMAD cleanup executed
 
 Progress: [██████████] 100%
 
@@ -51,6 +51,7 @@ Progress: [██████████] 100%
 
 *Updated after each plan completion*
 | Phase 01-gsd-infrastructure P01 | 10 | 2 tasks | 2 files |
+| Phase 02-bmad-cleanup P01 | 682s | 3 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -64,6 +65,8 @@ Recent decisions affecting current work:
 - [Init]: Remove BMAD artifacts in separate commits — clean separation of concerns in git history (two commits minimum)
 - [Phase 1]: All GSD infrastructure files verified complete — no gaps found
 - [Phase 01-gsd-infrastructure]: All GSD infrastructure files verified complete — no gaps found, no patches required
+- [Phase 02-bmad-cleanup]: BMAD removal completed in 4 atomic commits — _bmad-output/ first, _bmad/ second, .claude/skills/bmad-* third, doc cleanup fourth
+- [Phase 02-bmad-cleanup]: Definitional exclusion: REQUIREMENTS.md, ROADMAP.md, STATE.md, 02-phase files retain _bmad references as requirement definitions and historical records
 
 ### Pending Todos
 
@@ -71,11 +74,10 @@ None yet.
 
 ### Blockers/Concerns
 
-- [Phase 2]: BMAD removal must use exact absolute paths only — never globs. Verify with `ls` before deletion. Confirm `crates/` and `tests/` are untouched after.
-- [Phase 2]: `_bmad-output/` must be removed before `_bmad/` and in separate commits (project constraint).
+None — v1.1 GSD Tooling Transition milestone complete.
 
 ## Session Continuity
 
-Last session: 2026-03-16T12:49:32.659Z
-Stopped at: Phase 2 context gathered
-Resume file: .planning/phases/02-bmad-cleanup/02-CONTEXT.md
+Last session: 2026-03-16T13:12:15.810Z
+Stopped at: Completed 02-bmad-cleanup 02-01-PLAN.md
+Resume file: None

@@ -44,7 +44,7 @@ Plans:
   1. `_bmad-output/` directory no longer exists in the repository (removed via `git rm -r` in a dedicated commit)
   2. `_bmad/` directory no longer exists in the repository (removed via `git rm -r` in a separate dedicated commit)
   3. `grep -r "_bmad" .` (excluding `.git/`) returns no matches in any tracked file
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 
 Plans:
 - [ ] 02-01-PLAN.md — Remove BMAD directories and clean references in 4 atomic commits
@@ -56,4 +56,4 @@ Plans:
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 1. GSD Infrastructure | 1/1 | Complete   | 2026-03-16 | - |
-| 2. BMAD Cleanup | v1.1 | 0/1 | Not started | - |
+| 2. BMAD Cleanup | 1/1 | Complete   | 2026-03-16 | - |
