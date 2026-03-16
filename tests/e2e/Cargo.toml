@@ -14,3 +14,5 @@ tokio = { workspace = true, features = ["test-util", "macros"] }
 serde = { workspace = true }
 serde_json = { workspace = true }
 async-trait = { workspace = true }
+aws-sdk-lambda = { workspace = true }
+aws-smithy-types = { workspace = true }
