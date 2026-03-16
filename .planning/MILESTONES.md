@@ -78,7 +78,7 @@ All approach crates depend only on `durable-lambda-core` — no circular depende
 ### v1.1 — GSD Tooling Transition (in progress)
 
 **Started:** 2026-03-16
-**Goal:** Migrate project management from BMAD tooling to GSD workflow infrastructure. Stand up `.planning/` GSD files; remove `_bmad/` and `_bmad-output/` directories.
+**Goal:** Migrate project management from BMAD tooling to GSD workflow infrastructure. Stand up `.planning/` GSD files; remove BMAD framework tooling and planning output directories.
 
 See `.planning/ROADMAP.md` for phase execution plan.
 

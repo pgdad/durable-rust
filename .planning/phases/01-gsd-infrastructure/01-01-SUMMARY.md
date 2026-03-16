@@ -95,7 +95,7 @@ None.
 - Phase 2 (BMAD Cleanup) is ready to plan and execute
 - STATE.md points to Phase 2 as the active position
 - Key constraints for Phase 2 already captured in STATE.md Blockers section:
-  - `_bmad-output/` must be removed before `_bmad/` in separate commits
+  - BMAD output must be removed before BMAD tooling in separate commits
   - Must use exact absolute paths only — never globs
 
 ---

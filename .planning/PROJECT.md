@@ -14,7 +14,7 @@ Every durable operation behaves identically to the Python SDK — zero behaviora
 
 **Target features:**
 - Stand up `.planning/` GSD infrastructure
-- Remove `_bmad/` and `_bmad-output/` directories
+- Remove BMAD framework tooling and planning output directories
 
 ## Requirements
 
@@ -57,7 +57,7 @@ Every durable operation behaves identically to the Python SDK — zero behaviora
 
 - Workspace with 7 crates: core, macro, closure, trait, builder, testing + compliance
 - All crates depend on `durable-lambda-core`; no circular dependencies
-- Currently has `_bmad/` and `_bmad-output/` directories from prior BMAD tooling
+- Previously managed under BMAD tooling (removed in v1.1 transition)
 - Young dev team using AI coding assistants (Claude Code, Copilot)
 
 ## Constraints

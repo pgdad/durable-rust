@@ -7,11 +7,11 @@
 
 ## Executive Summary
 
-This milestone is a pure infrastructure transition — no Rust source code changes. The durable-rust SDK shipped v1.0 complete with 6 crates, 44 examples, 28 e2e tests, and a full compliance suite. The project was managed under the BMAD workflow and must now be brought onto GSD. The GSD `.planning/` directory already exists with `PROJECT.md`, `STATE.md`, and a minimal `config.json`. What remains is creating three missing GSD planning files (`ROADMAP.md`, `MILESTONES.md`, `REQUIREMENTS.md`), then removing BMAD artifacts (`_bmad/` — 508 files, `_bmad-output/` — 37 files) in two separate git commits.
+This milestone is a pure infrastructure transition — no Rust source code changes. The durable-rust SDK shipped v1.0 complete with 6 crates, 44 examples, 28 e2e tests, and a full compliance suite. The project was previously managed under the BMAD workflow and has been brought onto GSD. The GSD `.planning/` directory already existed with `PROJECT.md`, `STATE.md`, and a minimal `config.json`. The remaining work was creating three missing GSD planning files (`ROADMAP.md`, `MILESTONES.md`, `REQUIREMENTS.md`), then removing BMAD artifacts (framework tooling and planning output directories) in separate git commits.
 
-The recommended approach is a three-phase execution: (1) complete GSD infrastructure setup and capture v1.0 milestone history before any deletion, (2) remove `_bmad-output/` in a dedicated commit, and (3) remove `_bmad/` in a second dedicated commit. This ordering is non-negotiable — removing BMAD before GSD infrastructure is populated leaves the project with no planning context, and the `_bmad-output/planning-artifacts/` directory contains SDK design rationale that must be summarized into `MILESTONES.md` before it disappears.
+The recommended approach was a three-phase execution: (1) complete GSD infrastructure setup and capture v1.0 milestone history before any deletion, (2) remove BMAD output artifacts in a dedicated commit, and (3) remove BMAD framework tooling in a second dedicated commit. This ordering was non-negotiable — removing BMAD before GSD infrastructure is populated leaves the project with no planning context, and the BMAD planning artifacts contain SDK design rationale that must be summarized into `MILESTONES.md` before removal.
 
-The key risk is context loss: `_bmad-output/planning-artifacts/architecture.md` and `epics.md` contain the authoritative reasoning behind v1.0 design decisions (why blake2b for operation IDs, the 4 API styles, the compliance suite structure). Once deleted, these are only recoverable from git history. The second risk is accidental scope expansion during deletion — the `_bmad-output/implementation-artifacts/tests/` subdirectory sits near the repo's `/tests/` directory, and any glob-based deletion could reach production test files. All deletions must use exact absolute paths.
+The key risk was context loss: BMAD planning artifacts contained the authoritative reasoning behind v1.0 design decisions (why blake2b for operation IDs, the 4 API styles, the compliance suite structure). Once deleted, these are only recoverable from git history. The second risk was accidental scope expansion during deletion — BMAD output contained a tests subdirectory that sits near the repo's `/tests/` directory. All deletions used exact absolute paths.
 
 ---
 
@@ -34,7 +34,7 @@ This is a capability transition, not a product feature addition. The deliverable
 **Must have (table stakes for transition to be complete):**
 - `.planning/ROADMAP.md` in milestone-grouped format — required by all `/gsd:*` execution commands
 - `.planning/MILESTONES.md` with v1.0 entry — anchors phase numbering and preserves shipped history
-- BMAD artifact removal (`_bmad/` and `_bmad-output/`) — dead weight with no runtime value post-transition
+- BMAD artifact removal (framework tooling and planning output directories) — dead weight with no runtime value post-transition
 - `PROJECT.md` Validated requirements current — already present; verify 17 v1.0 requirements are captured
 - `STATE.md` pointing to active milestone — already present; update after ROADMAP is created
 
@@ -51,23 +51,23 @@ This is a capability transition, not a product feature addition. The deliverable
 
 ### Architecture Approach
 
-The GSD `.planning/` directory sits beside the Rust workspace without touching it. `crates/`, `tests/`, `examples/`, `compliance/`, and `docs/` are pure SDK deliverables untouched by this milestone. Planning infrastructure is additive and isolated — a deliberate GSD contract that keeps planning files out of Cargo workspace scope. After transition, the repo root will have no `_bmad*` directories and a complete `.planning/` tree.
+The GSD `.planning/` directory sits beside the Rust workspace without touching it. `crates/`, `tests/`, `examples/`, `compliance/`, and `docs/` are pure SDK deliverables untouched by this milestone. Planning infrastructure is additive and isolated — a deliberate GSD contract that keeps planning files out of Cargo workspace scope. After transition, the repo root has no BMAD directories and a complete `.planning/` tree.
 
 **Major components:**
-1. `.planning/PROJECT.md` — living requirements and decisions (EXISTS, authoritative)
-2. `.planning/STATE.md` — current phase position and session context (EXISTS, needs update post-ROADMAP)
-3. `.planning/ROADMAP.md` — phase definitions for v1.1 milestone (MISSING — create in Phase 1)
-4. `.planning/MILESTONES.md` — v1.0 milestone archive (MISSING — create in Phase 1 before deletion)
-5. `_bmad/` — BMAD tooling framework (REMOVE in Phase 2, separate commit)
-6. `_bmad-output/` — BMAD project artifacts (REMOVE in Phase 2, separate commit)
+1. `.planning/PROJECT.md` — living requirements and decisions (authoritative)
+2. `.planning/STATE.md` — current phase position and session context
+3. `.planning/ROADMAP.md` — phase definitions for v1.1 milestone
+4. `.planning/MILESTONES.md` — v1.0 milestone archive (created in Phase 1 before BMAD deletion)
+5. BMAD tooling framework — removed in Phase 2, separate commit
+6. BMAD project artifacts — removed in Phase 2, separate commit
 
 **See:** `.planning/research/ARCHITECTURE.md` for full removal strategy and anti-patterns.
 
 ### Critical Pitfalls
 
-1. **Deleting Rust source during BMAD removal** — use exact absolute paths only (`/Users/esa/git/durable-rust/_bmad/` and `/Users/esa/git/durable-rust/_bmad-output/`); never globs; verify with `ls` before deletion; confirm `crates/` and `tests/` are untouched after
+1. **Deleting Rust source during BMAD removal** — used exact absolute paths only; never globs; verified with `ls` before deletion; confirmed `crates/` and `tests/` untouched after
 
-2. **Removing BMAD before capturing v1.0 context** — `_bmad-output/planning-artifacts/architecture.md` and `epics.md` contain irreplaceable design rationale; extract key decisions into `MILESTONES.md` before any deletion; this is a one-way door
+2. **Removing BMAD before capturing v1.0 context** — BMAD planning artifacts contained irreplaceable design rationale; key decisions extracted into `MILESTONES.md` before deletion; one-way door
 
 3. **Bundling BMAD removal into GSD setup commit** — PROJECT.md explicitly records "Remove BMAD artifacts in separate commit"; two commits minimum (one per directory); enables clean git bisect and clear audit trail
 
@@ -109,17 +109,17 @@ Based on combined research, a two-phase structure is recommended for this milest
 **Rationale:** Removal depends on Phase 1 being complete — specifically, MILESTONES.md must exist and PROJECT.md must contain the extracted design context before BMAD artifacts are deleted. The two BMAD directories must be removed in two separate commits to maintain the clean audit trail required by PROJECT.md's key decision.
 
 **Delivers:**
-- `_bmad-output/` removed via `git rm -r` (commit 1: `chore: remove BMAD output artifacts`)
-- `_bmad/` removed via `git rm -r` (commit 2: `chore: remove BMAD tooling`)
-- `.claude/skills/` verified and removed if BMAD-only (commit 3 if applicable)
-- Zero `_bmad` references remaining across repo (`grep -r "_bmad" .` returns nothing outside git history)
+- BMAD output artifacts removed via `git rm -r` (commit 1)
+- BMAD framework tooling removed via `git rm -r` (commit 2)
+- `.claude/skills/` bmad-prefixed skill directories removed (commit 3)
+- Zero functional BMAD path references remaining across repo
 
 **Addresses (from FEATURES.md):** BMAD directory removal (P1 table stakes)
 
 **Avoids (from PITFALLS.md):**
 - Pitfall 1 (accidental Rust source deletion): exact absolute paths, `ls` verification before deletion, `cargo check` after
 - Pitfall 2 (breaking git history): no amend, no rebase, no force push; standalone commits only
-- Pitfall 3 (orphaned cross-references): run `grep -r "_bmad" .` as acceptance criterion
+- Pitfall 3 (orphaned cross-references): grep across repo for orphaned path references as acceptance criterion
 - Pitfall 5 (unnecessary cargo runs): acceptance criteria contain no `cargo` commands
 
 **Research flag:** Standard patterns — no research-phase needed. Removal is a mechanical `git rm` operation with verification steps.
@@ -163,9 +163,8 @@ No phases require deeper research. This is a tooling transition, not a feature b
 ## Sources
 
 ### Primary (HIGH confidence)
-- `/Users/esa/git/durable-rust/.planning/PROJECT.md` — project scope, key decisions, Validated requirements
-- `/Users/esa/git/durable-rust/_bmad-output/` — BMAD artifacts being replaced (direct inspection)
-- `/Users/esa/git/durable-rust/_bmad/` — BMAD tooling structure (direct inspection)
+- `.planning/PROJECT.md` — project scope, key decisions, Validated requirements
+- BMAD artifacts (prior to removal) — direct inspection of BMAD tooling and output directories
 - `~/.claude/get-shit-done/templates/` — GSD template set (authoritative)
 - `~/.claude/get-shit-done/workflows/` — GSD workflow commands (authoritative)
 - `~/.claude/get-shit-done/references/` — GSD planning config, git integration references

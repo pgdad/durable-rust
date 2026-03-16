@@ -108,8 +108,8 @@ Each of the 4 success criteria from ROADMAP.md maps to a specific check:
 
 | Old Approach | Current Approach | Impact |
 |--------------|-----------------|--------|
-| BMAD workflow artifacts in `_bmad/` | GSD `.planning/` directory | Phase 2 removes BMAD; this phase establishes the replacement |
-| BMAD epics/stories in `_bmad-output/` | MILESTONES.md history entries | v1.0 planning context preserved in MILESTONES.md before deletion |
+| BMAD framework tooling | GSD `.planning/` directory | Phase 2 removes BMAD; this phase establishes the replacement |
+| BMAD planning output artifacts | MILESTONES.md history entries | v1.0 planning context preserved in MILESTONES.md before deletion |
 
 ## Validation Architecture
 

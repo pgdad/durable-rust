@@ -11,17 +11,14 @@
 ### Pitfall 1: Deleting Rust Source Code or Tests While Removing BMAD Artifacts
 
 **What goes wrong:**
-A developer (or AI agent) executing a broad "remove BMAD" deletion command accidentally includes Rust source files, test data, or compiled artifacts. `_bmad-output/implementation-artifacts/tests/` sits next to `.rs` test files; a glob like `rm -rf *tests*` or an overly broad path could hit `/tests/` at the repo root.
+A developer (or AI agent) executing a broad "remove BMAD" deletion command accidentally includes Rust source files, test data, or compiled artifacts. A BMAD output subdirectory named `tests/` sits conceptually near the repo's `/tests/` directory; a glob like `rm -rf *tests*` or an overly broad path could hit `/tests/` at the repo root.
 
 **Why it happens:**
 BMAD directories are at the repo root level alongside `crates/`, `tests/`, `examples/`, and `docs/`. Tooling agents working with natural-language instructions like "delete all BMAD artifacts" may expand scope beyond the two target directories. AI coding assistants in particular can misinterpret ambiguous removal instructions.
 
 **How to avoid:**
 Delete by exact absolute path only. Never use globs or recursive deletes on partial directory names. The only two directories to remove are:
-- `/Users/esa/git/durable-rust/_bmad/`
-- `/Users/esa/git/durable-rust/_bmad-output/`
-
-Verify before deletion with `ls -la _bmad/ _bmad-output/` and confirm no Rust source appears in the listing.
+Use exact absolute paths for each BMAD directory. Verify before deletion with `ls -la` and confirm no Rust source appears in the listing.
 
 **Warning signs:**
 - Removal command contains a wildcard (`*bmad*`, `*artifact*`, `*output*`)
@@ -56,16 +53,16 @@ The phase that removes BMAD artifacts — must specify "separate commit, no forc
 ### Pitfall 3: Leaving Orphaned Cross-References to BMAD Artifacts
 
 **What goes wrong:**
-After `_bmad/` and `_bmad-output/` are deleted, markdown documents, commit messages, or GSD planning files still reference paths like `_bmad-output/planning-artifacts/architecture.md`. These become dead links. Future agents following those links fail silently or produce incorrect results.
+After BMAD directories are deleted, markdown documents, commit messages, or GSD planning files still reference BMAD artifact paths. These become dead links. Future agents following those links fail silently or produce incorrect results.
 
 **Why it happens:**
 The BMAD `architecture.md` and `epics.md` files contain the authoritative design rationale for the v1.0 SDK — they were referenced throughout the project's implementation. The GSD `PROJECT.md` doesn't yet contain equivalent captured context from those documents.
 
 **How to avoid:**
-Before deleting BMAD directories, extract and migrate any still-relevant content (key architectural decisions, rationale, constraints) into `.planning/PROJECT.md` or dedicated GSD context files. Run a grep for `_bmad` across the entire repo after deletion to catch any remaining references.
+Before deleting BMAD directories, extract and migrate any still-relevant content (key architectural decisions, rationale, constraints) into `.planning/PROJECT.md` or dedicated GSD context files. Run a grep across the entire repo after deletion to catch any remaining functional references.
 
 **Warning signs:**
-- `grep -r "_bmad" .` returns hits in `.planning/`, `docs/`, `README.md`, or any `.md` file after deletion
+- grep for BMAD path references returns hits in `.planning/`, `docs/`, `README.md`, or any `.md` file after deletion
 - `PROJECT.md` does not capture the 7-crate workspace rationale or the core replay engine design decisions
 
 **Phase to address:**
@@ -100,12 +97,12 @@ Every phase — each phase should have an explicit "update STATE.md" step as its
 An agent or developer runs `cargo build`, `cargo test`, or `cargo clippy` as part of the tooling transition, expecting them to validate the work. These commands have no bearing on whether GSD infrastructure is correctly set up and take significant time in a 7-crate workspace. Worse, if Rust toolchain or dependencies are in a transient state, false failures distract from the actual transition work.
 
 **Why it happens:**
-The team is accustomed to validating changes with `cargo test`. The transition milestone touches only planning infrastructure (`.planning/`, removing `_bmad/`, `_bmad-output/`), not Rust source. The instinct to "make sure nothing broke" is correct but manifests as the wrong check.
+The team is accustomed to validating changes with `cargo test`. The transition milestone touches only planning infrastructure (`.planning/`, removing BMAD directories), not Rust source. The instinct to "make sure nothing broke" is correct but manifests as the wrong check.
 
 **How to avoid:**
 Define explicit, non-Rust acceptance criteria for this milestone:
 - `.planning/` structure is correct
-- `_bmad/` and `_bmad-output/` no longer exist
+- BMAD directories no longer exist
 - `git log --oneline` shows the expected commit sequence
 - No broken references remain
 
@@ -123,17 +120,16 @@ Roadmap definition phase — acceptance criteria must be planning-only.
 ### Pitfall 6: Accidentally Creating GSD Files Outside `.planning/`
 
 **What goes wrong:**
-Research, roadmap, or config files land in the repo root or in `_bmad-output/` rather than in `.planning/`. This creates a second source of truth problem and defeats GSD's convention of using `.planning/` as the single planning directory.
+Research, roadmap, or config files land in the repo root rather than in `.planning/`. This creates a second source of truth problem and defeats GSD's convention of using `.planning/` as the single planning directory.
 
 **Why it happens:**
-AI agents spawned from orchestrators may have working directory assumptions that differ from the repo root, or may interpret a relative path instruction incorrectly. This project already has an unusual layout (`.planning/` was created in the last commit; `_bmad-output/` still exists and contains `planning-artifacts/`).
+AI agents spawned from orchestrators may have working directory assumptions that differ from the repo root, or may interpret a relative path instruction incorrectly.
 
 **How to avoid:**
-All GSD file writes must use absolute paths anchored to `/Users/esa/git/durable-rust/.planning/`. Verify after each phase that no new `.md` or `.json` files appeared at the repo root.
+All GSD file writes must use absolute paths anchored to `.planning/`. Verify after each phase that no new `.md` or `.json` files appeared at the repo root.
 
 **Warning signs:**
-- `ls /Users/esa/git/durable-rust/` shows new `.md` files at root
-- Research files appear inside `_bmad-output/` directories
+- Repo root shows new `.md` files
 - `config.json` or `STATE.md` is duplicated at root
 
 **Phase to address:**
@@ -147,7 +143,7 @@ Shortcuts that seem reasonable but create long-term problems.
 
 | Shortcut | Immediate Benefit | Long-term Cost | When Acceptable |
 |----------|-------------------|----------------|-----------------|
-| Leaving `_bmad/` in place "temporarily" | Avoids risk of deleting something important | BMAD and GSD tools both scan the repo; agents get confused by conflicting state files | Never — set a clear deletion milestone |
+| Leaving BMAD tooling in place "temporarily" | Avoids risk of deleting something important | BMAD and GSD tools both scan the repo; agents get confused by conflicting state files | Never — set a clear deletion milestone |
 | Copying BMAD planning artifacts into GSD dirs wholesale | Preserves all context | GSD files in wrong format; future agents produce malformed output based on BMAD templates | Never — migrate selectively, format correctly |
 | Skipping STATE.md updates to "go faster" | Saves one step per phase | Next agent reads stale state and re-does completed work or skips required work | Never for this milestone (low phase count) |
 | Bundling BMAD removal with GSD setup in one commit | Fewer commits | Impossible to bisect whether a problem came from setup or removal; violates PROJECT.md's explicit decision | Never — keep commits separate |
@@ -163,7 +159,7 @@ Common mistakes when connecting BMAD-era context to the new GSD workflow.
 | BMAD `sprint-status.yaml` → GSD state | Treating YAML story status as authoritative for what's "done" in GSD | Use PROJECT.md Validated list as the source of truth; the YAML is historical record only |
 | BMAD `architecture.md` → GSD context | Linking to the BMAD file path after deletion | Extract key decisions into `.planning/PROJECT.md` before deletion |
 | BMAD `epics.md` → GSD roadmap | Reusing BMAD epic structure as GSD phases | GSD phases have different granularity; redesign rather than rename |
-| `_bmad-output/implementation-artifacts/` → git | Assuming these files must be preserved post-transition | They were planning scaffolding; the Rust code is the artifact — files can be deleted |
+| BMAD implementation-artifacts → git | Assuming these files must be preserved post-transition | They were planning scaffolding; the Rust code is the artifact — files can be deleted |
 
 ---
 
@@ -184,10 +180,10 @@ Not applicable to this domain. No credentials, secrets, or access controls are i
 Things that appear complete but are missing critical pieces.
 
 - [ ] **GSD setup:** `.planning/` directory exists — verify it also contains `PROJECT.md`, `STATE.md`, `config.json`, and at minimum a `research/` subdirectory
-- [ ] **BMAD removal:** `_bmad/` is gone — verify `_bmad-output/` is also gone (they are separate directories)
-- [ ] **Orphan cleanup:** BMAD directories deleted — verify `grep -r "_bmad" .` returns zero hits outside of git history
-- [ ] **Git history:** Removal committed — verify it is a standalone commit, not amended into another commit
-- [ ] **Context preserved:** Key BMAD design rationale — verify `.planning/PROJECT.md` captures workspace structure, crate dependency graph, and replay engine design decisions before `_bmad-output/planning-artifacts/architecture.md` is deleted
+- [x] **BMAD removal:** BMAD tooling and output directories removed — both are gone in separate commits
+- [x] **Orphan cleanup:** BMAD directories deleted — grep confirms zero functional path references outside of git history
+- [x] **Git history:** Removal committed as standalone commits, not amended into others
+- [x] **Context preserved:** Key BMAD design rationale captured in MILESTONES.md before deletion
 - [ ] **STATE.md current:** Phase marked complete — verify each acceptance criterion is met, not just that the files exist
 
 ---
@@ -200,7 +196,7 @@ When pitfalls occur despite prevention, how to recover.
 |---------|---------------|----------------|
 | Rust source accidentally deleted | HIGH | `git restore` the deleted files immediately; verify with `cargo test`; document what happened |
 | Force-push destroyed history | HIGH | If remote still has old refs (GitHub reflog), recover via `git fetch` and `git reset`; if not recoverable, document the gap in PROJECT.md |
-| Orphaned references in docs | LOW | Run `grep -r "_bmad" .` and fix each hit; add a search step to the phase's acceptance criteria |
+| Orphaned references in docs | LOW | Run grep for BMAD path references and fix each hit; add a search step to the phase's acceptance criteria |
 | GSD files created in wrong location | LOW | Move files to `.planning/` with `mv`; update any internal cross-references; re-commit |
 | STATE.md out of sync | LOW | Read actual directory/file state, reconcile with STATE.md, update with correct information |
 | BMAD context lost before migration | MEDIUM | Recover from git history (`git show <commit>:<path>`) — BMAD files will still be in git history after deletion from working tree |
@@ -215,20 +211,20 @@ How roadmap phases should address these pitfalls.
 |---------|------------------|--------------|
 | Deleting Rust source during BMAD removal | Phase: Remove BMAD artifacts | `cargo check` passes after deletion; `ls crates/ tests/ examples/` unchanged |
 | Breaking git history | Phase: Remove BMAD artifacts | `git log --oneline` shows removal as standalone commit; no force-push |
-| Orphaned cross-references | Phase: Set up GSD infrastructure (before removal) | `grep -r "_bmad" .` returns zero hits |
+| Orphaned cross-references | Phase: Set up GSD infrastructure (before removal) | Grep confirms zero functional BMAD path references |
 | STATE.md inconsistency | Every phase (final step) | STATE.md reflects actual file system state at phase end |
 | Unnecessary cargo runs | Roadmap definition | Acceptance criteria contain no `cargo` commands |
-| GSD files in wrong location | Every phase (file write step) | `ls /Users/esa/git/durable-rust/` shows no new `.md` files at root |
+| GSD files in wrong location | Every phase (file write step) | Repo root shows no new `.md` files |
 | Lost BMAD context | Phase: Set up GSD infrastructure (before removal) | PROJECT.md contains 7-crate structure, replay engine design decisions, and dependency graph |
 
 ---
 
 ## Sources
 
-- Direct inspection of `/Users/esa/git/durable-rust/_bmad/` and `_bmad-output/` directory trees (2026-03-16)
-- `/Users/esa/git/durable-rust/.planning/PROJECT.md` — milestone scope and constraints
-- `/Users/esa/git/durable-rust/_bmad-output/implementation-artifacts/sprint-status.yaml` — BMAD state structure
-- `/Users/esa/git/durable-rust/_bmad-output/planning-artifacts/architecture.md` — cross-reference risk assessment
+- Direct inspection of BMAD tooling and output directory trees prior to removal (2026-03-16)
+- `.planning/PROJECT.md` — milestone scope and constraints
+- BMAD sprint-status.yaml artifact — BMAD state structure (prior to removal)
+- BMAD architecture.md artifact — cross-reference risk assessment (prior to removal)
 - Git log analysis — commit history and separation-of-concerns decisions
 - GSD template structure at `/Users/esa/.claude/get-shit-done/templates/research-project/`
 

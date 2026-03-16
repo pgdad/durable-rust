@@ -18,14 +18,14 @@ What BMAD provided and what GSD replaces it with:
 
 | BMAD Capability | BMAD Artifact | GSD Replacement | GSD Artifact |
 |-----------------|---------------|-----------------|--------------|
-| Project context for AI agents | `_bmad-output/project-context.md` | Living project context doc | `.planning/PROJECT.md` |
-| Product requirements | `_bmad-output/planning-artifacts/prd.md` | Requirements in PROJECT.md (Validated/Active/Out of Scope) | `.planning/PROJECT.md` |
-| Architecture documentation | `_bmad-output/planning-artifacts/architecture.md` | Research artifacts, codebase map | `.planning/research/ARCHITECTURE.md` |
-| Epic/story breakdown | `_bmad-output/planning-artifacts/epics.md` | Phases and plans in ROADMAP | `.planning/ROADMAP.md` + `plans/` |
-| Implementation readiness report | `_bmad-output/planning-artifacts/implementation-readiness-report.md` | Phase planning with success criteria | `.planning/plans/XX-YY-PLAN.md` |
-| Brainstorming session logs | `_bmad-output/brainstorming/` | Research files, discussion phases | `.planning/research/` |
-| Product brief | `_bmad-output/planning-artifacts/product-brief.md` | Summary.md research artifact | `.planning/research/SUMMARY.md` |
-| Workflow state (implicit in file layout) | `_bmad/` directory presence | Explicit state tracking | `.planning/STATE.md` |
+| Project context for AI agents | BMAD project-context.md | Living project context doc | `.planning/PROJECT.md` |
+| Product requirements | BMAD PRD artifact | Requirements in PROJECT.md (Validated/Active/Out of Scope) | `.planning/PROJECT.md` |
+| Architecture documentation | BMAD architecture artifact | Research artifacts, codebase map | `.planning/research/ARCHITECTURE.md` |
+| Epic/story breakdown | BMAD epics artifact | Phases and plans in ROADMAP | `.planning/ROADMAP.md` + `plans/` |
+| Implementation readiness report | BMAD implementation readiness report | Phase planning with success criteria | `.planning/plans/XX-YY-PLAN.md` |
+| Brainstorming session logs | BMAD brainstorming output | Research files, discussion phases | `.planning/research/` |
+| Product brief | BMAD product brief artifact | Summary.md research artifact | `.planning/research/SUMMARY.md` |
+| Workflow state (implicit in file layout) | BMAD framework directory presence | Explicit state tracking | `.planning/STATE.md` |
 | Milestone history (none) | No equivalent | Milestone log | `.planning/MILESTONES.md` |
 | Phase execution (manual) | No equivalent | Structured plan files with task lists | `.planning/plans/` |
 
@@ -45,7 +45,7 @@ pointless.
 | `ROADMAP.md` milestone-grouped format | GSD workflows read ROADMAP for phase state; required by `/gsd:progress`, `/gsd:execute-phase`, etc. | LOW | Must use milestone-grouped format since v1.0 is already shipped |
 | `STATE.md` | GSD uses STATE.md to resume context between sessions | LOW | Minimal file; references PROJECT.md and current milestone |
 | `MILESTONES.md` with v1.0 entry | Documents what shipped so future milestones have a baseline | LOW | Captures all 17 v1.0 deliverables in standard format |
-| BMAD artifact removal | Team expectation is clean repo; `_bmad/` and `_bmad-output/` are dead weight post-transition | LOW | Separate git commit per PROJECT.md decision |
+| BMAD artifact removal | Team expectation is clean repo; BMAD framework and output directories are dead weight post-transition | LOW | Separate git commit per PROJECT.md decision |
 | `config.json` settings | GSD config controls verbosity, team profile, and AI behavior; already present | LOW | Already exists at `.planning/config.json` |
 
 ### Differentiators (What GSD Adds That BMAD Didn't Have)
@@ -72,7 +72,7 @@ milestone.
 | Migrate BMAD epics content to ROADMAP plans | Feels like preserving history | The epics describe work already completed at v1.0 — migrating them inflates ROADMAP with done work and confuses AI agents about what's active | Capture completed work as v1.0 Validated requirements in PROJECT.md; let ROADMAP start clean with v1.1 |
 | Re-architect `.planning/` beyond GSD standard | Customizing directory layout for project-specific needs | GSD workflows assume specific file paths; deviating breaks `/gsd:*` commands | Use GSD standard layout exactly |
 | Add CI/CD or toolchain changes during transition | Transition is "in progress", feels like a good time | Out of scope per PROJECT.md; mixing tooling concerns muddies git history | Separate milestone post-transition |
-| Port project-context.md AI rules into GSD docs | The 38 AI rules in `_bmad-output/project-context.md` are valuable | They already live in `.claude/CLAUDE.md` or equivalent; duplicating into `.planning/` creates maintenance burden | Keep AI rules in their existing home; reference from PROJECT.md Context section if needed |
+| Port project-context.md AI rules into GSD docs | The 38 AI rules in the BMAD project-context.md are valuable | They already live in `.claude/CLAUDE.md` or equivalent; duplicating into `.planning/` creates maintenance burden | Keep AI rules in their existing home; reference from PROJECT.md Context section if needed |
 
 ---
 
@@ -87,7 +87,7 @@ GSD Infrastructure (.planning/ structure)
 
 BMAD Removal
     └──requires──> GSD Infrastructure (must exist before BMAD is removed)
-    └──requires──> PROJECT.md (replaces _bmad-output/project-context.md)
+    └──requires──> PROJECT.md (replaces BMAD project-context.md)
 
 ROADMAP.md (milestone-grouped)
     └──requires──> MILESTONES.md v1.0 entry (defines what was shipped)
@@ -96,7 +96,7 @@ ROADMAP.md (milestone-grouped)
 
 ### Dependency Notes
 
-- **BMAD removal requires GSD infrastructure first:** Removing `_bmad/` and `_bmad-output/` before
+- **BMAD removal requires GSD infrastructure first:** Removing BMAD directories before
   `.planning/` is populated leaves the project with no planning context. GSD setup must ship in a
   prior commit.
 - **ROADMAP requires MILESTONES:** The milestone-grouped ROADMAP format references the v1.0 milestone
@@ -117,8 +117,8 @@ Minimum viable GSD infrastructure — the exact deliverables for this milestone.
 - [ ] `.planning/ROADMAP.md` — Milestone-grouped format with v1.0 collapsed and v1.1 phases defined
 - [ ] `.planning/STATE.md` — Current state pointing to active milestone
 - [ ] `.planning/MILESTONES.md` — v1.0 entry documenting what shipped
-- [ ] Remove `_bmad/` directory — Dead BMAD tooling removed (separate commit)
-- [ ] Remove `_bmad-output/` directory — Dead BMAD artifacts removed (separate commit)
+- [x] Remove BMAD framework tooling directory — removed in Phase 2, separate commit
+- [x] Remove BMAD output artifacts directory — removed in Phase 2, separate commit
 
 ### Add After Validation (Not in This Milestone)
 
@@ -177,7 +177,7 @@ comparison is capability parity plus net-new value.
 
 - `/Users/esa/git/durable-rust/.planning/PROJECT.md` — authoritative project scope and milestone
   goals
-- `/Users/esa/git/durable-rust/_bmad-output/` — BMAD artifacts being replaced (direct inspection)
+- BMAD output directory (prior to removal) — direct inspection
 - `/Users/esa/.claude/get-shit-done/templates/` — GSD template set (direct inspection)
 - `/Users/esa/.claude/get-shit-done/workflows/` — GSD workflow commands (direct inspection)
 - Confidence: HIGH — all sources are local files with direct inspection, no external verification

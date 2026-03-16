@@ -15,9 +15,9 @@ Requirements for GSD Tooling Transition milestone. Each maps to roadmap phases.
 
 ### BMAD Cleanup
 
-- [ ] **BMAD-01**: `_bmad-output/` directory removed from repository in a dedicated commit
-- [ ] **BMAD-02**: `_bmad/` directory removed from repository in a dedicated commit
-- [ ] **BMAD-03**: No orphaned references to `_bmad` remain in tracked files
+- [x] **BMAD-01**: `_bmad-output/` directory removed from repository in a dedicated commit
+- [x] **BMAD-02**: `_bmad/` directory removed from repository in a dedicated commit
+- [x] **BMAD-03**: No orphaned references to `_bmad` remain in tracked files
 
 ## Future Requirements
 
@@ -46,9 +46,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | GSD-01 | Phase 1 | Complete |
 | GSD-02 | Phase 1 | Complete |
 | GSD-03 | Phase 1 | Complete |
-| BMAD-01 | Phase 2 | Pending |
-| BMAD-02 | Phase 2 | Pending |
-| BMAD-03 | Phase 2 | Pending |
+| BMAD-01 | Phase 2 | Complete |
+| BMAD-02 | Phase 2 | Complete |
+| BMAD-03 | Phase 2 | Complete |
 
 **Coverage:**
 - v1.1 requirements: 6 total
