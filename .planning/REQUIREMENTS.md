@@ -74,10 +74,10 @@
 - [x] **FEAT-20**: Tests verify spans are emitted with correct fields
 
 ### Features — Batch Checkpoint API
-- [ ] **FEAT-21**: DurableBackend gains batch_checkpoint() accepting Vec<OperationUpdate>
-- [ ] **FEAT-22**: Sequential steps can opt into batched checkpoint mode
-- [ ] **FEAT-23**: Single checkpoint call for N operation updates
-- [ ] **FEAT-24**: Tests verify batch reduces checkpoint call count
+- [x] **FEAT-21**: DurableBackend gains batch_checkpoint() accepting Vec<OperationUpdate>
+- [x] **FEAT-22**: Sequential steps can opt into batched checkpoint mode
+- [x] **FEAT-23**: Single checkpoint call for N operation updates
+- [x] **FEAT-24**: Tests verify batch reduces checkpoint call count
 
 ### Features — Saga / Compensation Pattern
 - [ ] **FEAT-25**: ctx.step_with_compensation(name, forward_fn, compensate_fn)

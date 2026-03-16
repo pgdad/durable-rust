@@ -9,7 +9,7 @@
 - [x] **Phase 3: Shared Context Trait** - Extract DurableContextOps trait to eliminate ~1,800 lines of duplicated delegation code (completed 2026-03-16)
 - [x] **Phase 4: Input Validation & Error Codes** - Validate options at construction, add structured error codes to DurableError (completed 2026-03-16)
 - [x] **Phase 5: Step Timeout & Conditional Retry** - Per-step time limits and retry predicates for error-aware retry policies (completed 2026-03-16)
-- [ ] **Phase 6: Observability & Batch Checkpoint** - Tracing spans per operation and batched checkpoint API to reduce AWS calls
+- [x] **Phase 6: Observability & Batch Checkpoint** - Tracing spans per operation and batched checkpoint API to reduce AWS calls (completed 2026-03-16)
 - [ ] **Phase 7: Saga / Compensation Pattern** - First-class support for distributed transaction rollback with durable compensations
 - [ ] **Phase 8: Macro & Builder Improvements** - Type validation in proc-macro, configuration methods on builder pattern
 - [ ] **Phase 9: Documentation Overhaul** - Determinism rules, error examples, troubleshooting FAQ, cross-references, metadata
@@ -162,7 +162,7 @@ Plans:
 | 3. Shared Context Trait | 3/3 | Complete   | 2026-03-16 |
 | 4. Input Validation & Error Codes | 3/3 | Complete   | 2026-03-16 |
 | 5. Step Timeout & Conditional Retry | 3/3 | Complete   | 2026-03-16 |
-| 6. Observability & Batch Checkpoint | 1/2 | In Progress|  |
+| 6. Observability & Batch Checkpoint | 2/2 | Complete   | 2026-03-16 |
 | 7. Saga / Compensation Pattern | 0/TBD | Not started | - |
 | 8. Macro & Builder Improvements | 0/TBD | Not started | - |
 | 9. Documentation Overhaul | 0/TBD | Not started | - |

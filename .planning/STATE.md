@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-last_updated: "2026-03-16T19:08:10.407Z"
+last_updated: "2026-03-16T19:19:08.813Z"
 progress:
   total_phases: 9
-  completed_phases: 5
+  completed_phases: 6
   total_plans: 17
-  completed_plans: 16
+  completed_plans: 17
 ---
 
 # STATE.md
@@ -20,10 +20,10 @@ progress:
 
 ## Current Position
 - **Phase**: 06-observability-batch-checkpoint
-- **Plan**: 06-01 complete
-- **Status**: Executing
-- **Last Activity**: 2026-03-16 — Completed 06-01 tracing spans for all 7 durable operations
-- **Progress**: [█████████░] 94% 16/17 plans complete
+- **Plan**: 06-02 complete (phase complete)
+- **Status**: Complete
+- **Last Activity**: 2026-03-16 — Completed 06-02 batch checkpoint API
+- **Progress**: [██████████] 100% 17/17 plans complete
 
 ## Performance Metrics
 - **Total Plans**: TBD (phases not yet planned into individual plans)
@@ -76,6 +76,10 @@ progress:
 - [06-01] span.enter() guard pattern used (not .instrument()) because &mut self async methods can't move body into async block for .instrument()
 - [06-01] tracing::trace!("durable_operation") required inside each span for tracing_test logs_contain() detection — events needed, not just span creation
 - [06-01] Span tests use per-file MockBackend instead of MockDurableContext — avoids type conflicts when durable_lambda_testing used as dev-dep of durable_lambda_core
+- [06-02] Child contexts always start with batch_mode=false — children must not inherit parent batch mode to avoid update loss on independent flush
+- [06-02] RETRY in batch mode auto-flushes before returning WaitSuspended — suspension requires checkpoint persisted before Lambda exits; deferred RETRY would lose the update
+- [06-02] batch_checkpoint() default method delegates to checkpoint() — RealBackend inherits automatically, MockBackend overrides for distinct tracking
+- [06-02] MockBackend::new() return type preserved as 3-tuple; batch_call_counter() accessor added — avoids breaking all existing test callers
 
 ### Pending Todos
 - None — ready to begin Phase 1 execution
@@ -84,6 +88,6 @@ progress:
 - None identified
 
 ## Session Continuity
-- **Last Session**: 2026-03-16 — Completed 06-01 tracing spans for all 7 durable operations + 9 span tests
-- **Stopped At**: Completed 06-observability-batch-checkpoint/06-01-PLAN.md
-- **Next Action**: Continue with 06-02 per ROADMAP.md
+- **Last Session**: 2026-03-16 — Completed 06-02 batch checkpoint API (accumulate-then-flush, 10->1 call reduction)
+- **Stopped At**: Completed 06-observability-batch-checkpoint/06-02-PLAN.md
+- **Next Action**: All 17 plans complete — review ROADMAP.md for any remaining phases
