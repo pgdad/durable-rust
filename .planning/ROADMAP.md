@@ -149,7 +149,7 @@ Plans:
 | 1. Error Path Test Coverage | 0/3 | Planned | - |
 | 2. Boundary & Replay Engine Tests | 0/TBD | Not started | - |
 | 3. Shared Context Trait | 0/3 | Planned | - |
-| 4. Input Validation & Error Codes | 1/3 | In Progress|  |
+| 4. Input Validation & Error Codes | 2/3 | In Progress|  |
 | 5. Step Timeout & Conditional Retry | 0/TBD | Not started | - |
 | 6. Observability & Batch Checkpoint | 0/TBD | Not started | - |
 | 7. Saga / Compensation Pattern | 0/TBD | Not started | - |

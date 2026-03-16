@@ -7,9 +7,9 @@
 
 ## Current Position
 - **Phase**: 04-input-validation-error-codes
-- **Plan**: 04-01 complete, 04-02 next
+- **Plan**: 04-02 complete, 04-03 next
 - **Status**: Executing
-- **Last Activity**: 2026-03-16 — Completed 04-01 input validation guards
+- **Last Activity**: 2026-03-16 — Completed 04-02 error codes and structured retry detection
 - **Progress**: ░░░░░░░░░░ 0/9 phases (Phase 4 in progress)
 
 ## Performance Metrics
@@ -27,6 +27,8 @@
 - StepOptions::retries changed from u32 to i32 so negative values can be rejected at runtime with clear panic messages (integer literals coerce automatically, no caller changes needed)
 - Builder validation uses assert! with format 'Type::method: constraint, got {value}' for consistent error messages
 - CallbackOptions uses strictly positive (>0) guards; StepOptions uses non-negative (>=0) guards since zero retries/backoff are valid
+- [04-02] No wildcard arm in DurableError::code() match — compiler enforces exhaustive coverage when new variants are added
+- [04-02] Only AwsSdkOperation and AwsSdk variants qualify as retryable; CheckpointFailed is never retried even if its source message contains transient-sounding keywords
 
 ### Pending Todos
 - None — ready to begin Phase 1 execution
@@ -35,6 +37,6 @@
 - None identified
 
 ## Session Continuity
-- **Last Session**: 2026-03-16 — Completed 04-01 input validation guards for option builders
-- **Stopped At**: Completed 04-input-validation-error-codes/04-01-PLAN.md
-- **Next Action**: Execute 04-02 plan (error code enum and structured errors)
+- **Last Session**: 2026-03-16 — Completed 04-02 error codes and structured retry detection
+- **Stopped At**: Completed 04-input-validation-error-codes/04-02-PLAN.md
+- **Next Action**: Execute 04-03 plan (next in phase 04)
