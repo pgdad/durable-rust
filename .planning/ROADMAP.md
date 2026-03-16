@@ -43,7 +43,11 @@ Plans:
   3. 5-level nested child contexts and 3-level nested parallel-in-child-in-parallel produce correct operation IDs
   4. Same history replayed 100 times produces bit-identical results every time
   5. Duplicate and missing operation IDs in history have defined behavior with tests
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 02-01-PLAN.md — Option boundary tests (zero wait, batch_size edges, parallel 0/1, name edge cases, validation panics)
+- [ ] 02-02-PLAN.md — Deep nesting tests (5-level child contexts, parallel-in-child-in-parallel)
+- [ ] 02-03-PLAN.md — Replay engine robustness (deterministic replay 100x, duplicate IDs, history gaps, token evolution)
 
 ### Phase 3: Shared Context Trait
 **Goal**: A single DurableContextOps trait defines all context methods, implemented by all wrapper contexts, enabling generic handler code.
@@ -147,7 +151,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Error Path Test Coverage | 0/3 | Planned | - |
-| 2. Boundary & Replay Engine Tests | 0/TBD | Not started | - |
+| 2. Boundary & Replay Engine Tests | 0/3 | Planned | - |
 | 3. Shared Context Trait | 3/3 | Complete   | 2026-03-16 |
 | 4. Input Validation & Error Codes | 3/3 | Complete   | 2026-03-16 |
 | 5. Step Timeout & Conditional Retry | 0/TBD | Not started | - |
