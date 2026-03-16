@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-last_updated: "2026-03-16T16:13:34.520Z"
+last_updated: "2026-03-16T16:18:03.883Z"
 progress:
   total_phases: 9
   completed_phases: 3
   total_plans: 12
-  completed_plans: 10
+  completed_plans: 11
 ---
 
 # STATE.md
@@ -20,10 +20,10 @@ progress:
 
 ## Current Position
 - **Phase**: 02-boundary-replay-engine-tests
-- **Plan**: 02-01 complete
+- **Plan**: 02-02 complete
 - **Status**: Executing
-- **Last Activity**: 2026-03-16 — Completed 02-01 boundary_conditions.rs (13 tests, TEST-12 through TEST-16)
-- **Progress**: [████████░░] 83% 10/12 plans complete
+- **Last Activity**: 2026-03-16 — Completed 02-02 deep nesting boundary tests (TEST-17, TEST-18)
+- **Progress**: [█████████░] 92% 11/12 plans complete
 
 ## Performance Metrics
 - **Total Plans**: TBD (phases not yet planned into individual plans)
@@ -61,6 +61,8 @@ progress:
 - [02-01] DurableError::WaitSuspended is a struct variant requiring { .. } pattern match, not a unit variant
 - [02-01] BatchResult results must be sorted by index before value assertions — concurrent execution may reorder them
 - [02-01] Zero-branch parallel produces exactly 2 checkpoints (outer START + SUCCEED) with empty BatchResult
+- [02-02] filter_map(|item| item.result) used for Option<i32> aggregation in parallel results — Copy type, no .copied() needed
+- [02-02] values.sort() required before assert_eq! in test_parallel_in_child_in_parallel — tokio::spawn execution order is non-deterministic
 
 ### Pending Todos
 - None — ready to begin Phase 1 execution
@@ -69,6 +71,6 @@ progress:
 - None identified
 
 ## Session Continuity
-- **Last Session**: 2026-03-16 — Completed 02-01 boundary_conditions.rs (13 tests, TEST-12 through TEST-16)
-- **Stopped At**: Completed 02-boundary-replay-engine-tests/02-01-PLAN.md
-- **Next Action**: Continue with remaining Phase 02 plans (replay engine tests) per ROADMAP.md
+- **Last Session**: 2026-03-16 — Completed 02-02 deep nesting boundary tests (TEST-17, TEST-18)
+- **Stopped At**: Completed 02-boundary-replay-engine-tests/02-02-PLAN.md
+- **Next Action**: Continue with remaining plans per ROADMAP.md
