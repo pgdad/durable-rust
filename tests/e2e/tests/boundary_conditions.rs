@@ -12,12 +12,17 @@
 
 use std::future::Future;
 use std::pin::Pin;
+use std::sync::Arc;
 
+use aws_sdk_lambda::types::{Operation, OperationStatus, OperationType, StepDetails};
+use aws_smithy_types::DateTime;
 use durable_lambda_core::context::DurableContext;
 use durable_lambda_core::error::DurableError;
+use durable_lambda_core::operation_id::OperationIdGenerator;
 use durable_lambda_core::types::{
     BatchItemStatus, CallbackOptions, MapOptions, ParallelOptions, StepOptions,
 };
+use durable_lambda_testing::mock_backend::MockBackend;
 use durable_lambda_testing::prelude::*;
 
 // ============================================================================
@@ -562,4 +567,164 @@ async fn test_parallel_in_child_in_parallel() {
     values.sort();
     // Branch a: 10 + 20 = 30, Branch b: 100 + 200 = 300
     assert_eq!(values, vec![30, 300], "branch sums should be [30, 300]");
+}
+
+// ============================================================================
+// TEST-19: Deterministic replay over 100 runs
+// ============================================================================
+
+/// Verify that replaying the same history 100 times produces identical step
+/// results and zero checkpoints every time.
+///
+/// Proves that `OperationIdGenerator` is deterministic and that the
+/// `ReplayEngine` always produces consistent results for the same input.
+#[tokio::test]
+async fn test_deterministic_replay_100_runs() {
+    for i in 0..100 {
+        let (mut ctx, calls, _ops) = MockDurableContext::new()
+            .with_step_result("step_a", r#"42"#)
+            .with_step_result("step_b", r#""hello""#)
+            .build()
+            .await;
+
+        let r1: Result<i32, String> = ctx
+            .step("step_a", || async { panic!("should not execute in replay") })
+            .await
+            .unwrap();
+        let r2: Result<String, String> = ctx
+            .step("step_b", || async { panic!("should not execute in replay") })
+            .await
+            .unwrap();
+
+        assert_eq!(r1.unwrap(), 42, "iteration {i}: step_a result mismatch");
+        assert_eq!(
+            r2.unwrap(),
+            "hello",
+            "iteration {i}: step_b result mismatch"
+        );
+
+        let captured = calls.lock().await;
+        assert_eq!(
+            captured.len(),
+            0,
+            "iteration {i}: replay should produce 0 checkpoints"
+        );
+    }
+}
+
+// ============================================================================
+// TEST-20: Duplicate operation IDs — last-writer-wins
+// ============================================================================
+
+/// Verify that duplicate operation IDs in history use last-writer-wins
+/// semantics — the second operation's value is returned.
+///
+/// `DurableContext::new()` converts the operations `Vec` to a `HashMap`
+/// using `.collect()`, which overwrites earlier entries with later ones.
+/// This test confirms the second op's value (42) wins over the first (999).
+#[tokio::test]
+async fn test_duplicate_operation_ids_last_writer_wins() {
+    let mut gen = OperationIdGenerator::new(None);
+    let op_id = gen.next_id();
+
+    let op_first = Operation::builder()
+        .id(&op_id)
+        .r#type(OperationType::Step)
+        .status(OperationStatus::Succeeded)
+        .start_timestamp(DateTime::from_secs(0))
+        .step_details(StepDetails::builder().result(r#"999"#).build())
+        .build()
+        .unwrap();
+
+    let op_second = Operation::builder()
+        .id(&op_id)
+        .r#type(OperationType::Step)
+        .status(OperationStatus::Succeeded)
+        .start_timestamp(DateTime::from_secs(0))
+        .step_details(StepDetails::builder().result(r#"42"#).build())
+        .build()
+        .unwrap();
+
+    let (backend, _calls, _ops) = MockBackend::new("mock-token");
+    let mut ctx = DurableContext::new(
+        Arc::new(backend),
+        "arn:test".into(),
+        "tok".into(),
+        vec![op_first, op_second],
+        None,
+    )
+    .await
+    .unwrap();
+
+    let result: Result<i32, String> = ctx
+        .step("any", || async { panic!("not executed in replay") })
+        .await
+        .unwrap();
+    assert_eq!(result.unwrap(), 42, "second op (last writer) should win");
+}
+
+// ============================================================================
+// TEST-21: History gap triggers execute path
+// ============================================================================
+
+/// Verify that a missing operation ID in history triggers the execute path
+/// for that position even while the replay engine is in Replaying mode.
+///
+/// History contains op at counter=1 (Succeeded) but NO op at counter=2.
+/// Step 1 replays from history; step 2 executes its closure because its ID
+/// is absent from the history map. After step 2 executes, the engine
+/// transitions to Executing mode.
+#[tokio::test]
+async fn test_history_gap_triggers_execute_path() {
+    let mut gen = OperationIdGenerator::new(None);
+    let id1 = gen.next_id(); // counter=1
+    let _id2 = gen.next_id(); // counter=2 — intentionally skipped in history
+
+    let op1 = Operation::builder()
+        .id(&id1)
+        .r#type(OperationType::Step)
+        .status(OperationStatus::Succeeded)
+        .start_timestamp(DateTime::from_secs(0))
+        .step_details(StepDetails::builder().result(r#"1"#).build())
+        .build()
+        .unwrap();
+
+    // No op for id2 — this is the gap
+
+    let (backend, calls, _ops) = MockBackend::new("mock-token");
+    let mut ctx = DurableContext::new(
+        Arc::new(backend),
+        "arn:test".into(),
+        "mock-checkpoint-token".into(),
+        vec![op1], // Only op1 in history
+        None,
+    )
+    .await
+    .unwrap();
+
+    // Step 1: replay path — op1 exists in history
+    let r1: Result<i32, String> = ctx
+        .step("step1", || async { panic!("not executed in replay") })
+        .await
+        .unwrap();
+    assert_eq!(r1.unwrap(), 1);
+
+    // Step 2: execute path — op2 NOT in history (gap)
+    let r2: Result<i32, String> = ctx
+        .step("step2", || async { Ok(222) })
+        .await
+        .unwrap();
+    assert_eq!(
+        r2.unwrap(),
+        222,
+        "step2 closure should execute because its ID is missing from history"
+    );
+
+    // Verify step2 made checkpoints (execute path) while step1 did not
+    let captured = calls.lock().await;
+    assert!(
+        captured.len() >= 2,
+        "step2 should have produced checkpoint calls (START + SUCCEED), got {}",
+        captured.len()
+    );
 }
