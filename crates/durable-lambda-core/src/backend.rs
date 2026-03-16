@@ -69,6 +69,26 @@ pub trait DurableBackend: Send + Sync {
         next_marker: &str,
         max_items: i32,
     ) -> Result<GetDurableExecutionStateOutput, DurableError>;
+
+    /// Persist multiple checkpoint updates in a single AWS API call.
+    ///
+    /// Default implementation delegates to [`checkpoint`](Self::checkpoint),
+    /// making it backward-compatible for existing implementors. Override
+    /// in test mocks to track batch-specific call counts.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`DurableError`] if the underlying AWS API call fails.
+    async fn batch_checkpoint(
+        &self,
+        arn: &str,
+        checkpoint_token: &str,
+        updates: Vec<OperationUpdate>,
+        client_token: Option<&str>,
+    ) -> Result<CheckpointDurableExecutionOutput, DurableError> {
+        self.checkpoint(arn, checkpoint_token, updates, client_token)
+            .await
+    }
 }
 
 /// Real AWS backend that calls `aws-sdk-lambda` durable execution APIs.

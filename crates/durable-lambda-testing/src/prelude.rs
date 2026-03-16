@@ -17,7 +17,8 @@ pub use crate::assertions::{
     assert_operations,
 };
 pub use crate::mock_backend::{
-    CheckpointCall, CheckpointRecorder, MockBackend, OperationRecord, OperationRecorder,
+    BatchCallCounter, CheckpointCall, CheckpointRecorder, MockBackend, OperationRecord,
+    OperationRecorder,
 };
 pub use crate::mock_context::MockDurableContext;
 pub use durable_lambda_core::context::DurableContext;

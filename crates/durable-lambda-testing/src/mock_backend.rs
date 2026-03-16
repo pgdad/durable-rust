@@ -155,10 +155,14 @@ pub type CheckpointRecorder = Arc<Mutex<Vec<CheckpointCall>>>;
 /// ```
 pub type OperationRecorder = Arc<Mutex<Vec<OperationRecord>>>;
 
+/// Shared counter for batch checkpoint calls.
+pub type BatchCallCounter = Arc<Mutex<usize>>;
+
 pub struct MockBackend {
     calls: CheckpointRecorder,
     operations: OperationRecorder,
     checkpoint_token: String,
+    batch_call_count: BatchCallCounter,
 }
 
 impl MockBackend {
@@ -184,8 +188,14 @@ impl MockBackend {
             calls: calls.clone(),
             operations: operations.clone(),
             checkpoint_token: checkpoint_token.to_string(),
+            batch_call_count: Arc::new(Mutex::new(0)),
         };
         (backend, calls, operations)
+    }
+
+    /// Return the batch checkpoint call counter for test assertions.
+    pub fn batch_call_counter(&self) -> BatchCallCounter {
+        self.batch_call_count.clone()
     }
 }
 
@@ -224,6 +234,46 @@ impl DurableBackend for MockBackend {
         Ok(CheckpointDurableExecutionOutput::builder()
             .checkpoint_token(&self.checkpoint_token)
             .build())
+    }
+
+    async fn batch_checkpoint(
+        &self,
+        arn: &str,
+        checkpoint_token: &str,
+        updates: Vec<OperationUpdate>,
+        _client_token: Option<&str>,
+    ) -> Result<
+        aws_sdk_lambda::operation::checkpoint_durable_execution::CheckpointDurableExecutionOutput,
+        DurableError,
+    > {
+        *self.batch_call_count.lock().await += 1;
+        // Record individual operations for sequence tracking (same as checkpoint).
+        for update in &updates {
+            if update.action() == &aws_sdk_lambda::types::OperationAction::Start {
+                let op_type = match update.r#type() {
+                    aws_sdk_lambda::types::OperationType::Step => "step",
+                    aws_sdk_lambda::types::OperationType::Wait => "wait",
+                    aws_sdk_lambda::types::OperationType::Callback => "callback",
+                    aws_sdk_lambda::types::OperationType::ChainedInvoke => "invoke",
+                    _ => "unknown",
+                };
+                let name = update.name().unwrap_or("").to_string();
+                self.operations.lock().await.push(OperationRecord {
+                    name,
+                    operation_type: op_type.to_string(),
+                });
+            }
+        }
+        self.calls.lock().await.push(CheckpointCall {
+            arn: arn.to_string(),
+            checkpoint_token: checkpoint_token.to_string(),
+            updates,
+        });
+        Ok(
+            aws_sdk_lambda::operation::checkpoint_durable_execution::CheckpointDurableExecutionOutput::builder()
+                .checkpoint_token(&self.checkpoint_token)
+                .build(),
+        )
     }
 
     async fn get_execution_state(

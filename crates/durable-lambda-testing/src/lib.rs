@@ -31,6 +31,7 @@ pub mod mock_context;
 pub mod prelude;
 
 pub use mock_backend::{
-    CheckpointCall, CheckpointRecorder, MockBackend, OperationRecord, OperationRecorder,
+    BatchCallCounter, CheckpointCall, CheckpointRecorder, MockBackend, OperationRecord,
+    OperationRecorder,
 };
 pub use mock_context::MockDurableContext;

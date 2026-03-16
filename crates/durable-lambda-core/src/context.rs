@@ -7,6 +7,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use aws_sdk_lambda::types::Operation;
+use aws_sdk_lambda::types::OperationUpdate;
 
 use crate::backend::DurableBackend;
 use crate::error::DurableError;
@@ -59,6 +60,8 @@ pub struct DurableContext {
     durable_execution_arn: String,
     checkpoint_token: String,
     parent_op_id: Option<String>,
+    batch_mode: bool,
+    pending_updates: Vec<OperationUpdate>,
 }
 
 /// Maximum items per page when paginating execution state.
@@ -119,6 +122,8 @@ impl DurableContext {
             durable_execution_arn: arn,
             checkpoint_token,
             parent_op_id: None,
+            batch_mode: false,
+            pending_updates: Vec::new(),
         })
     }
 
@@ -250,6 +255,8 @@ impl DurableContext {
             durable_execution_arn: self.durable_execution_arn.clone(),
             checkpoint_token: self.checkpoint_token.clone(),
             parent_op_id: Some(parent_op_id.to_string()),
+            batch_mode: false,
+            pending_updates: Vec::new(),
         }
     }
 
@@ -284,6 +291,91 @@ impl DurableContext {
     /// ```
     pub fn parent_op_id(&self) -> Option<&str> {
         self.parent_op_id.as_deref()
+    }
+
+    /// Enable batch checkpoint mode.
+    ///
+    /// When enabled, step operation checkpoints (START and SUCCEED/FAIL)
+    /// are accumulated in memory instead of being sent immediately.
+    /// Call [`flush_batch`](Self::flush_batch) to send all accumulated
+    /// updates in a single AWS API call.
+    ///
+    /// Batch mode applies only to `step` operations. `wait`, `invoke`,
+    /// and `callback` always send checkpoints immediately because they
+    /// produce suspension errors that require the checkpoint to be
+    /// persisted before the function exits.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// # async fn example(mut ctx: durable_lambda_core::context::DurableContext) -> Result<(), durable_lambda_core::error::DurableError> {
+    /// ctx.enable_batch_mode();
+    /// let _: Result<i32, String> = ctx.step("step1", || async { Ok(1) }).await?;
+    /// let _: Result<i32, String> = ctx.step("step2", || async { Ok(2) }).await?;
+    /// ctx.flush_batch().await?;  // sends all updates in one call
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub fn enable_batch_mode(&mut self) {
+        self.batch_mode = true;
+    }
+
+    /// Return whether batch checkpoint mode is active.
+    pub fn is_batch_mode(&self) -> bool {
+        self.batch_mode
+    }
+
+    /// Accumulate an operation update for later batch flush.
+    ///
+    /// Called internally by step operations when batch mode is active.
+    pub(crate) fn push_pending_update(&mut self, update: OperationUpdate) {
+        self.pending_updates.push(update);
+    }
+
+    /// Return the number of pending (unflushed) updates.
+    pub fn pending_update_count(&self) -> usize {
+        self.pending_updates.len()
+    }
+
+    /// Flush all accumulated checkpoint updates in a single AWS API call.
+    ///
+    /// No-op if no updates are pending. After flushing, the checkpoint
+    /// token is updated from the response.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`DurableError`] if the batch checkpoint call fails.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// # async fn example(mut ctx: durable_lambda_core::context::DurableContext) -> Result<(), durable_lambda_core::error::DurableError> {
+    /// ctx.enable_batch_mode();
+    /// // ... run several steps ...
+    /// ctx.flush_batch().await?;
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn flush_batch(&mut self) -> Result<(), DurableError> {
+        if self.pending_updates.is_empty() {
+            return Ok(());
+        }
+        let updates = std::mem::take(&mut self.pending_updates);
+        let response = self
+            .backend()
+            .batch_checkpoint(self.arn(), self.checkpoint_token(), updates, None)
+            .await?;
+        let new_token = response.checkpoint_token().ok_or_else(|| {
+            DurableError::checkpoint_failed(
+                "batch",
+                std::io::Error::new(
+                    std::io::ErrorKind::InvalidData,
+                    "batch checkpoint response missing checkpoint_token",
+                ),
+            )
+        })?;
+        self.set_checkpoint_token(new_token.to_string());
+        Ok(())
     }
 }
 

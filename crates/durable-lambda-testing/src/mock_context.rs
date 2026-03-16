@@ -11,7 +11,7 @@ use aws_sdk_lambda::types::{
 use durable_lambda_core::context::DurableContext;
 use durable_lambda_core::operation_id::OperationIdGenerator;
 
-use crate::mock_backend::{CheckpointRecorder, MockBackend, OperationRecorder};
+use crate::mock_backend::{BatchCallCounter, CheckpointRecorder, MockBackend, OperationRecorder};
 
 /// Builder for creating a [`DurableContext`] with pre-loaded step results.
 ///
@@ -321,6 +321,52 @@ impl MockDurableContext {
         .expect("MockDurableContext::build should not fail");
 
         (ctx, calls, operations)
+    }
+
+    /// Build mock context and also return the batch checkpoint call counter.
+    ///
+    /// Use this when testing batch mode — the `BatchCallCounter` lets you
+    /// assert how many times `batch_checkpoint()` was called.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// # async fn example() {
+    /// use durable_lambda_testing::prelude::*;
+    ///
+    /// let (mut ctx, calls, _ops, batch_counter) = MockDurableContext::new()
+    ///     .build_with_batch_counter()
+    ///     .await;
+    ///
+    /// ctx.enable_batch_mode();
+    /// let _: Result<i32, String> = ctx.step("s1", || async { Ok(1) }).await.unwrap();
+    /// ctx.flush_batch().await.unwrap();
+    ///
+    /// assert_eq!(*batch_counter.lock().await, 1);
+    /// # }
+    /// ```
+    pub async fn build_with_batch_counter(
+        self,
+    ) -> (
+        DurableContext,
+        CheckpointRecorder,
+        OperationRecorder,
+        BatchCallCounter,
+    ) {
+        let (backend, calls, operations) = MockBackend::new("mock-token");
+        let batch_counter = backend.batch_call_counter();
+
+        let ctx = DurableContext::new(
+            Arc::new(backend),
+            "arn:aws:lambda:us-east-1:000000000000:durable-execution/mock".to_string(),
+            "mock-checkpoint-token".to_string(),
+            self.operations,
+            None,
+        )
+        .await
+        .expect("MockDurableContext::build_with_batch_counter should not fail");
+
+        (ctx, calls, operations, batch_counter)
     }
 }
 
