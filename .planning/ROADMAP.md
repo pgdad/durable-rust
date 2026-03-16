@@ -94,7 +94,11 @@ Plans:
   4. Non-matching errors fail immediately without consuming retry budget
   5. Default behavior (no retry_if) retries all errors, preserving backward compatibility
   6. Cross-approach parity tests verify step timeout and conditional retry work identically across all 4 styles
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+- [ ] 05-01-PLAN.md — StepOptions extensions (timeout_seconds, retry_if) + DurableError::StepTimeout + step_with_options integration
+- [ ] 05-02-PLAN.md — E2E tests for step timeout and conditional retry (FEAT-12, FEAT-16)
+- [ ] 05-03-PLAN.md — Cross-approach parity tests (TEST-23, TEST-24, TEST-25)
 
 ### Phase 6: Observability & Batch Checkpoint
 **Goal**: Every operation emits structured tracing spans, and sequential steps can batch checkpoint writes to halve AWS API calls.
@@ -154,7 +158,7 @@ Plans:
 | 2. Boundary & Replay Engine Tests | 3/3 | Complete   | 2026-03-16 |
 | 3. Shared Context Trait | 3/3 | Complete   | 2026-03-16 |
 | 4. Input Validation & Error Codes | 3/3 | Complete   | 2026-03-16 |
-| 5. Step Timeout & Conditional Retry | 0/TBD | Not started | - |
+| 5. Step Timeout & Conditional Retry | 0/3 | Planned | - |
 | 6. Observability & Batch Checkpoint | 0/TBD | Not started | - |
 | 7. Saga / Compensation Pattern | 0/TBD | Not started | - |
 | 8. Macro & Builder Improvements | 0/TBD | Not started | - |
