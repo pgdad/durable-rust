@@ -16,11 +16,7 @@ async fn test_batch_mode_defers_checkpoints() {
         0,
         "batch mode should defer checkpoint calls"
     );
-    assert_eq!(
-        ctx.pending_update_count(),
-        2,
-        "START + SUCCEED deferred"
-    );
+    assert_eq!(ctx.pending_update_count(), 2, "START + SUCCEED deferred");
 }
 
 #[tokio::test]

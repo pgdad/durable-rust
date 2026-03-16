@@ -219,6 +219,22 @@ pub trait DurableContextOps {
 
     /// Emit a replay-safe error-level log message with structured data.
     fn log_error_with_data(&self, message: &str, data: &serde_json::Value);
+
+    // -------------------------------------------------------------------------
+    // Batch checkpoint methods
+    // -------------------------------------------------------------------------
+
+    /// Enable batch checkpoint mode.
+    ///
+    /// See [`DurableContext::enable_batch_mode`](crate::context::DurableContext) for full
+    /// documentation.
+    fn enable_batch_mode(&mut self);
+
+    /// Flush accumulated batch checkpoint updates.
+    ///
+    /// See [`DurableContext::flush_batch`](crate::context::DurableContext) for full
+    /// documentation.
+    fn flush_batch(&mut self) -> impl Future<Output = Result<(), DurableError>> + Send;
 }
 
 impl DurableContextOps for DurableContext {
@@ -376,5 +392,13 @@ impl DurableContextOps for DurableContext {
 
     fn log_error_with_data(&self, message: &str, data: &serde_json::Value) {
         DurableContext::log_error_with_data(self, message, data);
+    }
+
+    fn enable_batch_mode(&mut self) {
+        DurableContext::enable_batch_mode(self);
+    }
+
+    fn flush_batch(&mut self) -> impl Future<Output = Result<(), DurableError>> + Send {
+        DurableContext::flush_batch(self)
     }
 }

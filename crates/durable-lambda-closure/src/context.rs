@@ -757,6 +757,14 @@ impl DurableContextOps for ClosureContext {
     fn log_error_with_data(&self, message: &str, data: &serde_json::Value) {
         self.inner.log_error_with_data(message, data);
     }
+
+    fn enable_batch_mode(&mut self) {
+        self.inner.enable_batch_mode();
+    }
+
+    fn flush_batch(&mut self) -> impl Future<Output = Result<(), DurableError>> + Send {
+        self.inner.flush_batch()
+    }
 }
 
 #[cfg(test)]

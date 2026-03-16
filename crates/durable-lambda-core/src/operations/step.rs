@@ -182,40 +182,46 @@ impl DurableContext {
                 .build()
                 .map_err(|e| DurableError::checkpoint_failed(name, e))?;
 
-            let start_response = self
-                .backend()
-                .checkpoint(
-                    self.arn(),
-                    self.checkpoint_token(),
-                    vec![start_update],
-                    None,
-                )
-                .await?;
+            if self.is_batch_mode() {
+                // In batch mode, accumulate instead of sending immediately.
+                self.push_pending_update(start_update);
+                // No token update in batch mode — token updates on flush_batch()
+            } else {
+                let start_response = self
+                    .backend()
+                    .checkpoint(
+                        self.arn(),
+                        self.checkpoint_token(),
+                        vec![start_update],
+                        None,
+                    )
+                    .await?;
 
-            let new_token = start_response.checkpoint_token().ok_or_else(|| {
-                DurableError::checkpoint_failed(
-                    name,
-                    std::io::Error::new(
-                        std::io::ErrorKind::InvalidData,
-                        "checkpoint response missing checkpoint_token",
-                    ),
-                )
-            })?;
-            self.set_checkpoint_token(new_token.to_string());
+                let new_token = start_response.checkpoint_token().ok_or_else(|| {
+                    DurableError::checkpoint_failed(
+                        name,
+                        std::io::Error::new(
+                            std::io::ErrorKind::InvalidData,
+                            "checkpoint response missing checkpoint_token",
+                        ),
+                    )
+                })?;
+                self.set_checkpoint_token(new_token.to_string());
 
-            // Merge any new execution state from checkpoint response.
-            if let Some(new_state) = start_response.new_execution_state() {
-                for op in new_state.operations() {
-                    self.replay_engine_mut()
-                        .insert_operation(op.id().to_string(), op.clone());
+                // Merge any new execution state from checkpoint response.
+                if let Some(new_state) = start_response.new_execution_state() {
+                    for op in new_state.operations() {
+                        self.replay_engine_mut()
+                            .insert_operation(op.id().to_string(), op.clone());
+                    }
                 }
-            }
 
-            // Double-check: after START, re-check if operation already has result.
-            if let Some(operation) = self.replay_engine().check_result(&op_id) {
-                let result = extract_step_result::<T, E>(operation)?;
-                self.replay_engine_mut().track_replay(&op_id);
-                return Ok(result);
+                // Double-check: after START, re-check if operation already has result.
+                if let Some(operation) = self.replay_engine().check_result(&op_id) {
+                    let result = extract_step_result::<T, E>(operation)?;
+                    self.replay_engine_mut().track_replay(&op_id);
+                    return Ok(result);
+                }
             }
 
             1 // first attempt
@@ -266,26 +272,30 @@ impl DurableContext {
                     .build()
                     .map_err(|e| DurableError::checkpoint_failed(name, e))?;
 
-                let response = self
-                    .backend()
-                    .checkpoint(
-                        self.arn(),
-                        self.checkpoint_token(),
-                        vec![succeed_update],
-                        None,
-                    )
-                    .await?;
+                if self.is_batch_mode() {
+                    self.push_pending_update(succeed_update);
+                } else {
+                    let response = self
+                        .backend()
+                        .checkpoint(
+                            self.arn(),
+                            self.checkpoint_token(),
+                            vec![succeed_update],
+                            None,
+                        )
+                        .await?;
 
-                let new_token = response.checkpoint_token().ok_or_else(|| {
-                    DurableError::checkpoint_failed(
-                        name,
-                        std::io::Error::new(
-                            std::io::ErrorKind::InvalidData,
-                            "checkpoint response missing checkpoint_token",
-                        ),
-                    )
-                })?;
-                self.set_checkpoint_token(new_token.to_string());
+                    let new_token = response.checkpoint_token().ok_or_else(|| {
+                        DurableError::checkpoint_failed(
+                            name,
+                            std::io::Error::new(
+                                std::io::ErrorKind::InvalidData,
+                                "checkpoint response missing checkpoint_token",
+                            ),
+                        )
+                    })?;
+                    self.set_checkpoint_token(new_token.to_string());
+                }
             }
             Err(error) => {
                 let max_retries = options.get_retries().unwrap_or(0);
@@ -315,26 +325,32 @@ impl DurableContext {
                         .build()
                         .map_err(|e| DurableError::checkpoint_failed(name, e))?;
 
-                    let response = self
-                        .backend()
-                        .checkpoint(
-                            self.arn(),
-                            self.checkpoint_token(),
-                            vec![retry_update],
-                            None,
-                        )
-                        .await?;
+                    if self.is_batch_mode() {
+                        // RETRY causes suspension — must flush before exiting.
+                        self.push_pending_update(retry_update);
+                        self.flush_batch().await?;
+                    } else {
+                        let response = self
+                            .backend()
+                            .checkpoint(
+                                self.arn(),
+                                self.checkpoint_token(),
+                                vec![retry_update],
+                                None,
+                            )
+                            .await?;
 
-                    let new_token = response.checkpoint_token().ok_or_else(|| {
-                        DurableError::checkpoint_failed(
-                            name,
-                            std::io::Error::new(
-                                std::io::ErrorKind::InvalidData,
-                                "checkpoint response missing checkpoint_token",
-                            ),
-                        )
-                    })?;
-                    self.set_checkpoint_token(new_token.to_string());
+                        let new_token = response.checkpoint_token().ok_or_else(|| {
+                            DurableError::checkpoint_failed(
+                                name,
+                                std::io::Error::new(
+                                    std::io::ErrorKind::InvalidData,
+                                    "checkpoint response missing checkpoint_token",
+                                ),
+                            )
+                        })?;
+                        self.set_checkpoint_token(new_token.to_string());
+                    }
 
                     return Err(DurableError::step_retry_scheduled(name));
                 }
@@ -358,21 +374,25 @@ impl DurableContext {
                     .build()
                     .map_err(|e| DurableError::checkpoint_failed(name, e))?;
 
-                let response = self
-                    .backend()
-                    .checkpoint(self.arn(), self.checkpoint_token(), vec![fail_update], None)
-                    .await?;
+                if self.is_batch_mode() {
+                    self.push_pending_update(fail_update);
+                } else {
+                    let response = self
+                        .backend()
+                        .checkpoint(self.arn(), self.checkpoint_token(), vec![fail_update], None)
+                        .await?;
 
-                let new_token = response.checkpoint_token().ok_or_else(|| {
-                    DurableError::checkpoint_failed(
-                        name,
-                        std::io::Error::new(
-                            std::io::ErrorKind::InvalidData,
-                            "checkpoint response missing checkpoint_token",
-                        ),
-                    )
-                })?;
-                self.set_checkpoint_token(new_token.to_string());
+                    let new_token = response.checkpoint_token().ok_or_else(|| {
+                        DurableError::checkpoint_failed(
+                            name,
+                            std::io::Error::new(
+                                std::io::ErrorKind::InvalidData,
+                                "checkpoint response missing checkpoint_token",
+                            ),
+                        )
+                    })?;
+                    self.set_checkpoint_token(new_token.to_string());
+                }
             }
         }
 
