@@ -67,6 +67,7 @@ impl DurableContext {
     /// # Ok(())
     /// # }
     /// ```
+    #[allow(clippy::await_holding_lock)]
     pub async fn map<T, I, F, Fut>(
         &mut self,
         name: &str,
@@ -81,6 +82,14 @@ impl DurableContext {
         Fut: Future<Output = Result<T, DurableError>> + Send + 'static,
     {
         let op_id = self.replay_engine_mut().generate_operation_id();
+
+        let span = tracing::info_span!(
+            "durable_operation",
+            op.name = name,
+            op.type = "map",
+            op.id = %op_id,
+        );
+        let _guard = span.enter();
 
         // Replay path: check for completed outer map operation.
         if let Some(op) = self.replay_engine().check_result(&op_id) {

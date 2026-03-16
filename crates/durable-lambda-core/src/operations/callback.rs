@@ -52,12 +52,21 @@ impl DurableContext {
     /// # Ok(())
     /// # }
     /// ```
+    #[allow(clippy::await_holding_lock)]
     pub async fn create_callback(
         &mut self,
         name: &str,
         options: CallbackOptions,
     ) -> Result<CallbackHandle, DurableError> {
         let op_id = self.replay_engine_mut().generate_operation_id();
+
+        let span = tracing::info_span!(
+            "durable_operation",
+            op.name = name,
+            op.type = "callback",
+            op.id = %op_id,
+        );
+        let _guard = span.enter();
 
         // Check if operation exists in history (any status — not just completed).
         if let Some(op) = self.replay_engine().get_operation(&op_id) {

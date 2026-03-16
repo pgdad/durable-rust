@@ -46,8 +46,17 @@ impl DurableContext {
     /// # Ok(())
     /// # }
     /// ```
+    #[allow(clippy::await_holding_lock)]
     pub async fn wait(&mut self, name: &str, duration_secs: i32) -> Result<(), DurableError> {
         let op_id = self.replay_engine_mut().generate_operation_id();
+
+        let span = tracing::info_span!(
+            "durable_operation",
+            op.name = name,
+            op.type = "wait",
+            op.id = %op_id,
+        );
+        let _guard = span.enter();
 
         // Check if we have a completed result (replay path).
         if self.replay_engine().check_result(&op_id).is_some() {

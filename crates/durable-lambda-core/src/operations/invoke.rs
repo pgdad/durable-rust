@@ -62,6 +62,7 @@ impl DurableContext {
     /// # Ok(())
     /// # }
     /// ```
+    #[allow(clippy::await_holding_lock)]
     pub async fn invoke<T, P>(
         &mut self,
         name: &str,
@@ -73,6 +74,14 @@ impl DurableContext {
         P: Serialize,
     {
         let op_id = self.replay_engine_mut().generate_operation_id();
+
+        let span = tracing::info_span!(
+            "durable_operation",
+            op.name = name,
+            op.type = "invoke",
+            op.id = %op_id,
+        );
+        let _guard = span.enter();
 
         // Replay path: check for completed result (SUCCEEDED/FAILED/TIMED_OUT/etc).
         if let Some(op) = self.replay_engine().check_result(&op_id) {
