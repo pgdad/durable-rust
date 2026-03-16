@@ -9,6 +9,7 @@
 //! 3. Checkpoint SUCCEED, FAIL, or RETRY (sync)
 
 use std::future::Future;
+use std::time::Duration;
 
 use aws_sdk_lambda::types::{
     ErrorObject, OperationAction, OperationStatus, OperationType, OperationUpdate,
@@ -213,14 +214,31 @@ impl DurableContext {
         // Execute the closure in a spawned task to catch panics.
         // tokio::spawn catches panics as JoinError, converting them to
         // DurableError::CheckpointFailed rather than unwinding through the caller.
+        // When timeout_seconds is configured, wrap execution in tokio::time::timeout
+        // and abort the task if the deadline is exceeded.
         let name_owned = name.to_string();
-        let handle = tokio::spawn(async move { f().await });
-        let user_result = handle.await.map_err(|join_err| {
-            DurableError::checkpoint_failed(
-                &name_owned,
-                std::io::Error::other(format!("step closure panicked: {join_err}")),
-            )
-        })?;
+        let mut handle = tokio::spawn(async move { f().await });
+        let user_result = if let Some(secs) = options.get_timeout_seconds() {
+            match tokio::time::timeout(Duration::from_secs(secs), &mut handle).await {
+                Ok(join_result) => join_result.map_err(|join_err| {
+                    DurableError::checkpoint_failed(
+                        &name_owned,
+                        std::io::Error::other(format!("step closure panicked: {join_err}")),
+                    )
+                })?,
+                Err(_elapsed) => {
+                    handle.abort();
+                    return Err(DurableError::step_timeout(&name_owned));
+                }
+            }
+        } else {
+            handle.await.map_err(|join_err| {
+                DurableError::checkpoint_failed(
+                    &name_owned,
+                    std::io::Error::other(format!("step closure panicked: {join_err}")),
+                )
+            })?
+        };
 
         // Checkpoint the result.
         match &user_result {
@@ -262,7 +280,15 @@ impl DurableContext {
             Err(error) => {
                 let max_retries = options.get_retries().unwrap_or(0);
 
-                if (current_attempt as u32) <= max_retries {
+                // Check retry predicate first — false means fail immediately without
+                // consuming the retry budget (FEAT-14).
+                let should_retry = if let Some(pred) = options.get_retry_if() {
+                    pred(error as &dyn std::any::Any)
+                } else {
+                    true // no predicate — retry all errors (backward compatible)
+                };
+
+                if should_retry && (current_attempt as u32) <= max_retries {
                     // Retries remain — checkpoint RETRY and signal exit.
                     let delay = options.get_backoff_seconds().unwrap_or(0);
                     let aws_step_options = aws_sdk_lambda::types::StepOptions::builder()
@@ -1198,6 +1224,180 @@ mod tests {
         ) -> Result<GetDurableExecutionStateOutput, DurableError> {
             Ok(GetDurableExecutionStateOutput::builder().build().unwrap())
         }
+    }
+
+    // --- Task 2 TDD RED: timeout and conditional retry integration ---
+
+    #[tokio::test]
+    async fn test_step_timeout_aborts_slow_closure() {
+        let (backend, _calls) = MockBackend::new("new-token");
+        let backend = Arc::new(backend);
+
+        let mut ctx = DurableContext::new(
+            backend,
+            "arn:test".to_string(),
+            "initial-token".to_string(),
+            vec![],
+            None,
+        )
+        .await
+        .unwrap();
+
+        let options = StepOptions::new().timeout_seconds(1);
+        let result: Result<Result<i32, String>, DurableError> = ctx
+            .step_with_options("slow_step", options, || async {
+                tokio::time::sleep(std::time::Duration::from_secs(60)).await;
+                Ok::<i32, String>(42)
+            })
+            .await;
+
+        let err = result.unwrap_err();
+        match err {
+            DurableError::StepTimeout { operation_name } => {
+                assert_eq!(operation_name, "slow_step");
+            }
+            other => panic!("expected StepTimeout, got {other:?}"),
+        }
+    }
+
+    #[tokio::test]
+    async fn test_step_timeout_does_not_fire_when_fast_enough() {
+        let (backend, _calls) = MockBackend::new("new-token");
+        let backend = Arc::new(backend);
+
+        let mut ctx = DurableContext::new(
+            backend,
+            "arn:test".to_string(),
+            "initial-token".to_string(),
+            vec![],
+            None,
+        )
+        .await
+        .unwrap();
+
+        let options = StepOptions::new().timeout_seconds(5);
+        let result: Result<i32, String> = ctx
+            .step_with_options("fast_step", options, || async { Ok(99) })
+            .await
+            .unwrap();
+
+        assert_eq!(result.unwrap(), 99);
+    }
+
+    #[tokio::test]
+    async fn test_retry_if_false_causes_immediate_fail_no_retry_budget_consumed() {
+        let (backend, calls) = MockBackend::new("new-token");
+        let backend = Arc::new(backend);
+
+        let mut ctx = DurableContext::new(
+            backend,
+            "arn:test".to_string(),
+            "initial-token".to_string(),
+            vec![],
+            None,
+        )
+        .await
+        .unwrap();
+
+        // retry_if returns false — should skip retry and send FAIL checkpoint.
+        let options = StepOptions::new().retries(3).retry_if(|_e: &String| false);
+
+        let result: Result<Result<i32, String>, DurableError> = ctx
+            .step_with_options("no_retry_step", options, || async {
+                Err("permanent error".to_string())
+            })
+            .await;
+
+        // Should return Ok(Err(user_error)) — FAIL, not retry.
+        let inner = result.unwrap();
+        let user_error = inner.unwrap_err();
+        assert_eq!(user_error, "permanent error");
+
+        let captured = calls.lock().await;
+        // START + FAIL — no RETRY despite having 3 retries configured.
+        assert_eq!(
+            captured.len(),
+            2,
+            "expected START + FAIL, got {}",
+            captured.len()
+        );
+        assert_eq!(
+            captured[1].updates[0].action(),
+            &aws_sdk_lambda::types::OperationAction::Fail,
+            "second checkpoint should be FAIL not RETRY"
+        );
+    }
+
+    #[tokio::test]
+    async fn test_retry_if_true_retries_normally() {
+        let (backend, calls) = MockBackend::new("new-token");
+        let backend = Arc::new(backend);
+
+        let mut ctx = DurableContext::new(
+            backend,
+            "arn:test".to_string(),
+            "initial-token".to_string(),
+            vec![],
+            None,
+        )
+        .await
+        .unwrap();
+
+        // retry_if returns true — should retry (same as no predicate).
+        let options = StepOptions::new().retries(3).retry_if(|_e: &String| true);
+
+        let result: Result<Result<i32, String>, DurableError> = ctx
+            .step_with_options("retry_true_step", options, || async {
+                Err("transient error".to_string())
+            })
+            .await;
+
+        let err = result.unwrap_err();
+        match err {
+            DurableError::StepRetryScheduled { .. } => {}
+            other => panic!("expected StepRetryScheduled, got {other:?}"),
+        }
+
+        let captured = calls.lock().await;
+        assert_eq!(captured.len(), 2, "expected START + RETRY");
+        assert_eq!(
+            captured[1].updates[0].action(),
+            &aws_sdk_lambda::types::OperationAction::Retry,
+        );
+    }
+
+    #[tokio::test]
+    async fn test_no_retry_if_retries_all_errors_backward_compatible() {
+        let (backend, calls) = MockBackend::new("new-token");
+        let backend = Arc::new(backend);
+
+        let mut ctx = DurableContext::new(
+            backend,
+            "arn:test".to_string(),
+            "initial-token".to_string(),
+            vec![],
+            None,
+        )
+        .await
+        .unwrap();
+
+        // No retry_if — should retry all errors (backward compatible).
+        let options = StepOptions::new().retries(2);
+
+        let result: Result<Result<i32, String>, DurableError> = ctx
+            .step_with_options("compat_retry_step", options, || async {
+                Err("any error".to_string())
+            })
+            .await;
+
+        let err = result.unwrap_err();
+        match err {
+            DurableError::StepRetryScheduled { .. } => {}
+            other => panic!("expected StepRetryScheduled, got {other:?}"),
+        }
+
+        let captured = calls.lock().await;
+        assert_eq!(captured.len(), 2, "expected START + RETRY");
     }
 
     #[tokio::test]
