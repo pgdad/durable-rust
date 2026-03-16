@@ -158,7 +158,7 @@ Plans:
 | 2. Boundary & Replay Engine Tests | 3/3 | Complete   | 2026-03-16 |
 | 3. Shared Context Trait | 3/3 | Complete   | 2026-03-16 |
 | 4. Input Validation & Error Codes | 3/3 | Complete   | 2026-03-16 |
-| 5. Step Timeout & Conditional Retry | 0/3 | Planned | - |
+| 5. Step Timeout & Conditional Retry | 1/3 | In Progress|  |
 | 6. Observability & Batch Checkpoint | 0/TBD | Not started | - |
 | 7. Saga / Compensation Pattern | 0/TBD | Not started | - |
 | 8. Macro & Builder Improvements | 0/TBD | Not started | - |

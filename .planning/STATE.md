@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-last_updated: "2026-03-16T17:10:12.309Z"
+last_updated: "2026-03-16T17:38:24.035Z"
 progress:
   total_phases: 9
   completed_phases: 4
-  total_plans: 12
-  completed_plans: 12
+  total_plans: 15
+  completed_plans: 13
 ---
 
 # STATE.md
@@ -19,11 +19,11 @@ progress:
 **Current Focus**: v2 milestone — production hardening, test coverage, developer experience
 
 ## Current Position
-- **Phase**: 02-boundary-replay-engine-tests
-- **Plan**: 02-03 complete (phase complete)
+- **Phase**: 05-step-timeout-conditional-retry
+- **Plan**: 05-01 complete
 - **Status**: Executing
-- **Last Activity**: 2026-03-16 — Completed 02-03 replay engine robustness tests (TEST-19, TEST-20, TEST-21, TEST-22)
-- **Progress**: [██████████] 100% 12/12 plans complete
+- **Last Activity**: 2026-03-16 — Completed 05-01 step timeout and conditional retry infrastructure
+- **Progress**: [█████████░] 87% 13/15 plans complete
 
 ## Performance Metrics
 - **Total Plans**: TBD (phases not yet planned into individual plans)
@@ -65,6 +65,10 @@ progress:
 - [02-02] values.sort() required before assert_eq! in test_parallel_in_child_in_parallel — tokio::spawn execution order is non-deterministic
 - [02-03] History gap test uses only 2 steps — after step2 executes (gap), engine transitions to Executing mode; step3 would not replay from pre-loaded history; documented as defined behavior
 - [02-03] CheckpointCall struct has no client_token field in mock_backend.rs — plan description was inaccurate; test written against the actual struct
+- [05-01] Used RetryPredicate type alias for Arc<dyn Fn(&dyn Any) -> bool + Send + Sync> to satisfy clippy::type_complexity
+- [05-01] retry_if predicate returning false causes immediate FAIL without consuming retry budget (FEAT-14 — predicate checked before retry budget)
+- [05-01] No retry_if predicate defaults to retrying all errors (backward compatible behavior preserved)
+- [05-01] StepTimeout uses tokio::time::timeout on &mut JoinHandle with handle.abort() on expiry; no checkpoint sent on timeout
 
 ### Pending Todos
 - None — ready to begin Phase 1 execution
@@ -73,6 +77,6 @@ progress:
 - None identified
 
 ## Session Continuity
-- **Last Session**: 2026-03-16 — Completed 02-03 replay engine robustness tests (TEST-19, TEST-20, TEST-21, TEST-22)
-- **Stopped At**: Completed 02-boundary-replay-engine-tests/02-03-PLAN.md
-- **Next Action**: Continue with remaining phases per ROADMAP.md
+- **Last Session**: 2026-03-16 — Completed 05-01 step timeout and conditional retry (FEAT-09, FEAT-10, FEAT-11, FEAT-13, FEAT-14, FEAT-15)
+- **Stopped At**: Completed 05-step-timeout-conditional-retry/05-01-PLAN.md
+- **Next Action**: Continue with Plan 05-02 per ROADMAP.md

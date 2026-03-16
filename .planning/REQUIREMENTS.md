@@ -56,15 +56,15 @@
 - [x] **FEAT-08**: Checkpoint token None assumption replaced with defensive error handling
 
 ### Features — Step Timeout
-- [ ] **FEAT-09**: StepOptions gains `.timeout_seconds(u64)` field
-- [ ] **FEAT-10**: Step closure wrapped in tokio::time::timeout when timeout set
-- [ ] **FEAT-11**: Step exceeding timeout returns DurableError::step_timeout with operation name
+- [x] **FEAT-09**: StepOptions gains `.timeout_seconds(u64)` field
+- [x] **FEAT-10**: Step closure wrapped in tokio::time::timeout when timeout set
+- [x] **FEAT-11**: Step exceeding timeout returns DurableError::step_timeout with operation name
 - [ ] **FEAT-12**: Tests for step timeout (exceeds, completes within, zero timeout)
 
 ### Features — Conditional Retry
-- [ ] **FEAT-13**: StepOptions gains `.retry_if(Fn(&E) -> bool)` predicate
-- [ ] **FEAT-14**: Retry only when predicate returns true; non-matching errors fail immediately
-- [ ] **FEAT-15**: Default predicate (no retry_if) retries all errors (backward compatible)
+- [x] **FEAT-13**: StepOptions gains `.retry_if(Fn(&E) -> bool)` predicate
+- [x] **FEAT-14**: Retry only when predicate returns true; non-matching errors fail immediately
+- [x] **FEAT-15**: Default predicate (no retry_if) retries all errors (backward compatible)
 - [ ] **FEAT-16**: Tests for conditional retry (transient retries, non-transient fails fast)
 
 ### Features — Operation Observability
