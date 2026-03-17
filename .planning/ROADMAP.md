@@ -52,7 +52,11 @@ Plans:
   3. The 2 callee stub functions (`order-enrichment-lambda`, `fulfillment-lambda`) exist and are invocable
   4. `terraform destroy` removes all resources cleanly including ECR images (no orphaned resources in the AWS account)
   5. All resources carry project/milestone/style tags visible in the AWS console
-**Plans**: TBD
+**Plans:** 3 plans
+Plans:
+- [ ] 11-01-PLAN.md — Create all Terraform files (7 .tf + 2 Python stubs), terraform init + validate
+- [ ] 11-02-PLAN.md — Targeted apply of ECR + IAM resources (gateway for Phase 12 image push)
+- [ ] 11-03-PLAN.md — Full terraform apply + comprehensive smoke verification (after Phase 12 images)
 
 ### Phase 12: Docker Build Pipeline
 **Goal**: All 44 container images are built and pushed to ECR, with a repeatable one-command build that uses cargo-chef layer caching
@@ -128,7 +132,7 @@ Plans:
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 10. Tooling and Prerequisites | v1.1 | Complete    | 2026-03-17 | 2026-03-17 |
-| 11. Infrastructure | v1.1 | 0/TBD | Not started | - |
+| 11. Infrastructure | v1.1 | 0/3 | Not started | - |
 | 12. Docker Build Pipeline | v1.1 | 0/TBD | Not started | - |
 | 13. Test Harness | v1.1 | 0/TBD | Not started | - |
 | 14. Synchronous Operation Tests | v1.1 | 0/TBD | Not started | - |
