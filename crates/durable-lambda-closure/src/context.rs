@@ -10,8 +10,8 @@ use durable_lambda_core::context::DurableContext;
 use durable_lambda_core::error::DurableError;
 use durable_lambda_core::ops_trait::DurableContextOps;
 use durable_lambda_core::types::{
-    BatchResult, CallbackHandle, CallbackOptions, ExecutionMode, MapOptions, ParallelOptions,
-    StepOptions,
+    BatchResult, CallbackHandle, CallbackOptions, CompensationResult, ExecutionMode, MapOptions,
+    ParallelOptions, StepOptions,
 };
 use serde::de::DeserializeOwned;
 use serde::Serialize;
@@ -435,6 +435,99 @@ impl ClosureContext {
         self.inner.map(name, items, options, f).await
     }
 
+    /// Register a compensatable step.
+    ///
+    /// Executes the forward step and, on success, registers the compensation
+    /// closure for later rollback via [`run_compensations`](Self::run_compensations).
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// # async fn example(ctx: &mut durable_lambda_closure::context::ClosureContext) -> Result<(), durable_lambda_core::error::DurableError> {
+    /// let result: Result<i32, String> = ctx.step_with_compensation(
+    ///     "charge",
+    ///     || async { Ok(100) },
+    ///     |amount| async move { println!("Refunding {amount}"); Ok(()) },
+    /// ).await?;
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn step_with_compensation<T, E, F, Fut, G, GFut>(
+        &mut self,
+        name: &str,
+        forward_fn: F,
+        compensate_fn: G,
+    ) -> Result<Result<T, E>, DurableError>
+    where
+        T: Serialize + DeserializeOwned + Send + 'static,
+        E: Serialize + DeserializeOwned + Send + 'static,
+        F: FnOnce() -> Fut + Send + 'static,
+        Fut: Future<Output = Result<T, E>> + Send + 'static,
+        G: FnOnce(T) -> GFut + Send + 'static,
+        GFut: Future<Output = Result<(), DurableError>> + Send + 'static,
+    {
+        self.inner
+            .step_with_compensation(name, forward_fn, compensate_fn)
+            .await
+    }
+
+    /// Register a compensatable step with options.
+    ///
+    /// Like [`step_with_compensation`](Self::step_with_compensation) but accepts
+    /// [`StepOptions`] for configuring retries, backoff, and timeouts on the forward step.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// # async fn example(ctx: &mut durable_lambda_closure::context::ClosureContext) -> Result<(), durable_lambda_core::error::DurableError> {
+    /// use durable_lambda_closure::prelude::*;
+    ///
+    /// let result: Result<String, String> = ctx.step_with_compensation_opts(
+    ///     "book_hotel",
+    ///     StepOptions::new().retries(3),
+    ///     || async { Ok("BOOKING-123".to_string()) },
+    ///     |booking_id| async move { println!("Cancelling: {booking_id}"); Ok(()) },
+    /// ).await?;
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn step_with_compensation_opts<T, E, F, Fut, G, GFut>(
+        &mut self,
+        name: &str,
+        options: StepOptions,
+        forward_fn: F,
+        compensate_fn: G,
+    ) -> Result<Result<T, E>, DurableError>
+    where
+        T: Serialize + DeserializeOwned + Send + 'static,
+        E: Serialize + DeserializeOwned + Send + 'static,
+        F: FnOnce() -> Fut + Send + 'static,
+        Fut: Future<Output = Result<T, E>> + Send + 'static,
+        G: FnOnce(T) -> GFut + Send + 'static,
+        GFut: Future<Output = Result<(), DurableError>> + Send + 'static,
+    {
+        self.inner
+            .step_with_compensation_opts(name, options, forward_fn, compensate_fn)
+            .await
+    }
+
+    /// Execute all registered compensations in reverse registration order.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// # async fn example(ctx: &mut durable_lambda_closure::context::ClosureContext) -> Result<(), durable_lambda_core::error::DurableError> {
+    /// let result = ctx.run_compensations().await?;
+    /// if !result.all_succeeded {
+    ///     eprintln!("Some compensations failed");
+    /// }
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn run_compensations(&mut self) -> Result<CompensationResult, DurableError> {
+        self.inner.run_compensations().await
+    }
+
     /// Return the current execution mode (Replaying or Executing).
     ///
     /// # Examples
@@ -701,6 +794,48 @@ impl DurableContextOps for ClosureContext {
         Fut: Future<Output = Result<T, DurableError>> + Send + 'static,
     {
         self.inner.map(name, items, options, f)
+    }
+
+    fn step_with_compensation<T, E, F, Fut, G, GFut>(
+        &mut self,
+        name: &str,
+        forward_fn: F,
+        compensate_fn: G,
+    ) -> impl Future<Output = Result<Result<T, E>, DurableError>> + Send
+    where
+        T: Serialize + DeserializeOwned + Send + 'static,
+        E: Serialize + DeserializeOwned + Send + 'static,
+        F: FnOnce() -> Fut + Send + 'static,
+        Fut: Future<Output = Result<T, E>> + Send + 'static,
+        G: FnOnce(T) -> GFut + Send + 'static,
+        GFut: Future<Output = Result<(), DurableError>> + Send + 'static,
+    {
+        self.inner.step_with_compensation(name, forward_fn, compensate_fn)
+    }
+
+    fn step_with_compensation_opts<T, E, F, Fut, G, GFut>(
+        &mut self,
+        name: &str,
+        options: StepOptions,
+        forward_fn: F,
+        compensate_fn: G,
+    ) -> impl Future<Output = Result<Result<T, E>, DurableError>> + Send
+    where
+        T: Serialize + DeserializeOwned + Send + 'static,
+        E: Serialize + DeserializeOwned + Send + 'static,
+        F: FnOnce() -> Fut + Send + 'static,
+        Fut: Future<Output = Result<T, E>> + Send + 'static,
+        G: FnOnce(T) -> GFut + Send + 'static,
+        GFut: Future<Output = Result<(), DurableError>> + Send + 'static,
+    {
+        self.inner
+            .step_with_compensation_opts(name, options, forward_fn, compensate_fn)
+    }
+
+    fn run_compensations(
+        &mut self,
+    ) -> impl Future<Output = Result<CompensationResult, DurableError>> + Send {
+        self.inner.run_compensations()
     }
 
     fn callback_result<T: DeserializeOwned>(

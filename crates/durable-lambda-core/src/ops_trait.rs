@@ -16,8 +16,8 @@ use serde::Serialize;
 use crate::context::DurableContext;
 use crate::error::DurableError;
 use crate::types::{
-    BatchResult, CallbackHandle, CallbackOptions, ExecutionMode, MapOptions, ParallelOptions,
-    StepOptions,
+    BatchResult, CallbackHandle, CallbackOptions, CompensationResult, ExecutionMode, MapOptions,
+    ParallelOptions, StepOptions,
 };
 
 /// Shared interface for all durable context types.
@@ -162,6 +162,55 @@ pub trait DurableContextOps {
         I: Send + 'static,
         F: FnOnce(I, DurableContext) -> Fut + Send + 'static + Clone,
         Fut: Future<Output = Result<T, DurableError>> + Send + 'static;
+
+    // -------------------------------------------------------------------------
+    // Compensation (saga pattern) methods
+    // -------------------------------------------------------------------------
+
+    /// Execute a forward step and register a compensation closure on success.
+    ///
+    /// See [`DurableContext::step_with_compensation`](crate::context::DurableContext) for full
+    /// documentation.
+    fn step_with_compensation<T, E, F, Fut, G, GFut>(
+        &mut self,
+        name: &str,
+        forward_fn: F,
+        compensate_fn: G,
+    ) -> impl Future<Output = Result<Result<T, E>, DurableError>> + Send
+    where
+        T: Serialize + DeserializeOwned + Send + 'static,
+        E: Serialize + DeserializeOwned + Send + 'static,
+        F: FnOnce() -> Fut + Send + 'static,
+        Fut: Future<Output = Result<T, E>> + Send + 'static,
+        G: FnOnce(T) -> GFut + Send + 'static,
+        GFut: Future<Output = Result<(), DurableError>> + Send + 'static;
+
+    /// Execute a forward step (with options) and register a compensation closure on success.
+    ///
+    /// See [`DurableContext::step_with_compensation_opts`](crate::context::DurableContext) for full
+    /// documentation.
+    fn step_with_compensation_opts<T, E, F, Fut, G, GFut>(
+        &mut self,
+        name: &str,
+        options: StepOptions,
+        forward_fn: F,
+        compensate_fn: G,
+    ) -> impl Future<Output = Result<Result<T, E>, DurableError>> + Send
+    where
+        T: Serialize + DeserializeOwned + Send + 'static,
+        E: Serialize + DeserializeOwned + Send + 'static,
+        F: FnOnce() -> Fut + Send + 'static,
+        Fut: Future<Output = Result<T, E>> + Send + 'static,
+        G: FnOnce(T) -> GFut + Send + 'static,
+        GFut: Future<Output = Result<(), DurableError>> + Send + 'static;
+
+    /// Execute all registered compensations in reverse registration order.
+    ///
+    /// See [`DurableContext::run_compensations`](crate::context::DurableContext) for full
+    /// documentation.
+    fn run_compensations(
+        &mut self,
+    ) -> impl Future<Output = Result<CompensationResult, DurableError>> + Send;
 
     // -------------------------------------------------------------------------
     // Sync operation method
@@ -337,6 +386,47 @@ impl DurableContextOps for DurableContext {
         Fut: Future<Output = Result<T, DurableError>> + Send + 'static,
     {
         DurableContext::map(self, name, items, options, f)
+    }
+
+    fn step_with_compensation<T, E, F, Fut, G, GFut>(
+        &mut self,
+        name: &str,
+        forward_fn: F,
+        compensate_fn: G,
+    ) -> impl Future<Output = Result<Result<T, E>, DurableError>> + Send
+    where
+        T: Serialize + DeserializeOwned + Send + 'static,
+        E: Serialize + DeserializeOwned + Send + 'static,
+        F: FnOnce() -> Fut + Send + 'static,
+        Fut: Future<Output = Result<T, E>> + Send + 'static,
+        G: FnOnce(T) -> GFut + Send + 'static,
+        GFut: Future<Output = Result<(), DurableError>> + Send + 'static,
+    {
+        DurableContext::step_with_compensation(self, name, forward_fn, compensate_fn)
+    }
+
+    fn step_with_compensation_opts<T, E, F, Fut, G, GFut>(
+        &mut self,
+        name: &str,
+        options: StepOptions,
+        forward_fn: F,
+        compensate_fn: G,
+    ) -> impl Future<Output = Result<Result<T, E>, DurableError>> + Send
+    where
+        T: Serialize + DeserializeOwned + Send + 'static,
+        E: Serialize + DeserializeOwned + Send + 'static,
+        F: FnOnce() -> Fut + Send + 'static,
+        Fut: Future<Output = Result<T, E>> + Send + 'static,
+        G: FnOnce(T) -> GFut + Send + 'static,
+        GFut: Future<Output = Result<(), DurableError>> + Send + 'static,
+    {
+        DurableContext::step_with_compensation_opts(self, name, options, forward_fn, compensate_fn)
+    }
+
+    fn run_compensations(
+        &mut self,
+    ) -> impl Future<Output = Result<CompensationResult, DurableError>> + Send {
+        DurableContext::run_compensations(self)
     }
 
     fn callback_result<T: DeserializeOwned>(
