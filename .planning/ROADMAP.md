@@ -157,7 +157,10 @@ Plans:
   5. Migration guide has determinism anti-patterns section
   6. All Cargo.toml files have description, keywords, and categories fields
   7. CLAUDE.md documents the wrapper crate duplication pattern (or its elimination if Phase 3 completed)
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 09-01-PLAN.md — README additions (determinism rules, error handling, troubleshooting FAQ, contributing link, parallel boxing comment)
+- [ ] 09-02-PLAN.md — Migration guide, rustdoc (BatchResult + CallbackHandle), CLAUDE.md update, Cargo.toml metadata
 
 ## Progress
 
@@ -171,4 +174,4 @@ Plans:
 | 6. Observability & Batch Checkpoint | 2/2 | Complete   | 2026-03-16 |
 | 7. Saga / Compensation Pattern | 2/2 | Complete   | 2026-03-17 |
 | 8. Macro & Builder Improvements | 2/2 | Complete   | 2026-03-17 |
-| 9. Documentation Overhaul | 0/TBD | Not started | - |
+| 9. Documentation Overhaul | 0/2 | Planned | - |
