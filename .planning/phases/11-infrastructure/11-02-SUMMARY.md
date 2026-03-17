@@ -57,7 +57,7 @@ completed: 2026-03-17
 - **Duration:** 6 min
 - **Started:** 2026-03-17T15:20:14Z
 - **Completed:** 2026-03-17T15:26:00Z
-- **Tasks:** 1 completed (Task 2 is a human-verify checkpoint, pending verification)
+- **Tasks:** 2 completed (Task 1 auto, Task 2 human-verify approved)
 - **Files modified:** 1 created (scripts/deploy-ecr.sh)
 
 ## Accomplishments
@@ -72,8 +72,9 @@ completed: 2026-03-17
 Each task was committed atomically:
 
 1. **Task 1: Create deploy script and run targeted terraform apply** - `07c953b` (feat)
+2. **Task 2: Verify ECR and IAM resources in AWS** - human-verify checkpoint (approved by user)
 
-**Plan metadata:** (pending — will commit after human-verify checkpoint)
+**Plan metadata:** (committed after checkpoint approval)
 
 ## Files Created/Modified
 - `scripts/deploy-ecr.sh` - Bash script that runs verify-prerequisites.sh then targeted terraform apply for ECR + IAM resources, outputs ECR URL and suffix
@@ -90,7 +91,7 @@ None - plan executed exactly as written.
 None - prerequisites check passed, ADFS credentials valid, terraform apply succeeded on first attempt with 6 resources created in ~2 seconds.
 
 ## User Setup Required
-None - all automation. Human verification of AWS resources is requested at checkpoint Task 2.
+None - no external service configuration required. Human verification at Task 2 checkpoint confirmed ECR repo and IAM role exist and are correctly configured.
 
 ## Next Phase Readiness
 - ECR repository `dr-examples-c351` is ready for image pushes from Phase 12
@@ -104,6 +105,7 @@ All artifacts verified:
 - `scripts/deploy-ecr.sh` — exists and executable
 - `11-02-SUMMARY.md` — this file
 - Commit `07c953b` — confirmed in git log
+- Task 2 checkpoint — approved by user (ECR repo dr-examples-c351 and IAM role dr-lambda-exec-c351 confirmed live in us-east-2)
 
 ---
 *Phase: 11-infrastructure*
