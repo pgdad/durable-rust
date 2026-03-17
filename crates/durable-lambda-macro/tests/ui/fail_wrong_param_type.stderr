@@ -1,0 +1,5 @@
+error: #[durable_execution] second parameter must be DurableContext — expected: async fn handler(event: serde_json::Value, ctx: DurableContext) -> Result<serde_json::Value, DurableError>
+ --> tests/ui/fail_wrong_param_type.rs:4:29
+  |
+4 | async fn handler(x: i32, y: i32) -> Result<serde_json::Value, durable_lambda_core::error::DurableError> {
+  |                             ^^^
