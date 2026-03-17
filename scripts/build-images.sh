@@ -136,8 +136,8 @@ IMAGE_COUNT=$(aws ecr list-images \
   --profile "$PROFILE" \
   --region "$REGION" \
   --repository-name "$(basename "$ECR_URL")" \
-  --query 'length(imageIds)' \
-  --output text)
+  --query 'imageIds[*].imageTag' \
+  --output text | tr '\t' '\n' | grep -v '^$' | sort -u | wc -l)
 echo "ECR image count: $IMAGE_COUNT (expected: 44)"
 echo ""
 
