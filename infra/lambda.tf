@@ -13,29 +13,29 @@ locals {
     "closure-replay-safe-logging" = { style = "closure", package = "closure-style-example" }
     "closure-combined-workflow"   = { style = "closure", package = "closure-style-example" }
     # Macro style
-    "macro-basic-steps"           = { style = "macro", package = "macro-style-example" }
-    "macro-step-retries"          = { style = "macro", package = "macro-style-example" }
-    "macro-typed-errors"          = { style = "macro", package = "macro-style-example" }
-    "macro-waits"                 = { style = "macro", package = "macro-style-example" }
-    "macro-callbacks"             = { style = "macro", package = "macro-style-example" }
-    "macro-invoke"                = { style = "macro", package = "macro-style-example" }
-    "macro-parallel"              = { style = "macro", package = "macro-style-example" }
-    "macro-map"                   = { style = "macro", package = "macro-style-example" }
-    "macro-child-contexts"        = { style = "macro", package = "macro-style-example" }
-    "macro-replay-safe-logging"   = { style = "macro", package = "macro-style-example" }
-    "macro-combined-workflow"     = { style = "macro", package = "macro-style-example" }
+    "macro-basic-steps"         = { style = "macro", package = "macro-style-example" }
+    "macro-step-retries"        = { style = "macro", package = "macro-style-example" }
+    "macro-typed-errors"        = { style = "macro", package = "macro-style-example" }
+    "macro-waits"               = { style = "macro", package = "macro-style-example" }
+    "macro-callbacks"           = { style = "macro", package = "macro-style-example" }
+    "macro-invoke"              = { style = "macro", package = "macro-style-example" }
+    "macro-parallel"            = { style = "macro", package = "macro-style-example" }
+    "macro-map"                 = { style = "macro", package = "macro-style-example" }
+    "macro-child-contexts"      = { style = "macro", package = "macro-style-example" }
+    "macro-replay-safe-logging" = { style = "macro", package = "macro-style-example" }
+    "macro-combined-workflow"   = { style = "macro", package = "macro-style-example" }
     # Trait style
-    "trait-basic-steps"           = { style = "trait", package = "trait-style-example" }
-    "trait-step-retries"          = { style = "trait", package = "trait-style-example" }
-    "trait-typed-errors"          = { style = "trait", package = "trait-style-example" }
-    "trait-waits"                 = { style = "trait", package = "trait-style-example" }
-    "trait-callbacks"             = { style = "trait", package = "trait-style-example" }
-    "trait-invoke"                = { style = "trait", package = "trait-style-example" }
-    "trait-parallel"              = { style = "trait", package = "trait-style-example" }
-    "trait-map"                   = { style = "trait", package = "trait-style-example" }
-    "trait-child-contexts"        = { style = "trait", package = "trait-style-example" }
-    "trait-replay-safe-logging"   = { style = "trait", package = "trait-style-example" }
-    "trait-combined-workflow"     = { style = "trait", package = "trait-style-example" }
+    "trait-basic-steps"         = { style = "trait", package = "trait-style-example" }
+    "trait-step-retries"        = { style = "trait", package = "trait-style-example" }
+    "trait-typed-errors"        = { style = "trait", package = "trait-style-example" }
+    "trait-waits"               = { style = "trait", package = "trait-style-example" }
+    "trait-callbacks"           = { style = "trait", package = "trait-style-example" }
+    "trait-invoke"              = { style = "trait", package = "trait-style-example" }
+    "trait-parallel"            = { style = "trait", package = "trait-style-example" }
+    "trait-map"                 = { style = "trait", package = "trait-style-example" }
+    "trait-child-contexts"      = { style = "trait", package = "trait-style-example" }
+    "trait-replay-safe-logging" = { style = "trait", package = "trait-style-example" }
+    "trait-combined-workflow"   = { style = "trait", package = "trait-style-example" }
     # Builder style
     "builder-basic-steps"         = { style = "builder", package = "builder-style-example" }
     "builder-step-retries"        = { style = "builder", package = "builder-style-example" }

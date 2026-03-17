@@ -10,3 +10,9 @@
 # OS
 .DS_Store
 Thumbs.db
+
+# Terraform
+infra/.terraform/
+infra/terraform.tfstate
+infra/terraform.tfstate.backup
+infra/stubs/*.zip
