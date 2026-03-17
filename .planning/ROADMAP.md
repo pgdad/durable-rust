@@ -166,6 +166,6 @@ Plans:
 | 4. Input Validation & Error Codes | 3/3 | Complete   | 2026-03-16 |
 | 5. Step Timeout & Conditional Retry | 3/3 | Complete   | 2026-03-16 |
 | 6. Observability & Batch Checkpoint | 2/2 | Complete   | 2026-03-16 |
-| 7. Saga / Compensation Pattern | 0/2 | Planned | - |
+| 7. Saga / Compensation Pattern | 1/2 | In Progress|  |
 | 8. Macro & Builder Improvements | 0/TBD | Not started | - |
 | 9. Documentation Overhaul | 0/TBD | Not started | - |

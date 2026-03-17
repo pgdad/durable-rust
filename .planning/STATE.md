@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-last_updated: "2026-03-16T19:24:59.109Z"
+last_updated: "2026-03-17T04:59:04.347Z"
 progress:
   total_phases: 9
   completed_phases: 6
-  total_plans: 17
-  completed_plans: 17
+  total_plans: 19
+  completed_plans: 18
 ---
 
 # STATE.md
@@ -19,11 +19,11 @@ progress:
 **Current Focus**: v2 milestone — production hardening, test coverage, developer experience
 
 ## Current Position
-- **Phase**: 06-observability-batch-checkpoint
-- **Plan**: 06-02 complete (phase complete)
-- **Status**: Complete
-- **Last Activity**: 2026-03-16 — Completed 06-02 batch checkpoint API
-- **Progress**: [██████████] 100% 17/17 plans complete
+- **Phase**: 07-saga-compensation-pattern
+- **Plan**: 07-01 complete
+- **Status**: In Progress
+- **Last Activity**: 2026-03-17 — Completed 07-01 saga/compensation core implementation
+- **Progress**: [██████████] 95% 18/19 plans complete
 
 ## Performance Metrics
 - **Total Plans**: TBD (phases not yet planned into individual plans)
@@ -80,6 +80,10 @@ progress:
 - [06-02] RETRY in batch mode auto-flushes before returning WaitSuspended — suspension requires checkpoint persisted before Lambda exits; deferred RETRY would lose the update
 - [06-02] batch_checkpoint() default method delegates to checkpoint() — RealBackend inherits automatically, MockBackend overrides for distinct tracking
 - [06-02] MockBackend::new() return type preserved as 3-tuple; batch_call_counter() accessor added — avoids breaking all existing test callers
+- [07-01] CompensationRecord is not Debug — contains a closure (CompensateFn); child contexts start with empty compensations (not inherited)
+- [07-01] run_compensations uses continue-on-error semantics — all compensations attempt even when one fails; per-item status captured in CompensationResult
+- [07-01] Partial rollback resume via replay engine op_id tracking — completed compensations skip closure execution on re-invocation
+- [07-01] CompensateFn wraps typed G: FnOnce(T) -> GFut with JSON serialization/deserialization for type erasure; sub_type="Compensation" for checkpoint protocol
 
 ### Pending Todos
 - None — ready to begin Phase 1 execution
@@ -88,6 +92,6 @@ progress:
 - None identified
 
 ## Session Continuity
-- **Last Session**: 2026-03-16 — Completed 06-02 batch checkpoint API (accumulate-then-flush, 10->1 call reduction)
-- **Stopped At**: Completed 06-observability-batch-checkpoint/06-02-PLAN.md
-- **Next Action**: All 17 plans complete — review ROADMAP.md for any remaining phases
+- **Last Session**: 2026-03-17 — Completed 07-01 saga/compensation core: step_with_compensation, run_compensations, CompensationFailed error variant, 19 unit tests
+- **Stopped At**: Completed 07-saga-compensation-pattern/07-01-PLAN.md
+- **Next Action**: Execute 07-02 (integration/e2e tests for compensation pattern)

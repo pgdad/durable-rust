@@ -80,9 +80,9 @@
 - [x] **FEAT-24**: Tests verify batch reduces checkpoint call count
 
 ### Features — Saga / Compensation Pattern
-- [ ] **FEAT-25**: ctx.step_with_compensation(name, forward_fn, compensate_fn)
-- [ ] **FEAT-26**: Compensation closures execute in reverse order on workflow failure
-- [ ] **FEAT-27**: Compensation execution is itself checkpointed (durable rollback)
+- [x] **FEAT-25**: ctx.step_with_compensation(name, forward_fn, compensate_fn)
+- [x] **FEAT-26**: Compensation closures execute in reverse order on workflow failure
+- [x] **FEAT-27**: Compensation execution is itself checkpointed (durable rollback)
 - [ ] **FEAT-28**: Tests for compensation order, compensation failure, partial rollback
 
 ### Features — Macro Type Validation
