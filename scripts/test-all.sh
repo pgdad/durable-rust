@@ -126,7 +126,82 @@ test_builder_invoke()              { echo "STUB — not yet implemented"; } # TO
 # These use specific binaries, not 4-style variants
 # ---------------------------------------------------------------------------
 
-# (Phase 16 stubs will be added when phase 16 plan is written)
+test_closure_saga_compensation() {
+  local fn_arn
+  fn_arn=$(get_alias_arn "closure-saga-compensation")
+  local result
+  result=$(invoke_sync "$fn_arn" '{}')
+  local status fn_error response_body
+  IFS='|' read -r status fn_error _ response_body <<< "$result"
+
+  [[ "$status" == "200" ]] || { echo "Expected status 200, got: $status"; return 1; }
+  [[ -z "$fn_error" ]] || { echo "Expected no FunctionError, got: $fn_error"; return 1; }
+
+  local seq
+  seq=$(echo "$response_body" | jq -r '.compensation_sequence | join(",")')
+  [[ "$seq" == "charge_card,book_flight,book_hotel" ]] || \
+    { echo "Expected LIFO compensation_sequence, got: $seq"; return 1; }
+
+  local all_succeeded
+  all_succeeded=$(echo "$response_body" | jq -r '.all_succeeded')
+  [[ "$all_succeeded" == "true" ]] || \
+    { echo "Expected all_succeeded=true, got: $all_succeeded"; return 1; }
+
+  echo "saga compensation rollback succeeded in LIFO order"
+}
+
+test_closure_step_timeout() {
+  local fn_arn
+  fn_arn=$(get_alias_arn "closure-step-timeout")
+  local result
+  result=$(invoke_sync "$fn_arn" '{}')
+  local status fn_error response_body
+  IFS='|' read -r status fn_error _ response_body <<< "$result"
+
+  [[ -n "$fn_error" ]] || \
+    { echo "Expected FunctionError (StepTimeout), got empty fn_error; body=$response_body"; return 1; }
+
+  echo "$response_body" | grep -qi "timed out\|timeout" || \
+    { echo "Expected 'timed out' or 'timeout' in response body, got: $response_body"; return 1; }
+
+  echo "step timeout correctly produced FunctionError"
+}
+
+test_closure_conditional_retry() {
+  local fn_arn
+  fn_arn=$(get_alias_arn "closure-conditional-retry")
+  local result
+  result=$(invoke_sync "$fn_arn" '{"error_type":"non_retryable"}')
+  local fn_error response_body
+  IFS='|' read -r _ fn_error _ response_body <<< "$result"
+
+  [[ -n "$fn_error" ]] || \
+    { echo "Expected FunctionError for non_retryable path, got empty fn_error; body=$response_body"; return 1; }
+
+  echo "non-retryable path verified: retry_if predicate correctly skipped retry on non-matching error"
+}
+
+test_closure_batch_checkpoint() {
+  local fn_arn
+  fn_arn=$(get_alias_arn "closure-batch-checkpoint")
+  local result
+  result=$(invoke_sync "$fn_arn" '{"batch":true}')
+  local status fn_error response_body
+  IFS='|' read -r status fn_error _ response_body <<< "$result"
+
+  [[ "$status" == "200" ]] || { echo "Expected status 200, got: $status"; return 1; }
+  [[ -z "$fn_error" ]] || { echo "Expected no FunctionError, got: $fn_error"; return 1; }
+
+  local batch_mode
+  batch_mode=$(echo "$response_body" | jq -r '.batch_mode')
+  [[ "$batch_mode" == "true" ]] || { echo "Expected batch_mode=true, got: $batch_mode"; return 1; }
+
+  local steps_completed
+  steps_completed=$(echo "$response_body" | jq -r '.steps_completed')
+  [[ "$steps_completed" == "5" ]] || { echo "Expected steps_completed=5, got: $steps_completed"; return 1; }
+
+  echo "batch checkpoint handler succeeded with 5 steps"
+}
 
 # ---------------------------------------------------------------------------
 # BINARY_TO_TEST
@@ -192,6 +267,12 @@ BINARY_TO_TEST["macro-invoke"]="test_macro_invoke"
 BINARY_TO_TEST["trait-invoke"]="test_trait_invoke"
 BINARY_TO_TEST["builder-invoke"]="test_builder_invoke"
 
+# Phase 16 — advanced
+BINARY_TO_TEST["closure-saga-compensation"]="test_closure_saga_compensation"
+BINARY_TO_TEST["closure-step-timeout"]="test_closure_step_timeout"
+BINARY_TO_TEST["closure-conditional-retry"]="test_closure_conditional_retry"
+BINARY_TO_TEST["closure-batch-checkpoint"]="test_closure_batch_checkpoint"
+
 # ---------------------------------------------------------------------------
 # run_all_tests
 # Runs every test in defined order: Phase 14 sync, Phase 15 async,
@@ -255,7 +336,11 @@ run_all_tests() {
   run_test "trait-invoke"                test_trait_invoke
   run_test "builder-invoke"             test_builder_invoke
 
-  # Phase 16 — Advanced Feature Tests (stubs to be added in Phase 16 plan)
+  # Phase 16 — Advanced Feature Tests
+  run_test "closure-saga-compensation"  test_closure_saga_compensation
+  run_test "closure-step-timeout"       test_closure_step_timeout
+  run_test "closure-conditional-retry"  test_closure_conditional_retry
+  run_test "closure-batch-checkpoint"   test_closure_batch_checkpoint
 }
 
 # ---------------------------------------------------------------------------

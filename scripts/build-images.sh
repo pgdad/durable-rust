@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # scripts/build-images.sh
-# Builds all 44 Lambda container images (4 crates x 11 binaries) and pushes
+# Builds all 48 Lambda container images (closure-style: 15 binaries; other 3 crates: 11 each) and pushes
 # them to ECR. The 4 crates are built concurrently as background jobs.
 #
 # Usage:
@@ -17,7 +17,7 @@ TF_DIR="$REPO_ROOT/infra"
 PROFILE="adfs"
 REGION="us-east-2"
 
-echo "=== Building and pushing all 44 Lambda images to ECR ==="
+echo "=== Building and pushing all 48 Lambda images to ECR ==="
 echo "Repo root: $REPO_ROOT"
 echo ""
 
@@ -54,11 +54,11 @@ docker pull public.ecr.aws/lambda/provided:al2023
 echo "Base images ready"
 
 # ---------------------------------------------------------------------------
-# Crate-to-binary mapping (all 44 binary names hardcoded to match lambda.tf)
+# Crate-to-binary mapping (all 48 binary names hardcoded to match lambda.tf)
 # ---------------------------------------------------------------------------
 declare -A CRATE_BINS
 
-CRATE_BINS["closure-style-example"]="closure-basic-steps closure-step-retries closure-typed-errors closure-waits closure-callbacks closure-invoke closure-parallel closure-map closure-child-contexts closure-replay-safe-logging closure-combined-workflow"
+CRATE_BINS["closure-style-example"]="closure-basic-steps closure-step-retries closure-typed-errors closure-waits closure-callbacks closure-invoke closure-parallel closure-map closure-child-contexts closure-replay-safe-logging closure-combined-workflow closure-saga-compensation closure-step-timeout closure-conditional-retry closure-batch-checkpoint"
 
 CRATE_BINS["macro-style-example"]="macro-basic-steps macro-step-retries macro-typed-errors macro-waits macro-callbacks macro-invoke macro-parallel macro-map macro-child-contexts macro-replay-safe-logging macro-combined-workflow"
 
@@ -74,7 +74,8 @@ build_and_push_crate() {
   local package="$1"
   local bins="$2"
   local count=0
-  local total=11
+  local total
+  total=$(echo "$bins" | wc -w)
 
   echo "[${package}] Starting — building ${total} images..."
 
@@ -92,7 +93,7 @@ build_and_push_crate() {
     echo "[${package}] Pushed ${bin_name} (${count}/${total})"
   done
 
-  echo "[${package}] Complete -- 11 images pushed"
+  echo "[${package}] Complete -- ${total} images pushed"
 }
 
 # Export variables and function so subshells (background jobs) can access them
@@ -130,7 +131,7 @@ fi
 # Final summary and ECR verification
 # ---------------------------------------------------------------------------
 echo ""
-echo "=== All 44 images pushed to ${ECR_URL} ==="
+echo "=== All 48 images pushed to ${ECR_URL} ==="
 echo ""
 echo "=== Verifying ECR image count ==="
 IMAGE_COUNT=$(aws ecr list-images \
@@ -139,14 +140,14 @@ IMAGE_COUNT=$(aws ecr list-images \
   --repository-name "$(basename "$ECR_URL")" \
   --query 'imageIds[*].imageTag' \
   --output text | tr '\t' '\n' | grep -v '^$' | sort -u | wc -l)
-echo "ECR image count: $IMAGE_COUNT (expected: 44)"
+echo "ECR image count: $IMAGE_COUNT (expected: 48)"
 echo ""
 
-if [[ "$IMAGE_COUNT" -ne 44 ]]; then
-  echo "WARNING: Expected 44 images in ECR but found ${IMAGE_COUNT}."
+if [[ "$IMAGE_COUNT" -ne 48 ]]; then
+  echo "WARNING: Expected 48 images in ECR but found ${IMAGE_COUNT}."
   echo "Some pushes may have failed silently. Check ECR console."
   exit 1
 fi
 
-echo "Build pipeline complete. All 44 Lambda images are ready for deployment."
+echo "Build pipeline complete. All 48 Lambda images are ready for deployment."
 echo "Next step: run scripts/deploy-lambdas.sh (Phase 11 Plan 03)"

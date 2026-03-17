@@ -12,6 +12,11 @@ locals {
     "closure-child-contexts"      = { style = "closure", package = "closure-style-example" }
     "closure-replay-safe-logging" = { style = "closure", package = "closure-style-example" }
     "closure-combined-workflow"   = { style = "closure", package = "closure-style-example" }
+    # Closure style — advanced features (Phase 16)
+    "closure-saga-compensation"   = { style = "closure", package = "closure-style-example" }
+    "closure-step-timeout"        = { style = "closure", package = "closure-style-example" }
+    "closure-conditional-retry"   = { style = "closure", package = "closure-style-example" }
+    "closure-batch-checkpoint"    = { style = "closure", package = "closure-style-example" }
     # Macro style
     "macro-basic-steps"         = { style = "macro", package = "macro-style-example" }
     "macro-step-retries"        = { style = "macro", package = "macro-style-example" }
