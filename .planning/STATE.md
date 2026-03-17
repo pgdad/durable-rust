@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-last_updated: "2026-03-17T05:46:13.668Z"
+last_updated: "2026-03-17T09:32:42.764Z"
 progress:
   total_phases: 9
   completed_phases: 8
-  total_plans: 21
-  completed_plans: 21
+  total_plans: 23
+  completed_plans: 22
 ---
 
 # STATE.md
@@ -19,11 +19,11 @@ progress:
 **Current Focus**: v2 milestone — production hardening, test coverage, developer experience
 
 ## Current Position
-- **Phase**: 08-macro-builder-improvements
-- **Plan**: 08-01 complete (08-02 also complete — Phase 08 complete)
+- **Phase**: 09-documentation-overhaul
+- **Plan**: 09-01 complete
 - **Status**: Complete
-- **Last Activity**: 2026-03-17 — Completed 08-01 macro type validation (DurableContext + Result checks + trybuild)
-- **Progress**: [██████████] 100% 21/21 plans complete
+- **Last Activity**: 2026-03-17 — Completed 09-01 README documentation overhaul (Determinism Rules, Error Handling, Troubleshooting FAQ, Contributing, Parallel boxing comment)
+- **Progress**: [██████████] 96% 22/23 plans complete
 
 ## Performance Metrics
 - **Total Plans**: TBD (phases not yet planned into individual plans)
@@ -90,6 +90,9 @@ progress:
 - [08-02] error_handler stored as Option<Box<dyn Fn(DurableError) -> DurableError + Send + Sync>>; applied after handler.await before Box<dyn Error> conversion — preserves DurableError type for transformation
 - [08-01] Last path segment ident used for DurableContext and Result type checking — tolerates fully qualified and bare type names in #[durable_execution] validation
 - [08-01] ReturnType::Default (implicit ()) rejected at fn_token span; FnArg::Receiver handled defensively with if let in validate_signature()
+- [09-01] Determinism Rules placed after Operations Guide (after Replay-Safe Logging), before Testing per user decision in CONTEXT.md
+- [09-01] Error Handling placed as standalone section between API Styles and Operations Guide — natural reading flow: API styles -> error model -> operations
+- [09-01] Troubleshooting placed before Container Deployment; Contributing placed before License
 
 ### Pending Todos
 - None — ready to begin Phase 1 execution
@@ -98,6 +101,6 @@ progress:
 - None identified
 
 ## Session Continuity
-- **Last Session**: 2026-03-17 — Completed 08-01 macro type validation (FEAT-29/30/31 — DurableContext+Result checks, 4 trybuild tests)
-- **Stopped At**: Completed 08-macro-builder-improvements/08-01-PLAN.md
-- **Next Action**: All plans in Phase 08 complete — proceed to Phase 09 if planned
+- **Last Session**: 2026-03-17 — Completed 09-01 README documentation overhaul (DOCS-01/02/03/04/07)
+- **Stopped At**: Completed 09-documentation-overhaul/09-01-PLAN.md
+- **Next Action**: Phase 09 Plan 01 complete — proceed to remaining Phase 09 plans if any

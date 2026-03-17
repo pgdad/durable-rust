@@ -174,4 +174,4 @@ Plans:
 | 6. Observability & Batch Checkpoint | 2/2 | Complete   | 2026-03-16 |
 | 7. Saga / Compensation Pattern | 2/2 | Complete   | 2026-03-17 |
 | 8. Macro & Builder Improvements | 2/2 | Complete   | 2026-03-17 |
-| 9. Documentation Overhaul | 0/2 | Planned | - |
+| 9. Documentation Overhaul | 1/2 | In Progress|  |

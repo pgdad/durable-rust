@@ -96,13 +96,13 @@
 - [x] **FEAT-34**: Tests verify custom configuration takes effect
 
 ### Documentation
-- [ ] **DOCS-01**: README adds "Determinism Rules" section with do/don't examples
-- [ ] **DOCS-02**: README adds error handling example showing two-level Result matching
-- [ ] **DOCS-03**: README adds troubleshooting FAQ (Send+Static, Serialize bounds, type annotations)
-- [ ] **DOCS-04**: README links to project-context.md for implementation rules
+- [x] **DOCS-01**: README adds "Determinism Rules" section with do/don't examples
+- [x] **DOCS-02**: README adds error handling example showing two-level Result matching
+- [x] **DOCS-03**: README adds troubleshooting FAQ (Send+Static, Serialize bounds, type annotations)
+- [x] **DOCS-04**: README links to project-context.md for implementation rules
 - [ ] **DOCS-05**: Migration guide adds determinism section with anti-patterns
 - [ ] **DOCS-06**: BatchResult documentation adds per-item status checking example
-- [ ] **DOCS-07**: Parallel example adds comment explaining boxing/type alias complexity
+- [x] **DOCS-07**: Parallel example adds comment explaining boxing/type alias complexity
 - [ ] **DOCS-08**: CLAUDE.md documents wrapper crate duplication and change propagation requirement
 - [ ] **DOCS-09**: Callback documentation adds two-phase operation ID diagram
 - [ ] **DOCS-10**: Cargo.toml files gain description, keywords, categories metadata
