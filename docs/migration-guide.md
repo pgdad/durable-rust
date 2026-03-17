@@ -415,6 +415,19 @@ ctx.step("process", || async move {
 
 **Rule:** If a value must be the same across replays, checkpoint it inside a `step()`.
 
+### Python Determinism Anti-Patterns in Rust
+
+Python durable execution silently serializes many non-deterministic values. Rust requires you to be explicit. These Python patterns cause replay failures in Rust:
+
+| Python Pattern | Why It Works in Python | Rust Equivalent (Correct) |
+|----------------|----------------------|--------------------------|
+| `datetime.now()` outside activity | Python SDK sometimes serializes it automatically | `ctx.step("ts", \|\| async { Ok(Utc::now()) }).await?` |
+| `uuid.uuid4()` outside activity | Python value happens to be deterministic per-session | `ctx.step("id", \|\| async { Ok(Uuid::new_v4()) }).await?` |
+| `random.random()` outside activity | Python may checkpoint the value implicitly | `ctx.step("rng", \|\| async { Ok(rand::random::<f64>()) }).await?` |
+| Branching on external env vars | Env vars stable per container instance in Python | Read env vars in a `step()` if they affect workflow branching |
+
+**The rule:** If a value must be the same across all replays of a workflow execution, it must be produced inside a `ctx.step()` so it is checkpointed.
+
 ### 2. Send + 'static Bounds — Parallel/Map Closures Must Be Sendable
 
 Branch closures in `parallel()` and item closures in `map()` run on separate Tokio tasks. They must satisfy `Send + 'static`.
