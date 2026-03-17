@@ -183,6 +183,38 @@ async fn main() -> Result<(), lambda_runtime::Error> {
 }
 ```
 
+## Error Handling
+
+Step results have two `Result` layers:
+
+- **Outer `Result<_, DurableError>`**: SDK infrastructure errors (checkpoint failures, replay mismatches, AWS errors). Use `?` to propagate these.
+- **Inner `Result<T, E>`**: Your business logic result. Both `Ok` and `Err` are checkpointed and replayed identically.
+
+```rust
+// The `?` on `.await?` propagates the outer DurableError (infrastructure layer).
+// The returned value is your inner Result<T, E> — both arms are checkpointed.
+let payment: Result<String, PaymentError> = ctx
+    .step("charge", || async { charge_card().await })
+    .await?;  // ? propagates DurableError (outer layer)
+
+match payment {
+    Ok(tx_id) => {
+        // Step succeeded — tx_id is the checkpointed return value
+    }
+    Err(biz_err) => {
+        // Step returned Err(PaymentError) — the error is also checkpointed
+        // and will replay identically on re-invocation
+    }
+}
+
+// Full three-arm pattern when you also handle infrastructure errors:
+match ctx.step("charge", || async { charge_card().await }).await {
+    Ok(Ok(tx_id))    => { /* business success */ }
+    Ok(Err(biz_err)) => { /* business failure, checkpointed */ }
+    Err(durable_err) => { /* SDK error: checkpoint fail, replay mismatch, etc. */ }
+}
+```
+
 ## Operations Guide
 
 ### Step (checkpointed work)
@@ -236,6 +268,12 @@ let result: serde_json::Value = ctx.invoke(
 use std::pin::Pin;
 use std::future::Future;
 
+// Why the type alias and Box::pin?
+// `parallel()` requires a Vec of type-erased closures because each branch may have
+// a different concrete future type (different captures, different return paths).
+// `Box<dyn FnOnce(DurableContext) -> Pin<Box<dyn Future<...> + Send>>>` is the
+// standard trait-object pattern for heterogeneous async closures.
+// The BranchFn type alias keeps signatures readable.
 type BranchFn = Box<dyn FnOnce(DurableContext)
     -> Pin<Box<dyn Future<Output = Result<i32, DurableError>> + Send>> + Send>;
 
@@ -297,6 +335,50 @@ ctx.log_warn("something unexpected");
 ctx.log_error("operation failed");
 // All log methods have _with_data variants for structured data
 ```
+
+## Determinism Rules
+
+Code **outside** durable operations re-executes on every invocation, including replays. Non-deterministic code produces different values each time, breaking replay.
+
+### Do / Don't
+
+| Non-deterministic source | Wrong (outside step) | Right (inside step) |
+|--------------------------|----------------------|---------------------|
+| Current time | `let now = Utc::now();` | `ctx.step("now", \|\| async { Ok(Utc::now()) }).await?` |
+| Random values | `let id = Uuid::new_v4();` | `ctx.step("id", \|\| async { Ok(Uuid::new_v4()) }).await?` |
+| Random numbers | `let n = rand::random::<u32>();` | `ctx.step("rng", \|\| async { Ok(rand::random::<u32>()) }).await?` |
+
+**Wrong:**
+
+```rust
+// BAD: Uuid changes on every invocation — replay gets a different ID
+let order_id = Uuid::new_v4();
+let result: Result<(), String> = ctx.step("create_order", || async move {
+    create_order(order_id).await // Different ID on replay!
+}).await?;
+```
+
+**Right:**
+
+```rust
+// GOOD: Uuid is generated inside the step — same value replayed every time
+let order_id_result: Result<Uuid, String> = ctx.step("gen_id", || async {
+    Ok(Uuid::new_v4())
+}).await?;
+let order_id = order_id_result.unwrap();
+
+let result: Result<(), String> = ctx.step("create_order", || async move {
+    create_order(order_id).await // Same value on replay
+}).await?;
+```
+
+**Safety checklist:**
+
+- [ ] No `Utc::now()` / `SystemTime::now()` outside a step
+- [ ] No `Uuid::new_v4()` outside a step
+- [ ] No `rand::random()` or `rand::thread_rng()` outside a step
+- [ ] No environment variable reads that may differ between invocations outside a step
+- [ ] Operation order is fixed — do not reorder operations between deployments of in-flight workflows
 
 ## Testing
 
