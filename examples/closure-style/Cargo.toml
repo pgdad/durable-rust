@@ -47,6 +47,22 @@ path = "src/replay_safe_logging.rs"
 name = "closure-combined-workflow"
 path = "src/combined_workflow.rs"
 
+[[bin]]
+name = "closure-saga-compensation"
+path = "src/saga_compensation.rs"
+
+[[bin]]
+name = "closure-step-timeout"
+path = "src/step_timeout.rs"
+
+[[bin]]
+name = "closure-conditional-retry"
+path = "src/conditional_retry.rs"
+
+[[bin]]
+name = "closure-batch-checkpoint"
+path = "src/batch_checkpoint.rs"
+
 [dependencies]
 durable-lambda-closure = { path = "../../crates/durable-lambda-closure" }
 durable-lambda-core = { path = "../../crates/durable-lambda-core" }
