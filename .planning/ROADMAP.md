@@ -24,7 +24,7 @@
 - [x] **Phase 13: Test Harness** - Single-command test runner with per-test reporting and credential validation (completed 2026-03-17)
 - [ ] **Phase 14: Synchronous Operation Tests** - All synchronous operations validated against real Lambda (step, parallel, map, child_context, logging, combined_workflow)
 - [ ] **Phase 15: Async Operation Tests** - Wait, callback, and invoke operations validated with state polling
-- [ ] **Phase 16: Advanced Feature Tests** - Saga/compensation, step timeout, conditional retry, batch checkpoint validated
+- [x] **Phase 16: Advanced Feature Tests** - Saga/compensation, step timeout, conditional retry, batch checkpoint validated (completed 2026-03-17)
 - [ ] **Phase 17: Documentation** - Manual test instructions, teardown guide, tooling installation doc
 
 ## Phase Details
@@ -118,7 +118,7 @@ Plans:
   2. The step timeout test handler returns FAILED with a timeout error when the step closure exceeds the configured threshold
   3. The conditional retry handler retries on matching errors and does not retry on non-matching errors, confirmed by execution step count in the result
   4. The batch checkpoint handler produces fewer checkpoint API calls than the equivalent non-batch handler, confirmed by CloudWatch metrics or execution metadata
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 Plans:
 - [ ] 16-01-PLAN.md — Write 4 handler binaries, register in Cargo.toml/lambda.tf/build-images.sh/test-all.sh
 - [ ] 16-02-PLAN.md — Deploy infrastructure, build images, run integration tests
@@ -145,5 +145,5 @@ Plans:
 | 13. Test Harness | 1/1 | Complete    | 2026-03-17 | - |
 | 14. Synchronous Operation Tests | v1.1 | 0/TBD | Not started | - |
 | 15. Async Operation Tests | v1.1 | 0/TBD | Not started | - |
-| 16. Advanced Feature Tests | 1/2 | In Progress|  | - |
+| 16. Advanced Feature Tests | 2/2 | Complete   | 2026-03-17 | - |
 | 17. Documentation | v1.1 | 0/TBD | Not started | - |

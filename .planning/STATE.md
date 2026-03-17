@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: AWS Integration Testing
 status: executing
-stopped_at: Completed 16-01 — 4 advanced-feature handlers, infra registration, and test assertions
-last_updated: "2026-03-17T18:18:53.088Z"
-last_activity: 2026-03-17 — Completed 11-02 (ECR dr-examples-c351 and IAM dr-lambda-exec-c351 deployed and verified)
+stopped_at: Completed 16-02 — all 48 Lambda functions deployed with durable response envelope, 48/48 integration tests passing
+last_updated: "2026-03-17T19:30:00.000Z"
+last_activity: 2026-03-17 — Completed 16-02 (48 Lambda functions deployed, 4 Phase 16 advanced feature tests passing)
 progress:
   total_phases: 8
   completed_phases: 4
   total_plans: 9
-  completed_plans: 8
-  percent: 6
+  completed_plans: 9
+  percent: 11
 ---
 
 # Project State
@@ -53,6 +53,7 @@ Progress: [██░░░░░░░░] 6%
 | Phase 11-infrastructure P03 | 10 | 2 tasks | 3 files |
 | Phase 13-test-harness P01 | 2 | 2 tasks | 2 files |
 | Phase 16-advanced-feature-tests P01 | 3 | 2 tasks | 7 files |
+| Phase 16-advanced-feature-tests P02 | 82 | 2 tasks | 12 files |
 
 ## Accumulated Context
 
@@ -86,6 +87,11 @@ Recent decisions affecting current work:
 - [Phase 13-test-harness]: 3-second polling interval for wait_for_terminal_status and extract_callback_id — no busy-loop
 - [Phase 16-advanced-feature-tests]: 16-01: CRATE_BINS total computed dynamically via wc -w to avoid stale hardcoded count as binaries grow
 - [Phase 16-advanced-feature-tests]: 16-01: test_closure_conditional_retry tests non-retryable path only; retryable path deferred per RESEARCH open question about StepRetryScheduled async behavior
+- [Phase 16-advanced-feature-tests]: 16-02: Durable execution service SUCCEEDS → unwraps Result JSON and returns to caller directly (no Status envelope visible)
+- [Phase 16-advanced-feature-tests]: 16-02: Durable execution service FAILED → converts to FunctionError=Unhandled with errorType/errorMessage from Error object
+- [Phase 16-advanced-feature-tests]: 16-02: Context/Compensation sub_type rejected by service after step FAIL checkpoint — saga uses regular ctx.step() for compensation operations
+- [Phase 16-advanced-feature-tests]: 16-02: execution_timeout must be ≤900s for synchronous invocation (changed from 3600 to 840)
+- [Phase 16-advanced-feature-tests]: 16-02: musl cross-compilation (x86_64-unknown-linux-musl) required to avoid GLIBC 2.38 vs 2.34 mismatch between build host and Lambda al2023
 
 ### Pending Todos
 
@@ -97,6 +103,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-17T18:18:53.087Z
-Stopped at: Completed 16-01 — 4 advanced-feature handlers, infra registration, and test assertions
+Last session: 2026-03-17T19:30:00.000Z
+Stopped at: Completed 16-02 — all 48 Lambda functions deployed with durable response envelope, 48/48 integration tests passing
 Resume file: None
