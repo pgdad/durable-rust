@@ -134,16 +134,26 @@ test_closure_saga_compensation() {
   local status fn_error response_body
   IFS='|' read -r status fn_error _ response_body <<< "$result"
 
-  [[ "$status" == "200" ]] || { echo "Expected status 200, got: $status"; return 1; }
+  [[ "$status" == "200" ]] || { echo "Expected HTTP 200, got: $status"; return 1; }
   [[ -z "$fn_error" ]] || { echo "Expected no FunctionError, got: $fn_error"; return 1; }
 
+  # Durable execution response envelope: {"Status": "SUCCEEDED", "Result": "<JSON string>"}
+  local durable_status
+  durable_status=$(echo "$response_body" | jq -r '.Status')
+  [[ "$durable_status" == "SUCCEEDED" ]] || \
+    { echo "Expected durable Status=SUCCEEDED, got: $durable_status; body=$response_body"; return 1; }
+
+  # User result is a JSON string nested inside .Result
+  local user_result
+  user_result=$(echo "$response_body" | jq -r '.Result')
+
   local seq
-  seq=$(echo "$response_body" | jq -r '.compensation_sequence | join(",")')
+  seq=$(echo "$user_result" | jq -r '.compensation_sequence | join(",")')
   [[ "$seq" == "charge_card,book_flight,book_hotel" ]] || \
     { echo "Expected LIFO compensation_sequence, got: $seq"; return 1; }
 
   local all_succeeded
-  all_succeeded=$(echo "$response_body" | jq -r '.all_succeeded')
+  all_succeeded=$(echo "$user_result" | jq -r '.all_succeeded')
   [[ "$all_succeeded" == "true" ]] || \
     { echo "Expected all_succeeded=true, got: $all_succeeded"; return 1; }
 
@@ -158,13 +168,24 @@ test_closure_step_timeout() {
   local status fn_error response_body
   IFS='|' read -r status fn_error _ response_body <<< "$result"
 
-  [[ -n "$fn_error" ]] || \
-    { echo "Expected FunctionError (StepTimeout), got empty fn_error; body=$response_body"; return 1; }
+  [[ "$status" == "200" ]] || { echo "Expected HTTP 200, got: $status"; return 1; }
+  [[ -z "$fn_error" ]] || { echo "Expected no Lambda FunctionError, got: $fn_error"; return 1; }
 
-  echo "$response_body" | grep -qi "timed out\|timeout" || \
-    { echo "Expected 'timed out' or 'timeout' in response body, got: $response_body"; return 1; }
+  # Durable execution response: {"Status": "FAILED", "Error": {"ErrorType": "STEP_TIMEOUT", ...}}
+  local durable_status
+  durable_status=$(echo "$response_body" | jq -r '.Status')
+  [[ "$durable_status" == "FAILED" ]] || \
+    { echo "Expected durable Status=FAILED (StepTimeout), got: $durable_status; body=$response_body"; return 1; }
 
-  echo "step timeout correctly produced FunctionError"
+  # Verify the error indicates a timeout
+  local error_type error_msg
+  error_type=$(echo "$response_body" | jq -r '.Error.ErrorType // ""')
+  error_msg=$(echo "$response_body" | jq -r '.Error.ErrorMessage // ""')
+  [[ "$error_type" == "STEP_TIMEOUT" ]] || \
+    echo "$error_msg" | grep -qi "timed out\|timeout" || \
+    { echo "Expected STEP_TIMEOUT error, got type=$error_type msg=$error_msg"; return 1; }
+
+  echo "step timeout correctly produced durable Status=FAILED with STEP_TIMEOUT"
 }
 
 test_closure_conditional_retry() {
@@ -172,11 +193,17 @@ test_closure_conditional_retry() {
   fn_arn=$(get_alias_arn "closure-conditional-retry")
   local result
   result=$(invoke_sync "$fn_arn" '{"error_type":"non_retryable"}')
-  local fn_error response_body
-  IFS='|' read -r _ fn_error _ response_body <<< "$result"
+  local status fn_error response_body
+  IFS='|' read -r status fn_error _ response_body <<< "$result"
 
-  [[ -n "$fn_error" ]] || \
-    { echo "Expected FunctionError for non_retryable path, got empty fn_error; body=$response_body"; return 1; }
+  [[ "$status" == "200" ]] || { echo "Expected HTTP 200, got: $status"; return 1; }
+  [[ -z "$fn_error" ]] || { echo "Expected no Lambda FunctionError, got: $fn_error"; return 1; }
+
+  # Durable execution response: {"Status": "FAILED", ...} — non-retryable step fails immediately
+  local durable_status
+  durable_status=$(echo "$response_body" | jq -r '.Status')
+  [[ "$durable_status" == "FAILED" ]] || \
+    { echo "Expected durable Status=FAILED for non_retryable path, got: $durable_status; body=$response_body"; return 1; }
 
   echo "non-retryable path verified: retry_if predicate correctly skipped retry on non-matching error"
 }
@@ -189,15 +216,25 @@ test_closure_batch_checkpoint() {
   local status fn_error response_body
   IFS='|' read -r status fn_error _ response_body <<< "$result"
 
-  [[ "$status" == "200" ]] || { echo "Expected status 200, got: $status"; return 1; }
+  [[ "$status" == "200" ]] || { echo "Expected HTTP 200, got: $status"; return 1; }
   [[ -z "$fn_error" ]] || { echo "Expected no FunctionError, got: $fn_error"; return 1; }
 
+  # Durable execution response envelope: {"Status": "SUCCEEDED", "Result": "<JSON string>"}
+  local durable_status
+  durable_status=$(echo "$response_body" | jq -r '.Status')
+  [[ "$durable_status" == "SUCCEEDED" ]] || \
+    { echo "Expected durable Status=SUCCEEDED, got: $durable_status; body=$response_body"; return 1; }
+
+  # User result is a JSON string nested inside .Result
+  local user_result
+  user_result=$(echo "$response_body" | jq -r '.Result')
+
   local batch_mode
-  batch_mode=$(echo "$response_body" | jq -r '.batch_mode')
+  batch_mode=$(echo "$user_result" | jq -r '.batch_mode')
   [[ "$batch_mode" == "true" ]] || { echo "Expected batch_mode=true, got: $batch_mode"; return 1; }
 
   local steps_completed
-  steps_completed=$(echo "$response_body" | jq -r '.steps_completed')
+  steps_completed=$(echo "$user_result" | jq -r '.steps_completed')
   [[ "$steps_completed" == "5" ]] || { echo "Expected steps_completed=5, got: $steps_completed"; return 1; }
 
   echo "batch checkpoint handler succeeded with 5 steps"

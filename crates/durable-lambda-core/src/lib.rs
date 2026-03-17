@@ -6,6 +6,7 @@ pub mod operation_id;
 pub mod operations;
 pub mod ops_trait;
 pub mod replay;
+pub mod response;
 pub mod types;
 
 pub use backend::{DurableBackend, RealBackend};

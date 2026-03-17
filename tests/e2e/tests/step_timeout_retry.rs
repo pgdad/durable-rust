@@ -75,7 +75,10 @@ async fn test_step_within_timeout_succeeds() {
         )
         .await;
 
-    assert!(result.is_ok(), "expected Ok from fast step, got: {result:?}");
+    assert!(
+        result.is_ok(),
+        "expected Ok from fast step, got: {result:?}"
+    );
     let inner = result.unwrap();
     assert!(
         inner.is_ok(),
@@ -150,9 +153,9 @@ async fn test_conditional_retry_transient_error_retries() {
     // Verify checkpoint calls include a RETRY action.
     let captured = calls.lock().await;
     let has_retry = captured.iter().any(|call| {
-        call.updates.iter().any(|u| {
-            u.action() == &aws_sdk_lambda::types::OperationAction::Retry
-        })
+        call.updates
+            .iter()
+            .any(|u| u.action() == &aws_sdk_lambda::types::OperationAction::Retry)
     });
     assert!(
         has_retry,
@@ -194,14 +197,14 @@ async fn test_conditional_retry_non_transient_fails_fast() {
     // Verify checkpoint calls include a FAIL action, not RETRY.
     let captured = calls.lock().await;
     let has_fail = captured.iter().any(|call| {
-        call.updates.iter().any(|u| {
-            u.action() == &aws_sdk_lambda::types::OperationAction::Fail
-        })
+        call.updates
+            .iter()
+            .any(|u| u.action() == &aws_sdk_lambda::types::OperationAction::Fail)
     });
     let has_retry = captured.iter().any(|call| {
-        call.updates.iter().any(|u| {
-            u.action() == &aws_sdk_lambda::types::OperationAction::Retry
-        })
+        call.updates
+            .iter()
+            .any(|u| u.action() == &aws_sdk_lambda::types::OperationAction::Retry)
     });
     assert!(
         has_fail,
@@ -222,11 +225,9 @@ async fn test_no_retry_if_retries_all_errors() {
     let (mut ctx, calls, _ops) = MockDurableContext::new().build().await;
 
     let result: Result<Result<i32, String>, DurableError> = ctx
-        .step_with_options(
-            "check",
-            StepOptions::new().retries(2),
-            || async { Err::<i32, String>("any error".into()) },
-        )
+        .step_with_options("check", StepOptions::new().retries(2), || async {
+            Err::<i32, String>("any error".into())
+        })
         .await;
 
     // Should be Err(StepRetryScheduled) — existing behavior preserved.
@@ -247,9 +248,9 @@ async fn test_no_retry_if_retries_all_errors() {
     // Verify checkpoint includes a RETRY action.
     let captured = calls.lock().await;
     let has_retry = captured.iter().any(|call| {
-        call.updates.iter().any(|u| {
-            u.action() == &aws_sdk_lambda::types::OperationAction::Retry
-        })
+        call.updates
+            .iter()
+            .any(|u| u.action() == &aws_sdk_lambda::types::OperationAction::Retry)
     });
     assert!(
         has_retry,

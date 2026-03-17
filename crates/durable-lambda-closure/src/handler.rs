@@ -11,6 +11,7 @@ use durable_lambda_core::backend::RealBackend;
 use durable_lambda_core::context::DurableContext;
 use durable_lambda_core::error::DurableError;
 use durable_lambda_core::event::parse_invocation;
+use durable_lambda_core::response::wrap_handler_result;
 use lambda_runtime::{service_fn, LambdaEvent};
 
 use crate::context::ClosureContext;
@@ -91,11 +92,12 @@ where
             let closure_ctx = ClosureContext::new(durable_ctx);
 
             // Call the user handler with owned context.
-            let result = handler(invocation.user_event, closure_ctx)
-                .await
-                .map_err(|e| Box::new(e) as Box<dyn std::error::Error + Send + Sync>)?;
+            let result = handler(invocation.user_event, closure_ctx).await;
 
-            Ok::<serde_json::Value, Box<dyn std::error::Error + Send + Sync>>(result)
+            // Wrap the result in the durable execution invocation output envelope.
+            // The durable execution service requires {"Status": "SUCCEEDED/FAILED/PENDING", ...}
+            // rather than a plain JSON response.
+            wrap_handler_result(result)
         }
     }))
     .await

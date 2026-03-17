@@ -10,6 +10,7 @@ use durable_lambda_core::backend::RealBackend;
 use durable_lambda_core::context::DurableContext;
 use durable_lambda_core::error::DurableError;
 use durable_lambda_core::event::parse_invocation;
+use durable_lambda_core::response::wrap_handler_result;
 use lambda_runtime::{service_fn, LambdaEvent};
 
 use crate::context::TraitContext;
@@ -144,12 +145,10 @@ pub async fn run<H: DurableHandler>(handler: H) -> Result<(), lambda_runtime::Er
             let trait_ctx = TraitContext::new(durable_ctx);
 
             // Call the handler's handle method.
-            let result = handler
-                .handle(invocation.user_event, trait_ctx)
-                .await
-                .map_err(|e| Box::new(e) as Box<dyn std::error::Error + Send + Sync>)?;
+            let result = handler.handle(invocation.user_event, trait_ctx).await;
 
-            Ok::<serde_json::Value, Box<dyn std::error::Error + Send + Sync>>(result)
+            // Wrap the result in the durable execution invocation output envelope.
+            wrap_handler_result(result)
         }
     }))
     .await

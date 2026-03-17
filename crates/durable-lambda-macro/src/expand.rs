@@ -58,19 +58,10 @@ pub(crate) fn expand_durable_execution(func: ItemFn) -> Result<TokenStream, Erro
                                 >
                         })?;
 
-                        let result = #fn_name(invocation.user_event, durable_ctx).await.map_err(|e| {
-                            ::std::boxed::Box::new(e)
-                                as ::std::boxed::Box<
-                                    dyn ::std::error::Error + ::std::marker::Send + ::std::marker::Sync,
-                                >
-                        })?;
+                        let result = #fn_name(invocation.user_event, durable_ctx).await;
 
-                        ::std::result::Result::Ok::<
-                            ::serde_json::Value,
-                            ::std::boxed::Box<
-                                dyn ::std::error::Error + ::std::marker::Send + ::std::marker::Sync,
-                            >,
-                        >(result)
+                        // Wrap the result in the durable execution invocation output envelope.
+                        ::durable_lambda_core::response::wrap_handler_result(result)
                     }
                 },
             ))

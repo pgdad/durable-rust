@@ -44,17 +44,21 @@ FROM chef AS builder
 # Default crate to build — override with --build-arg PACKAGE=your-crate
 ARG PACKAGE=closure-style-example
 
+# Install musl tools and add the musl target so the binary links statically
+# against musl libc. This avoids GLIBC version mismatches on the Lambda
+# al2023 runtime (which ships GLIBC 2.34, while the build host may have newer).
+RUN apt-get update && apt-get install -y --no-install-recommends musl-tools && rm -rf /var/lib/apt/lists/*
+RUN rustup target add x86_64-unknown-linux-musl
+
 COPY --from=planner /usr/src/app/recipe.json recipe.json
 
-# Cook the full workspace dependency layer. No -p flag here: all 4 example
-# crates share durable-lambda-core as a transitive dependency, so scoping
-# the cook per-crate can cause cross-crate dependency resolution failures.
-# This layer is cached as long as Cargo.lock / the dependency tree is unchanged.
-RUN cargo chef cook --release --recipe-path recipe.json
+# Cook the full workspace dependency layer with the musl target.
+# No -p flag: all 4 example crates share durable-lambda-core as a transitive dependency.
+RUN cargo chef cook --release --target x86_64-unknown-linux-musl --recipe-path recipe.json
 
 # Copy source and build the specified crate (produces all its binaries)
 COPY . .
-RUN cargo build --release -p "${PACKAGE}"
+RUN cargo build --release --target x86_64-unknown-linux-musl -p "${PACKAGE}"
 
 # --------------------------------------------------------------------------
 # Stage 3: Lambda runtime image
@@ -68,7 +72,7 @@ ARG BINARY_NAME=closure-basic-steps
 
 # Copy the compiled binary as the Lambda bootstrap entrypoint.
 # provided.al2023 looks for a binary named "bootstrap" in LAMBDA_RUNTIME_DIR.
-COPY --from=builder "/usr/src/app/target/release/${BINARY_NAME}" "${LAMBDA_RUNTIME_DIR}/bootstrap"
+COPY --from=builder "/usr/src/app/target/x86_64-unknown-linux-musl/release/${BINARY_NAME}" "${LAMBDA_RUNTIME_DIR}/bootstrap"
 
 # The CMD value is the Lambda handler name. For lambda_runtime-based handlers
 # this is ignored (the runtime handles routing internally), but it is required

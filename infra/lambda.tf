@@ -69,8 +69,8 @@ resource "aws_lambda_function" "examples" {
   memory_size = 256
 
   durable_config {
-    execution_timeout = 3600 # 1 hour max per durable execution
-    retention_period  = 7    # days to retain checkpoint state
+    execution_timeout = 840 # 14 min — must be <= 900s (Lambda timeout) to allow synchronous invocation in integration tests
+    retention_period  = 7   # days to retain checkpoint state
   }
 
   tags = {

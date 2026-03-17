@@ -370,9 +370,11 @@ async fn step_timeout_parity_fast_closure_within_timeout_returns_ok() {
     let (mut ctx, _calls, _ops) = MockDurableContext::new().build().await;
 
     let result: Result<i32, String> = ctx
-        .step_with_options("fast_step", StepOptions::new().timeout_seconds(5), || async {
-            Ok(42)
-        })
+        .step_with_options(
+            "fast_step",
+            StepOptions::new().timeout_seconds(5),
+            || async { Ok(42) },
+        )
         .await
         .unwrap();
 
@@ -521,14 +523,16 @@ fn all_context_types_implement_durable_context_ops() {
 #[tokio::test]
 async fn complex_workflow_parity_parallel_with_timeout_step() {
     use durable_lambda_core::error::DurableError;
-    use durable_lambda_core::types::{BatchItemStatus, CompletionReason, ParallelOptions, StepOptions};
+    use durable_lambda_core::types::{
+        BatchItemStatus, CompletionReason, ParallelOptions, StepOptions,
+    };
 
     type BranchFn = Box<
         dyn FnOnce(
-            DurableContext,
-        ) -> std::pin::Pin<
-            Box<dyn std::future::Future<Output = Result<i32, DurableError>> + Send>,
-        > + Send,
+                DurableContext,
+            ) -> std::pin::Pin<
+                Box<dyn std::future::Future<Output = Result<i32, DurableError>> + Send>,
+            > + Send,
     >;
 
     let (mut ctx, _calls, _ops) = MockDurableContext::new().build().await;
@@ -540,11 +544,9 @@ async fn complex_workflow_parity_parallel_with_timeout_step() {
         Box::new(|mut child_ctx: DurableContext| {
             Box::pin(async move {
                 let r: Result<i32, String> = child_ctx
-                    .step_with_options(
-                        "fast",
-                        StepOptions::new().timeout_seconds(5),
-                        || async { Ok::<i32, String>(1) },
-                    )
+                    .step_with_options("fast", StepOptions::new().timeout_seconds(5), || async {
+                        Ok::<i32, String>(1)
+                    })
                     .await?;
                 Ok(r.unwrap())
             })
@@ -564,7 +566,11 @@ async fn complex_workflow_parity_parallel_with_timeout_step() {
         .await
         .unwrap();
 
-    assert_eq!(result.results.len(), 2, "parallel should have 2 branch results");
+    assert_eq!(
+        result.results.len(),
+        2,
+        "parallel should have 2 branch results"
+    );
     assert_eq!(
         result.completion_reason,
         CompletionReason::AllCompleted,
@@ -576,9 +582,17 @@ async fn complex_workflow_parity_parallel_with_timeout_step() {
     results.sort_by_key(|item| item.index);
 
     assert_eq!(results[0].status, BatchItemStatus::Succeeded);
-    assert_eq!(results[0].result, Some(1), "branch 0 (timeout step) should return 1");
+    assert_eq!(
+        results[0].result,
+        Some(1),
+        "branch 0 (timeout step) should return 1"
+    );
     assert_eq!(results[1].status, BatchItemStatus::Succeeded);
-    assert_eq!(results[1].result, Some(2), "branch 1 (regular step) should return 2");
+    assert_eq!(
+        results[1].result,
+        Some(2),
+        "branch 1 (regular step) should return 2"
+    );
 }
 
 // ========================================================================
@@ -596,10 +610,10 @@ async fn batch_item_status_succeeded_and_failed_parallel() {
 
     type BranchFn = Box<
         dyn FnOnce(
-            DurableContext,
-        ) -> std::pin::Pin<
-            Box<dyn std::future::Future<Output = Result<i32, DurableError>> + Send>,
-        > + Send,
+                DurableContext,
+            ) -> std::pin::Pin<
+                Box<dyn std::future::Future<Output = Result<i32, DurableError>> + Send>,
+            > + Send,
     >;
 
     let (mut ctx, _calls, _ops) = MockDurableContext::new().build().await;
@@ -638,11 +652,7 @@ async fn batch_item_status_succeeded_and_failed_parallel() {
     );
     assert!(results[1].result.is_none());
     assert!(
-        results[1]
-            .error
-            .as_ref()
-            .unwrap()
-            .contains("fail"),
+        results[1].error.as_ref().unwrap().contains("fail"),
         "error message should contain 'fail'"
     );
 }
