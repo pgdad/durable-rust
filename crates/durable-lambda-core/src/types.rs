@@ -7,6 +7,14 @@ use std::sync::Arc;
 
 use serde::{Deserialize, Serialize};
 
+use crate::error::DurableError;
+
+/// Type alias for the type-erased retry predicate stored inside [`StepOptions`].
+///
+/// The predicate receives a type-erased `&dyn Any` reference to the step error
+/// and returns `true` if the error is retryable, `false` if it should fail immediately.
+pub type RetryPredicate = Arc<dyn Fn(&dyn std::any::Any) -> bool + Send + Sync>;
+
 /// Represent a single entry from the durable execution history log.
 ///
 /// Each entry records the name, result, and type of a durable operation
@@ -175,7 +183,7 @@ pub struct StepOptions {
     retries: Option<u32>,
     backoff_seconds: Option<i32>,
     timeout_seconds: Option<u64>,
-    retry_if: Option<Arc<dyn Fn(&dyn std::any::Any) -> bool + Send + Sync>>,
+    retry_if: Option<RetryPredicate>,
 }
 
 impl std::fmt::Debug for StepOptions {
@@ -353,9 +361,7 @@ impl StepOptions {
         P: Fn(&E) -> bool + Send + Sync + 'static,
     {
         self.retry_if = Some(Arc::new(move |any_err: &dyn std::any::Any| {
-            any_err
-                .downcast_ref::<E>()
-                .map_or(false, |e| predicate(e))
+            any_err.downcast_ref::<E>().is_some_and(&predicate)
         }));
         self
     }
@@ -390,9 +396,7 @@ impl StepOptions {
     /// let opts = StepOptions::new().retry_if(|e: &String| e.contains("transient"));
     /// assert!(opts.get_retry_if().is_some());
     /// ```
-    pub fn get_retry_if(
-        &self,
-    ) -> Option<&Arc<dyn Fn(&dyn std::any::Any) -> bool + Send + Sync>> {
+    pub fn get_retry_if(&self) -> Option<&RetryPredicate> {
         self.retry_if.as_ref()
     }
 }
@@ -756,6 +760,101 @@ pub enum CompletionReason {
     FailureToleranceExceeded,
 }
 
+/// Type alias for a type-erased async compensation closure.
+///
+/// Receives the serialized forward result as `serde_json::Value`,
+/// deserializes it internally, and executes the compensation logic.
+pub type CompensateFn = Box<
+    dyn FnOnce(serde_json::Value) -> std::pin::Pin<
+        Box<dyn std::future::Future<Output = Result<(), DurableError>> + Send>,
+    > + Send
+        + 'static,
+>;
+
+/// A single registered compensation with its serialized forward result.
+///
+/// Created by [`DurableContext::step_with_compensation`] when a forward step
+/// succeeds. The compensation closure and its serialized input are stored
+/// until [`DurableContext::run_compensations`] is called.
+///
+/// Note: Does not implement `Debug` because `CompensateFn` contains a closure.
+pub struct CompensationRecord {
+    /// The operation name for the compensation checkpoint.
+    pub(crate) name: String,
+    /// The serialized forward result passed to the compensation closure.
+    pub(crate) forward_result_json: serde_json::Value,
+    /// The type-erased compensation closure.
+    pub(crate) compensate_fn: CompensateFn,
+}
+
+/// Result of running compensations via `run_compensations()`.
+///
+/// Contains per-compensation outcomes and a summary flag.
+///
+/// # Examples
+///
+/// ```
+/// use durable_lambda_core::types::{CompensationResult, CompensationItem, CompensationStatus};
+///
+/// let result = CompensationResult {
+///     items: vec![
+///         CompensationItem { name: "refund".to_string(), status: CompensationStatus::Succeeded, error: None },
+///     ],
+///     all_succeeded: true,
+/// };
+/// assert!(result.all_succeeded);
+/// ```
+#[derive(Debug, Clone)]
+pub struct CompensationResult {
+    /// Per-compensation outcomes in execution order (reverse registration).
+    pub items: Vec<CompensationItem>,
+    /// True if all compensations succeeded; false if any failed.
+    pub all_succeeded: bool,
+}
+
+/// A single compensation outcome within a `CompensationResult`.
+///
+/// # Examples
+///
+/// ```
+/// use durable_lambda_core::types::{CompensationItem, CompensationStatus};
+///
+/// let item = CompensationItem {
+///     name: "refund_payment".to_string(),
+///     status: CompensationStatus::Succeeded,
+///     error: None,
+/// };
+/// assert_eq!(item.status, CompensationStatus::Succeeded);
+/// ```
+#[derive(Debug, Clone)]
+pub struct CompensationItem {
+    /// The compensation operation name.
+    pub name: String,
+    /// The compensation status.
+    pub status: CompensationStatus,
+    /// Error message if compensation failed.
+    pub error: Option<String>,
+}
+
+/// Status of an individual compensation execution.
+///
+/// # Examples
+///
+/// ```
+/// use durable_lambda_core::types::CompensationStatus;
+///
+/// let status = CompensationStatus::Succeeded;
+/// assert_eq!(status, CompensationStatus::Succeeded);
+/// ```
+#[derive(Debug, Clone, PartialEq)]
+#[non_exhaustive]
+pub enum CompensationStatus {
+    /// Compensation completed successfully.
+    Succeeded,
+    /// Compensation failed with an error.
+    Failed,
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1012,5 +1111,45 @@ mod tests {
             debug_str.contains("None"),
             "Debug output should show 'None' when retry_if is not set, got: {debug_str}"
         );
+    }
+
+    // --- CompensationResult, CompensationItem, CompensationStatus tests ---
+
+    #[test]
+    fn compensation_result_with_all_succeeded_true() {
+        let result = CompensationResult {
+            items: vec![CompensationItem {
+                name: "refund".to_string(),
+                status: CompensationStatus::Succeeded,
+                error: None,
+            }],
+            all_succeeded: true,
+        };
+        assert!(result.all_succeeded);
+        assert_eq!(result.items.len(), 1);
+    }
+
+    #[test]
+    fn compensation_status_succeeded_and_failed_variants_exist_and_are_debug() {
+        let s = CompensationStatus::Succeeded;
+        let f = CompensationStatus::Failed;
+        // Debug derivation verifiable via format
+        let _ = format!("{s:?}");
+        let _ = format!("{f:?}");
+        assert_eq!(s, CompensationStatus::Succeeded);
+        assert_eq!(f, CompensationStatus::Failed);
+        assert_ne!(s, f);
+    }
+
+    #[test]
+    fn compensation_item_is_debug_and_clone() {
+        let item = CompensationItem {
+            name: "rollback_payment".to_string(),
+            status: CompensationStatus::Failed,
+            error: Some("timeout".to_string()),
+        };
+        let cloned = item.clone();
+        assert_eq!(cloned.name, "rollback_payment");
+        let _ = format!("{item:?}");
     }
 }

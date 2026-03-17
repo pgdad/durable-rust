@@ -12,7 +12,7 @@ use aws_sdk_lambda::types::OperationUpdate;
 use crate::backend::DurableBackend;
 use crate::error::DurableError;
 use crate::replay::ReplayEngine;
-use crate::types::ExecutionMode;
+use crate::types::{CompensationRecord, ExecutionMode};
 
 /// Main context for a durable execution invocation.
 ///
@@ -62,6 +62,10 @@ pub struct DurableContext {
     parent_op_id: Option<String>,
     batch_mode: bool,
     pending_updates: Vec<OperationUpdate>,
+    /// Registered compensation closures for the saga/compensation pattern.
+    /// Populated by `step_with_compensation` on forward step success.
+    /// Drained and executed in reverse order by `run_compensations`.
+    compensations: Vec<CompensationRecord>,
 }
 
 /// Maximum items per page when paginating execution state.
@@ -124,6 +128,7 @@ impl DurableContext {
             parent_op_id: None,
             batch_mode: false,
             pending_updates: Vec::new(),
+            compensations: Vec::new(),
         })
     }
 
@@ -257,6 +262,7 @@ impl DurableContext {
             parent_op_id: Some(parent_op_id.to_string()),
             batch_mode: false,
             pending_updates: Vec::new(),
+            compensations: Vec::new(), // NOT inherited from parent (isolated per context)
         }
     }
 
@@ -335,6 +341,36 @@ impl DurableContext {
     /// Return the number of pending (unflushed) updates.
     pub fn pending_update_count(&self) -> usize {
         self.pending_updates.len()
+    }
+
+    /// Return the number of registered compensation closures.
+    ///
+    /// Useful for asserting compensation registration in tests.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// # async fn example(ctx: durable_lambda_core::context::DurableContext) {
+    /// assert_eq!(ctx.compensation_count(), 0);
+    /// # }
+    /// ```
+    pub fn compensation_count(&self) -> usize {
+        self.compensations.len()
+    }
+
+    /// Register a compensation closure after a successful forward step.
+    ///
+    /// Called by `step_with_compensation` when the forward step succeeds.
+    pub(crate) fn push_compensation(&mut self, record: CompensationRecord) {
+        self.compensations.push(record);
+    }
+
+    /// Drain all registered compensations for execution.
+    ///
+    /// Returns the compensations vec (emptying the field) so `run_compensations`
+    /// can execute them. Reversing the returned vec gives LIFO order.
+    pub(crate) fn take_compensations(&mut self) -> Vec<CompensationRecord> {
+        std::mem::take(&mut self.compensations)
     }
 
     /// Flush all accumulated checkpoint updates in a single AWS API call.
@@ -498,5 +534,44 @@ mod tests {
         assert_eq!(ctx.checkpoint_token(), "tok1");
         ctx.set_checkpoint_token("tok2".to_string());
         assert_eq!(ctx.checkpoint_token(), "tok2");
+    }
+
+    // --- compensation field tests ---
+
+    #[tokio::test]
+    async fn new_context_has_empty_compensations() {
+        let backend = Arc::new(TestBackend { pages: vec![] });
+        let ctx = DurableContext::new(backend, "arn:test".into(), "tok".into(), vec![], None)
+            .await
+            .unwrap();
+
+        assert_eq!(ctx.compensation_count(), 0);
+    }
+
+    #[tokio::test]
+    async fn create_child_context_has_empty_compensations_not_inherited() {
+        use crate::types::CompensationRecord;
+
+        let backend = Arc::new(TestBackend { pages: vec![] });
+        let mut ctx = DurableContext::new(backend, "arn:test".into(), "tok".into(), vec![], None)
+            .await
+            .unwrap();
+
+        // Register a compensation on the parent
+        let record = CompensationRecord {
+            name: "parent_comp".to_string(),
+            forward_result_json: serde_json::Value::Null,
+            compensate_fn: Box::new(|_| Box::pin(async { Ok(()) })),
+        };
+        ctx.push_compensation(record);
+        assert_eq!(ctx.compensation_count(), 1);
+
+        // Child context should start with 0 compensations
+        let child = ctx.create_child_context("some-op-id");
+        assert_eq!(
+            child.compensation_count(),
+            0,
+            "child context must NOT inherit parent compensations"
+        );
     }
 }

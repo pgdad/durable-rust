@@ -198,6 +198,29 @@ pub enum DurableError {
     #[error("step timed out for operation '{operation_name}'")]
     #[non_exhaustive]
     StepTimeout { operation_name: String },
+
+    /// One or more compensation steps failed during saga rollback.
+    ///
+    /// The saga/compensation pattern ran `run_compensations()` and one or more
+    /// compensation closures returned an error. All compensations are attempted
+    /// regardless; this error captures the first/combined failure.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use durable_lambda_core::error::DurableError;
+    ///
+    /// let err = DurableError::compensation_failed("charge_payment", "payment reversal failed");
+    /// assert!(err.to_string().contains("charge_payment"));
+    /// assert!(err.to_string().contains("payment reversal failed"));
+    /// assert_eq!(err.code(), "COMPENSATION_FAILED");
+    /// ```
+    #[error("compensation failed for operation '{operation_name}': {error_message}")]
+    #[non_exhaustive]
+    CompensationFailed {
+        operation_name: String,
+        error_message: String,
+    },
 }
 
 impl DurableError {
@@ -536,6 +559,31 @@ impl DurableError {
         }
     }
 
+    /// Create a compensation failed error.
+    ///
+    /// Use when one or more compensation closures in `run_compensations()` fail.
+    /// All compensations are attempted even when one fails; this error is returned
+    /// when the [`CompensationResult`](crate::types::CompensationResult) shows failures.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use durable_lambda_core::error::DurableError;
+    ///
+    /// let err = DurableError::compensation_failed("charge_payment", "reversal failed");
+    /// assert!(err.to_string().contains("charge_payment"));
+    /// assert_eq!(err.code(), "COMPENSATION_FAILED");
+    /// ```
+    pub fn compensation_failed(
+        operation_name: impl Into<String>,
+        error_message: impl Into<String>,
+    ) -> Self {
+        Self::CompensationFailed {
+            operation_name: operation_name.into(),
+            error_message: error_message.into(),
+        }
+    }
+
     /// Return a stable, programmatic error code for this error variant.
     ///
     /// Codes are SCREAMING_SNAKE_CASE and stable across versions.
@@ -568,6 +616,7 @@ impl DurableError {
             Self::MapFailed { .. } => "MAP_FAILED",
             Self::ChildContextFailed { .. } => "CHILD_CONTEXT_FAILED",
             Self::StepTimeout { .. } => "STEP_TIMEOUT",
+            Self::CompensationFailed { .. } => "COMPENSATION_FAILED",
         }
     }
 }
@@ -597,7 +646,7 @@ mod tests {
         let serde_err = || serde_json::from_str::<i32>("bad").unwrap_err();
         let io_err = || std::io::Error::new(std::io::ErrorKind::Other, "test");
 
-        // Construct all 15 testable variants (AwsSdk excluded — no public constructor).
+        // Construct all 16 testable variants (AwsSdk excluded — no public constructor).
         let variants: &[(DurableError, &str)] = &[
             (
                 DurableError::replay_mismatch("A", "B", 0),
@@ -644,6 +693,10 @@ mod tests {
                 "CHILD_CONTEXT_FAILED",
             ),
             (DurableError::step_timeout("op"), "STEP_TIMEOUT"),
+            (
+                DurableError::compensation_failed("op", "msg"),
+                "COMPENSATION_FAILED",
+            ),
         ];
 
         let mut codes = HashSet::new();
@@ -757,5 +810,27 @@ mod tests {
     fn error_is_send_sync() {
         fn assert_send_sync<T: Send + Sync>() {}
         assert_send_sync::<DurableError>();
+    }
+
+    // --- CompensationFailed tests ---
+
+    #[test]
+    fn compensation_failed_error_code() {
+        let err = DurableError::compensation_failed("op", "msg");
+        assert_eq!(err.code(), "COMPENSATION_FAILED");
+    }
+
+    #[test]
+    fn compensation_failed_display_contains_operation_and_message() {
+        let err = DurableError::compensation_failed("charge_payment", "payment reversal failed");
+        let msg = err.to_string();
+        assert!(
+            msg.contains("charge_payment"),
+            "display should contain operation_name, got: {msg}"
+        );
+        assert!(
+            msg.contains("payment reversal failed"),
+            "display should contain error_message, got: {msg}"
+        );
     }
 }

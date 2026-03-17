@@ -16,6 +16,6 @@ pub use ops_trait::DurableContextOps;
 pub use replay::ReplayEngine;
 pub use types::{
     BatchItem, BatchItemStatus, BatchResult, CallbackHandle, CallbackOptions, CheckpointResult,
-    CompletionReason, ExecutionMode, HistoryEntry, MapOptions, OperationType, ParallelOptions,
-    StepOptions,
+    CompensationItem, CompensationResult, CompensationStatus, CompletionReason, ExecutionMode,
+    HistoryEntry, MapOptions, OperationType, ParallelOptions, StepOptions,
 };
