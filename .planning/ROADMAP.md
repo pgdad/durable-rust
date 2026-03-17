@@ -140,7 +140,10 @@ Plans:
   3. trybuild compile-fail tests verify both wrong-type and wrong-return-type errors
   4. `handler(fn).with_tracing(subscriber).run()` configures custom tracing before execution
   5. `handler(fn).with_error_handler(fn).run()` routes errors through custom handler
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 08-01-PLAN.md — Proc-macro type validation (second param DurableContext, return type Result) + trybuild compile-fail tests
+- [ ] 08-02-PLAN.md — Builder configuration methods (with_tracing, with_error_handler) + unit tests
 
 ### Phase 9: Documentation Overhaul
 **Goal**: README, migration guide, and inline docs cover determinism rules, error handling patterns, and troubleshooting with no gaps.
@@ -167,5 +170,5 @@ Plans:
 | 5. Step Timeout & Conditional Retry | 3/3 | Complete   | 2026-03-16 |
 | 6. Observability & Batch Checkpoint | 2/2 | Complete   | 2026-03-16 |
 | 7. Saga / Compensation Pattern | 2/2 | Complete   | 2026-03-17 |
-| 8. Macro & Builder Improvements | 0/TBD | Not started | - |
+| 8. Macro & Builder Improvements | 0/2 | Planned | - |
 | 9. Documentation Overhaul | 0/TBD | Not started | - |
