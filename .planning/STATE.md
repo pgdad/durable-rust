@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: AWS Integration Testing
 status: executing
-stopped_at: Completed 12-01 (Dockerfile + .dockerignore with cargo-chef)
-last_updated: "2026-03-17T16:46:31.705Z"
+stopped_at: Completed 12-02 — all 44 ECR images verified, Phase 11-03 unblocked
+last_updated: "2026-03-17T16:58:55.882Z"
 last_activity: 2026-03-17 — Completed 11-02 (ECR dr-examples-c351 and IAM dr-lambda-exec-c351 deployed and verified)
 progress:
   total_phases: 8
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 6
-  completed_plans: 4
+  completed_plans: 5
   percent: 6
 ---
 
@@ -49,6 +49,7 @@ Progress: [██░░░░░░░░] 6%
 
 *Updated after each plan completion*
 | Phase 12-docker-build-pipeline P01 | 3 | 1 tasks | 2 files |
+| Phase 12-docker-build-pipeline P02 | 7 | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -72,6 +73,9 @@ Recent decisions affecting current work:
 - [Phase 11-infrastructure]: 11-02: deploy-ecr.sh gates on verify-prerequisites.sh to catch expired ADFS credentials before any terraform operations
 - [Phase 12-docker-build-pipeline]: 12-01: Full workspace cargo chef cook (no -p) chosen to avoid cross-crate dep resolution failures; all 4 example crates share durable-lambda-core
 - [Phase 12-docker-build-pipeline]: 12-01: BINARY_NAME ARG added separately from PACKAGE to fix bug where Dockerfile assumed crate name equals binary name
+- [Phase 12-docker-build-pipeline]: 12-02: ECR image count verification uses unique tag count (imageIds[*].imageTag | length) not raw length(imageIds) — raw count includes untagged manifest digests
+- [Phase 12-docker-build-pipeline]: 12-02: Base images pre-pulled serially before 4 parallel crate jobs to prevent Docker layer-store contention on simultaneous pulls
+- [Phase 12-docker-build-pipeline]: 12-02: Binary names hardcoded in CRATE_BINS array (not computed) to guarantee exact match with lambda.tf handler map keys
 
 ### Pending Todos
 
@@ -83,6 +87,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-17T16:46:31.703Z
-Stopped at: Completed 12-01 (Dockerfile + .dockerignore with cargo-chef)
+Last session: 2026-03-17T16:58:55.881Z
+Stopped at: Completed 12-02 — all 44 ECR images verified, Phase 11-03 unblocked
 Resume file: None

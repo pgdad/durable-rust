@@ -26,9 +26,9 @@ Requirements for AWS Integration Testing milestone. Each maps to roadmap phases.
 ### Build Pipeline
 
 - [x] **BUILD-01**: Dockerfile updated with cargo-chef for fast dependency-layer caching
-- [ ] **BUILD-02**: Build script builds all 44 Docker images from the 4 example crates
-- [ ] **BUILD-03**: Build script pushes all 44 images to ECR with per-binary tags
-- [ ] **BUILD-04**: Build supports parallel execution (4 crates built concurrently)
+- [x] **BUILD-02**: Build script builds all 44 Docker images from the 4 example crates
+- [x] **BUILD-03**: Build script pushes all 44 images to ECR with per-binary tags
+- [x] **BUILD-04**: Build supports parallel execution (4 crates built concurrently)
 
 ### Test Harness
 
@@ -108,9 +108,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | INFRA-07 | Phase 11 | Complete |
 | INFRA-08 | Phase 11 | Complete |
 | BUILD-01 | Phase 12 | Complete |
-| BUILD-02 | Phase 12 | Pending |
-| BUILD-03 | Phase 12 | Pending |
-| BUILD-04 | Phase 12 | Pending |
+| BUILD-02 | Phase 12 | Complete |
+| BUILD-03 | Phase 12 | Complete |
+| BUILD-04 | Phase 12 | Complete |
 | TEST-01 | Phase 13 | Pending |
 | TEST-02 | Phase 13 | Pending |
 | TEST-03 | Phase 13 | Pending |
