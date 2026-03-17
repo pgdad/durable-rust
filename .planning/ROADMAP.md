@@ -38,7 +38,7 @@
   2. `aws --version` outputs aws-cli/2.x and `aws sts get-caller-identity --profile adfs` returns a valid account ID
   3. `docker buildx version` outputs a valid version and `docker info` shows the daemon is running
   4. `jq --version` outputs 1.7 or higher
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 Plans:
 - [x] 10-01-PLAN.md — Verify prerequisites and create verification script
 
@@ -127,7 +127,7 @@ Plans:
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 10. Tooling and Prerequisites | v1.1 | 1/1 | Complete | 2026-03-17 |
+| 10. Tooling and Prerequisites | v1.1 | Complete    | 2026-03-17 | 2026-03-17 |
 | 11. Infrastructure | v1.1 | 0/TBD | Not started | - |
 | 12. Docker Build Pipeline | v1.1 | 0/TBD | Not started | - |
 | 13. Test Harness | v1.1 | 0/TBD | Not started | - |
