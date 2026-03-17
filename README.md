@@ -483,6 +483,80 @@ Key mapping:
 | `context.parallel("name", branches)` | `ctx.parallel("name", branches, opts).await?` |
 | `MockContext()` | `MockDurableContext::new().build().await` |
 
+## Troubleshooting
+
+### Send + 'static on parallel/map closures
+
+**Problem:** Closures in `parallel()` or `map()` capture a borrowed reference (`&T`), violating the `Send + 'static` requirement imposed by `tokio::spawn`.
+
+**Compiler error (representative):**
+
+```
+error[E0521]: borrowed data escapes outside of closure
+  --> src/main.rs:15:9
+   |
+   |     Box::new(|mut ctx| Box::pin(async move {
+   |              --------- `data` is a reference that is only valid in the closure body
+   |         process(data); // captured &data violates 'static
+   |         ^^^^^^^^^^^^ `data` escapes the closure body here
+```
+
+**Fix:** Clone the data before the closure and use `move`:
+
+```rust
+let data = data.clone(); // owned copy
+Box::new(move |mut ctx| Box::pin(async move {
+    process(&data); // owned — satisfies Send + 'static
+    Ok(())
+}))
+```
+
+---
+
+### Serialize + DeserializeOwned bounds
+
+**Problem:** A type flowing through `step()`, `parallel()`, `map()`, or `child_context()` does not derive `Serialize` + `Deserialize`. Both `T` and `E` in `Result<T, E>` must implement these traits.
+
+**Compiler error (representative):**
+
+```
+error[E0277]: the trait bound `MyType: Serialize` is not satisfied
+  --> src/main.rs:10:5
+   |
+   |     let result: Result<MyType, String> = ctx.step("work", || async {
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `Serialize` is not implemented for `MyType`
+```
+
+**Fix:** Add serde derives to every type used in durable operations:
+
+```rust
+#[derive(serde::Serialize, serde::Deserialize)]
+struct MyType { /* ... */ }
+```
+
+---
+
+### Missing type annotations on step results
+
+**Problem:** The compiler cannot infer `T` and `E` for a step result because the type information comes from serde deserialization, not from the closure return type alone.
+
+**Compiler error (representative):**
+
+```
+error[E0284]: type annotations needed
+  --> src/main.rs:10:9
+   |
+   |     let result = ctx.step("work", || async { Ok(42) }).await?;
+   |         ^^^^^^ cannot infer type for type parameter `T` declared on the method `step`
+```
+
+**Fix:** Always annotate step results explicitly:
+
+```rust
+let result: Result<i32, String> = ctx.step("work", || async { Ok(42) }).await?;
+//         ^^^^^^^^^^^^^^^^^^^ required — compiler cannot infer T and E
+```
+
 ## Container Deployment
 
 Durable Lambdas deploy as container images using `provided.al2023`:
@@ -506,6 +580,10 @@ CMD ["bootstrap"]
 - **For deployment:** AWS account with durable execution enabled
 
 For local development and testing, no AWS credentials are needed.
+
+## Contributing
+
+This project follows 38 implementation rules documented in [project-context.md](_bmad-output/project-context.md). Read these before making changes.
 
 ## License
 
