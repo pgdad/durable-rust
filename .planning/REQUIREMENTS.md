@@ -97,50 +97,50 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| TOOL-01 | — | Pending |
-| TOOL-02 | — | Pending |
-| INFRA-01 | — | Pending |
-| INFRA-02 | — | Pending |
-| INFRA-03 | — | Pending |
-| INFRA-04 | — | Pending |
-| INFRA-05 | — | Pending |
-| INFRA-06 | — | Pending |
-| INFRA-07 | — | Pending |
-| INFRA-08 | — | Pending |
-| BUILD-01 | — | Pending |
-| BUILD-02 | — | Pending |
-| BUILD-03 | — | Pending |
-| BUILD-04 | — | Pending |
-| TEST-01 | — | Pending |
-| TEST-02 | — | Pending |
-| TEST-03 | — | Pending |
-| TEST-04 | — | Pending |
-| TEST-05 | — | Pending |
-| TEST-06 | — | Pending |
-| OPTEST-01 | — | Pending |
-| OPTEST-02 | — | Pending |
-| OPTEST-03 | — | Pending |
-| OPTEST-04 | — | Pending |
-| OPTEST-05 | — | Pending |
-| OPTEST-06 | — | Pending |
-| OPTEST-07 | — | Pending |
-| OPTEST-08 | — | Pending |
-| OPTEST-09 | — | Pending |
-| OPTEST-10 | — | Pending |
-| OPTEST-11 | — | Pending |
-| ADV-01 | — | Pending |
-| ADV-02 | — | Pending |
-| ADV-03 | — | Pending |
-| ADV-04 | — | Pending |
-| DOC-01 | — | Pending |
-| DOC-02 | — | Pending |
-| DOC-03 | — | Pending |
+| TOOL-01 | Phase 10 | Pending |
+| TOOL-02 | Phase 10 | Pending |
+| INFRA-01 | Phase 11 | Pending |
+| INFRA-02 | Phase 11 | Pending |
+| INFRA-03 | Phase 11 | Pending |
+| INFRA-04 | Phase 11 | Pending |
+| INFRA-05 | Phase 11 | Pending |
+| INFRA-06 | Phase 11 | Pending |
+| INFRA-07 | Phase 11 | Pending |
+| INFRA-08 | Phase 11 | Pending |
+| BUILD-01 | Phase 12 | Pending |
+| BUILD-02 | Phase 12 | Pending |
+| BUILD-03 | Phase 12 | Pending |
+| BUILD-04 | Phase 12 | Pending |
+| TEST-01 | Phase 13 | Pending |
+| TEST-02 | Phase 13 | Pending |
+| TEST-03 | Phase 13 | Pending |
+| TEST-04 | Phase 13 | Pending |
+| TEST-05 | Phase 13 | Pending |
+| TEST-06 | Phase 13 | Pending |
+| OPTEST-01 | Phase 14 | Pending |
+| OPTEST-02 | Phase 14 | Pending |
+| OPTEST-03 | Phase 14 | Pending |
+| OPTEST-04 | Phase 15 | Pending |
+| OPTEST-05 | Phase 15 | Pending |
+| OPTEST-06 | Phase 15 | Pending |
+| OPTEST-07 | Phase 14 | Pending |
+| OPTEST-08 | Phase 14 | Pending |
+| OPTEST-09 | Phase 14 | Pending |
+| OPTEST-10 | Phase 14 | Pending |
+| OPTEST-11 | Phase 14 | Pending |
+| ADV-01 | Phase 16 | Pending |
+| ADV-02 | Phase 16 | Pending |
+| ADV-03 | Phase 16 | Pending |
+| ADV-04 | Phase 16 | Pending |
+| DOC-01 | Phase 17 | Pending |
+| DOC-02 | Phase 17 | Pending |
+| DOC-03 | Phase 17 | Pending |
 
 **Coverage:**
 - v1.1 requirements: 38 total
-- Mapped to phases: 0
-- Unmapped: 38 ⚠️
+- Mapped to phases: 38
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-03-17*
-*Last updated: 2026-03-17 after initial definition*
+*Last updated: 2026-03-17 after roadmap creation — all 38 requirements mapped*

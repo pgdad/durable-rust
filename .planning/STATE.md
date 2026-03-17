@@ -5,46 +5,69 @@ milestone_name: AWS Integration Testing
 status: active
 last_updated: "2026-03-17T12:00:00.000Z"
 progress:
-  total_phases: 0
+  total_phases: 8
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
 ---
 
-# STATE.md
+# Project State
 
 ## Project Reference
-**File**: PROJECT.md
-**Core Value**: Enable Rust durable Lambda handlers with 4-8x lower memory and zero behavioral divergence from Python SDK
-**Current Focus**: v1.1 milestone — AWS integration testing infrastructure
+
+See: .planning/PROJECT.md (updated 2026-03-17)
+
+**Core value:** Enable Rust durable Lambda handlers with 4-8x lower memory and zero behavioral divergence from Python SDK
+**Current focus:** Phase 10 — Tooling and Prerequisites
 
 ## Current Position
-- **Phase**: Not started (defining requirements)
-- **Plan**: —
-- **Status**: Defining requirements
-- **Last Activity**: 2026-03-17 — Milestone v1.1 started
-- **Progress**: [░░░░░░░░░░] 0%
+
+Phase: 10 of 17 (Tooling and Prerequisites)
+Plan: 0 of TBD in current phase
+Status: Ready to plan
+Last activity: 2026-03-17 — Roadmap created for v1.1 milestone
+
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
-- **Total Plans**: TBD
-- **Phases**: TBD
-- **Requirements**: TBD
+
+**Velocity:**
+- Total plans completed: 0
+- Average duration: —
+- Total execution time: —
+
+**By Phase:**
+
+| Phase | Plans | Total | Avg/Plan |
+|-------|-------|-------|----------|
+| - | - | - | - |
+
+*Updated after each plan completion*
 
 ## Accumulated Context
 
-### Recent Decisions
-- v1.1 milestone: AWS Integration Testing — deploy all ~44 example handlers as separate Lambda functions
-- AWS profile: adfs, region: us-east-2, default VPC
-- Terraform for all AWS resources
-- Automated test runner with per-test pass/fail + manual test instructions
+### Decisions
+
+Decisions are logged in PROJECT.md Key Decisions table.
+Recent decisions affecting current work:
+
+- v1.1: durable_config is creation-only — Terraform must include it from first apply (no retrofitting)
+- v1.1: All durable invocations require qualified ARN — every function needs a `live` alias
+- v1.1: cargo-chef required in Dockerfile — prevents 60-min cold builds on source changes
+- v1.1: Callback tests must poll for SUSPENDED state before sending signal (never use sleep)
+- v1.1: `terraform apply -parallelism=5` required to avoid ResourceConflictException at 44-function scale
+- v1.1: Two callee stubs needed: `order-enrichment-lambda` (invoke tests) and `fulfillment-lambda` (combined_workflow)
 
 ### Pending Todos
-- None — defining requirements
 
-### Blockers
-- None identified
+None yet.
+
+### Blockers/Concerns
+
+- Phase 15: Exact JSON field paths for GetDurableExecution response (callback_id location) must be confirmed against a live execution before finalizing polling shell functions — treat as provisional until then.
 
 ## Session Continuity
-- **Last Session**: 2026-03-17 — Started v1.1 milestone
-- **Stopped At**: Defining requirements
-- **Next Action**: Complete requirements definition and roadmap
+
+Last session: 2026-03-17
+Stopped at: Roadmap created — ready to plan Phase 10
+Resume file: None
