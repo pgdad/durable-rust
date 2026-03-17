@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: AWS Integration Testing
 status: executing
-stopped_at: Completed 11-infrastructure/11-01-PLAN.md
-last_updated: "2026-03-17T15:19:01.986Z"
+stopped_at: "Checkpoint Task 2 of 11-infrastructure/11-02-PLAN.md (human-verify: ECR + IAM resources in AWS)"
+last_updated: "2026-03-17T15:22:53.631Z"
 last_activity: 2026-03-17 — Completed 10-01 (verify-prerequisites.sh created, exits 0)
 progress:
   total_phases: 8
   completed_phases: 1
   total_plans: 4
-  completed_plans: 2
+  completed_plans: 3
   percent: 3
 ---
 
@@ -47,6 +47,7 @@ Progress: [█░░░░░░░░░] 3%
 
 *Updated after each plan completion*
 | Phase 11-infrastructure P01 | 3 | 2 tasks | 11 files |
+| Phase 11-infrastructure P02 | 6 | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -66,6 +67,8 @@ Recent decisions affecting current work:
 - [Phase 11-infrastructure]: 44 Lambda functions use for_each over locals map with durable_config (execution_timeout=3600, retention_period=7); publish = true required for live alias versioning
 - [Phase 11-infrastructure]: random_id suffix (4-char hex) ensures multi-workspace safe naming across all resources; force_delete=true on ECR for clean destroy
 - [Phase 11-infrastructure]: terraform apply -parallelism=5 required to avoid ResourceConflictException at 44-function scale
+- [Phase 11-infrastructure]: 11-02: Targeted apply order lets Terraform resolve random_id.suffix dependency automatically; suffix c351 is now fixed for all downstream resources
+- [Phase 11-infrastructure]: 11-02: deploy-ecr.sh gates on verify-prerequisites.sh to catch expired ADFS credentials before any terraform operations
 
 ### Pending Todos
 
@@ -77,6 +80,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-17T15:19:01.985Z
-Stopped at: Completed 11-infrastructure/11-01-PLAN.md
+Last session: 2026-03-17T15:22:53.629Z
+Stopped at: Checkpoint Task 2 of 11-infrastructure/11-02-PLAN.md (human-verify: ECR + IAM resources in AWS)
 Resume file: None
