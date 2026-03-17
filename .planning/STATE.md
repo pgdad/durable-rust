@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: AWS Integration Testing
 status: executing
-stopped_at: Completed 12-02 — all 44 ECR images verified, Phase 11-03 unblocked
-last_updated: "2026-03-17T16:59:50.413Z"
+stopped_at: Completed 11-03 — all 44 Lambda functions + 2 stubs deployed and verified, Phase 11 complete
+last_updated: "2026-03-17T17:31:22.856Z"
 last_activity: 2026-03-17 — Completed 11-02 (ECR dr-examples-c351 and IAM dr-lambda-exec-c351 deployed and verified)
 progress:
   total_phases: 8
-  completed_phases: 2
-  total_plans: 6
-  completed_plans: 5
+  completed_phases: 3
+  total_plans: 7
+  completed_plans: 6
   percent: 6
 ---
 
@@ -50,6 +50,7 @@ Progress: [██░░░░░░░░] 6%
 *Updated after each plan completion*
 | Phase 12-docker-build-pipeline P01 | 3 | 1 tasks | 2 files |
 | Phase 12-docker-build-pipeline P02 | 7 | 2 tasks | 1 files |
+| Phase 11-infrastructure P03 | 10 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -76,6 +77,8 @@ Recent decisions affecting current work:
 - [Phase 12-docker-build-pipeline]: 12-02: ECR image count verification uses unique tag count (imageIds[*].imageTag | length) not raw length(imageIds) — raw count includes untagged manifest digests
 - [Phase 12-docker-build-pipeline]: 12-02: Base images pre-pulled serially before 4 parallel crate jobs to prevent Docker layer-store contention on simultaneous pulls
 - [Phase 12-docker-build-pipeline]: 12-02: Binary names hardcoded in CRATE_BINS array (not computed) to guarantee exact match with lambda.tf handler map keys
+- [Phase 11-infrastructure]: 11-03: DurableConfig verified via terraform state (not AWS API) — get-function-configuration does not surface DurableConfig in response
+- [Phase 11-infrastructure]: 11-03: --provenance=false required in docker build — BuildKit creates OCI index manifests by default which Lambda rejects
 
 ### Pending Todos
 
@@ -87,6 +90,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-17T16:58:55.881Z
-Stopped at: Completed 12-02 — all 44 ECR images verified, Phase 11-03 unblocked
+Last session: 2026-03-17T17:31:22.855Z
+Stopped at: Completed 11-03 — all 44 Lambda functions + 2 stubs deployed and verified, Phase 11 complete
 Resume file: None

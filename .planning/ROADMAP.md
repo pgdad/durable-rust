@@ -19,7 +19,7 @@
 **Milestone Goal:** Deploy all 44 example handlers as Lambda functions against real AWS, validate every SDK operation end-to-end with an automated test harness.
 
 - [x] **Phase 10: Tooling and Prerequisites** - Install and configure all required tools on the developer machine
-- [ ] **Phase 11: Infrastructure** - Terraform manages all AWS resources (ECR, IAM, 44 Lambda functions, aliases, stubs)
+- [x] **Phase 11: Infrastructure** - Terraform manages all AWS resources (ECR, IAM, 44 Lambda functions, aliases, stubs) (completed 2026-03-17)
 - [x] **Phase 12: Docker Build Pipeline** - Build and push all 44 container images to ECR with cargo-chef caching (completed 2026-03-17)
 - [ ] **Phase 13: Test Harness** - Single-command test runner with per-test reporting and credential validation
 - [ ] **Phase 14: Synchronous Operation Tests** - All synchronous operations validated against real Lambda (step, parallel, map, child_context, logging, combined_workflow)
@@ -52,7 +52,7 @@ Plans:
   3. The 2 callee stub functions (`order-enrichment-lambda`, `fulfillment-lambda`) exist and are invocable
   4. `terraform destroy` removes all resources cleanly including ECR images (no orphaned resources in the AWS account)
   5. All resources carry project/milestone/style tags visible in the AWS console
-**Plans:** 2/3 plans complete
+**Plans:** 3/3 plans complete
 Plans:
 - [x] 11-01-PLAN.md — Create all Terraform files (7 .tf + 2 Python stubs), terraform init + validate
 - [x] 11-02-PLAN.md — Targeted apply of ECR + IAM resources (gateway for Phase 12 image push)
@@ -137,7 +137,7 @@ Plans:
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 10. Tooling and Prerequisites | v1.1 | Complete    | 2026-03-17 | 2026-03-17 |
-| 11. Infrastructure | 2/3 | In Progress (awaiting Phase 12) | - | - |
+| 11. Infrastructure | 3/3 | Complete   | 2026-03-17 | - |
 | 12. Docker Build Pipeline | 2/2 | Complete    | 2026-03-17 | - |
 | 13. Test Harness | v1.1 | 0/1 | Not started | - |
 | 14. Synchronous Operation Tests | v1.1 | 0/TBD | Not started | - |
