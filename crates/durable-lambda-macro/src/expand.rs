@@ -84,6 +84,8 @@ pub(crate) fn expand_durable_execution(func: ItemFn) -> Result<TokenStream, Erro
 /// Requirements:
 /// - Must be `async`
 /// - Must have exactly 2 parameters
+/// - Second parameter must be `DurableContext`
+/// - Return type must be `Result<...>`
 fn validate_signature(func: &ItemFn) -> Result<(), Error> {
     if func.sig.asyncness.is_none() {
         return Err(Error::new_spanned(
@@ -101,6 +103,60 @@ fn validate_signature(func: &ItemFn) -> Result<(), Error> {
                  (event: serde_json::Value, ctx: DurableContext), found {param_count}"
             ),
         ));
+    }
+
+    // FEAT-29: Second parameter must be DurableContext.
+    // Safety: param_count == 2 is guaranteed above, so nth(1) always yields Some.
+    let second = func.sig.inputs.iter().nth(1).expect("param_count == 2");
+    if let FnArg::Typed(PatType { ty, .. }) = second {
+        let is_durable_context = if let Type::Path(type_path) = ty.as_ref() {
+            type_path
+                .path
+                .segments
+                .last()
+                .map(|seg| seg.ident == "DurableContext")
+                .unwrap_or(false)
+        } else {
+            false
+        };
+        if !is_durable_context {
+            return Err(Error::new_spanned(
+                ty,
+                "#[durable_execution] second parameter must be DurableContext — \
+                 expected: async fn handler(event: serde_json::Value, ctx: DurableContext) \
+                 -> Result<serde_json::Value, DurableError>",
+            ));
+        }
+    }
+
+    // FEAT-30: Return type must be Result<...>.
+    match &func.sig.output {
+        ReturnType::Default => {
+            return Err(Error::new_spanned(
+                func.sig.fn_token,
+                "#[durable_execution] must explicitly return \
+                 Result<serde_json::Value, DurableError>",
+            ));
+        }
+        ReturnType::Type(_, boxed_type) => {
+            let is_result = if let Type::Path(type_path) = boxed_type.as_ref() {
+                type_path
+                    .path
+                    .segments
+                    .last()
+                    .map(|seg| seg.ident == "Result")
+                    .unwrap_or(false)
+            } else {
+                false
+            };
+            if !is_result {
+                return Err(Error::new_spanned(
+                    boxed_type,
+                    "#[durable_execution] return type must be \
+                     Result<serde_json::Value, DurableError> — found non-Result type",
+                ));
+            }
+        }
     }
 
     Ok(())
