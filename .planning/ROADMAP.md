@@ -56,7 +56,7 @@ Plans:
 Plans:
 - [x] 11-01-PLAN.md — Create all Terraform files (7 .tf + 2 Python stubs), terraform init + validate
 - [x] 11-02-PLAN.md — Targeted apply of ECR + IAM resources (gateway for Phase 12 image push)
-- [ ] 11-03-PLAN.md — Full terraform apply + comprehensive smoke verification (after Phase 12 images)
+- [x] 11-03-PLAN.md — Full terraform apply + comprehensive smoke verification (after Phase 12 images) (completed 2026-03-17)
 
 ### Phase 12: Docker Build Pipeline
 **Goal**: All 44 container images are built and pushed to ECR, with a repeatable one-command build that uses cargo-chef layer caching
@@ -136,7 +136,7 @@ Plans:
 |-------|-----------|----------------|--------|-----------|
 | 10. Tooling and Prerequisites | v1.1 | Complete    | 2026-03-17 | 2026-03-17 |
 | 11. Infrastructure | 2/3 | In Progress (awaiting Phase 12) | - | - |
-| 12. Docker Build Pipeline | 2/2 | Complete   | 2026-03-17 | - |
+| 12. Docker Build Pipeline | 2/2 | Complete    | 2026-03-17 | - |
 | 13. Test Harness | v1.1 | 0/TBD | Not started | - |
 | 14. Synchronous Operation Tests | v1.1 | 0/TBD | Not started | - |
 | 15. Async Operation Tests | v1.1 | 0/TBD | Not started | - |
