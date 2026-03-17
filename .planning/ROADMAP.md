@@ -12,7 +12,7 @@
 - [x] **Phase 6: Observability & Batch Checkpoint** - Tracing spans per operation and batched checkpoint API to reduce AWS calls (completed 2026-03-16)
 - [x] **Phase 7: Saga / Compensation Pattern** - First-class support for distributed transaction rollback with durable compensations (completed 2026-03-17)
 - [x] **Phase 8: Macro & Builder Improvements** - Type validation in proc-macro, configuration methods on builder pattern (completed 2026-03-17)
-- [ ] **Phase 9: Documentation Overhaul** - Determinism rules, error examples, troubleshooting FAQ, cross-references, metadata
+- [x] **Phase 9: Documentation Overhaul** - Determinism rules, error examples, troubleshooting FAQ, cross-references, metadata (completed 2026-03-17)
 
 ## Phase Details
 
@@ -174,4 +174,4 @@ Plans:
 | 6. Observability & Batch Checkpoint | 2/2 | Complete   | 2026-03-16 |
 | 7. Saga / Compensation Pattern | 2/2 | Complete   | 2026-03-17 |
 | 8. Macro & Builder Improvements | 2/2 | Complete   | 2026-03-17 |
-| 9. Documentation Overhaul | 1/2 | In Progress|  |
+| 9. Documentation Overhaul | 2/2 | Complete   | 2026-03-17 |

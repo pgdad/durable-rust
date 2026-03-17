@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-last_updated: "2026-03-17T09:32:42.764Z"
+last_updated: "2026-03-17T09:33:57.263Z"
 progress:
   total_phases: 9
-  completed_phases: 8
+  completed_phases: 9
   total_plans: 23
-  completed_plans: 22
+  completed_plans: 23
 ---
 
 # STATE.md
@@ -20,10 +20,10 @@ progress:
 
 ## Current Position
 - **Phase**: 09-documentation-overhaul
-- **Plan**: 09-01 complete
+- **Plan**: 09-02 complete (Phase 09 complete — all phases complete)
 - **Status**: Complete
-- **Last Activity**: 2026-03-17 — Completed 09-01 README documentation overhaul (Determinism Rules, Error Handling, Troubleshooting FAQ, Contributing, Parallel boxing comment)
-- **Progress**: [██████████] 96% 22/23 plans complete
+- **Last Activity**: 2026-03-17 — Completed 09-02 migration guide anti-patterns, types.rs rustdoc, CLAUDE.md, all 6 Cargo.toml metadata
+- **Progress**: [██████████] 100% 23/23 plans complete
 
 ## Performance Metrics
 - **Total Plans**: TBD (phases not yet planned into individual plans)
@@ -93,14 +93,17 @@ progress:
 - [09-01] Determinism Rules placed after Operations Guide (after Replay-Safe Logging), before Testing per user decision in CONTEXT.md
 - [09-01] Error Handling placed as standalone section between API Styles and Operations Guide — natural reading flow: API styles -> error model -> operations
 - [09-01] Troubleshooting placed before Container Deployment; Contributing placed before License
+- [09-02] BatchResult doctest uses concrete i32 types inline so it compiles without no_run; CallbackHandle ASCII diagram wrapped in text fence to prevent doctest execution
+- [09-02] CLAUDE.md New Features section appended after Code Style — documents DurableContextOps trait and 6 new Phases 5-8 features in terse bullet style
+- [09-02] Cargo.toml omits license/repository fields (internal project not published to crates.io)
 
 ### Pending Todos
-- None — ready to begin Phase 1 execution
+- None — all phases complete
 
 ### Blockers
 - None identified
 
 ## Session Continuity
-- **Last Session**: 2026-03-17 — Completed 09-01 README documentation overhaul (DOCS-01/02/03/04/07)
-- **Stopped At**: Completed 09-documentation-overhaul/09-01-PLAN.md
-- **Next Action**: Phase 09 Plan 01 complete — proceed to remaining Phase 09 plans if any
+- **Last Session**: 2026-03-17 — Completed 09-02 migration guide/types.rs/CLAUDE.md/Cargo.toml documentation (DOCS-05/06/08/09/10)
+- **Stopped At**: Completed 09-documentation-overhaul/09-02-PLAN.md
+- **Next Action**: All 9 phases and 23 plans complete — project at v1.0 milestone

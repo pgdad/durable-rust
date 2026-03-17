@@ -100,12 +100,12 @@
 - [x] **DOCS-02**: README adds error handling example showing two-level Result matching
 - [x] **DOCS-03**: README adds troubleshooting FAQ (Send+Static, Serialize bounds, type annotations)
 - [x] **DOCS-04**: README links to project-context.md for implementation rules
-- [ ] **DOCS-05**: Migration guide adds determinism section with anti-patterns
-- [ ] **DOCS-06**: BatchResult documentation adds per-item status checking example
+- [x] **DOCS-05**: Migration guide adds determinism section with anti-patterns
+- [x] **DOCS-06**: BatchResult documentation adds per-item status checking example
 - [x] **DOCS-07**: Parallel example adds comment explaining boxing/type alias complexity
-- [ ] **DOCS-08**: CLAUDE.md documents wrapper crate duplication and change propagation requirement
-- [ ] **DOCS-09**: Callback documentation adds two-phase operation ID diagram
-- [ ] **DOCS-10**: Cargo.toml files gain description, keywords, categories metadata
+- [x] **DOCS-08**: CLAUDE.md documents wrapper crate duplication and change propagation requirement
+- [x] **DOCS-09**: Callback documentation adds two-phase operation ID diagram
+- [x] **DOCS-10**: Cargo.toml files gain description, keywords, categories metadata
 
 ## v2 Requirements (deferred)
 - [ ] **V2-01**: Rate limiting — client-side rate limiting before AWS API calls
