@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: AWS Integration Testing
 status: executing
-stopped_at: Completed 13-01 — test-helpers.sh and test-all.sh with 44 stubs, credential gating, and PASS/FAIL reporting
-last_updated: "2026-03-17T17:40:09.063Z"
+stopped_at: Completed 16-01 — 4 advanced-feature handlers, infra registration, and test assertions
+last_updated: "2026-03-17T18:18:53.088Z"
 last_activity: 2026-03-17 — Completed 11-02 (ECR dr-examples-c351 and IAM dr-lambda-exec-c351 deployed and verified)
 progress:
   total_phases: 8
   completed_phases: 4
-  total_plans: 7
-  completed_plans: 7
+  total_plans: 9
+  completed_plans: 8
   percent: 6
 ---
 
@@ -52,6 +52,7 @@ Progress: [██░░░░░░░░] 6%
 | Phase 12-docker-build-pipeline P02 | 7 | 2 tasks | 1 files |
 | Phase 11-infrastructure P03 | 10 | 2 tasks | 3 files |
 | Phase 13-test-harness P01 | 2 | 2 tasks | 2 files |
+| Phase 16-advanced-feature-tests P01 | 3 | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -83,6 +84,8 @@ Recent decisions affecting current work:
 - [Phase 13-test-harness]: test-helpers.sh is a sourceable library (no shebang, no chmod +x) — enforces correct usage pattern
 - [Phase 13-test-harness]: Stub test functions return 0 so harness framework is verifiable before any real tests exist
 - [Phase 13-test-harness]: 3-second polling interval for wait_for_terminal_status and extract_callback_id — no busy-loop
+- [Phase 16-advanced-feature-tests]: 16-01: CRATE_BINS total computed dynamically via wc -w to avoid stale hardcoded count as binaries grow
+- [Phase 16-advanced-feature-tests]: 16-01: test_closure_conditional_retry tests non-retryable path only; retryable path deferred per RESEARCH open question about StepRetryScheduled async behavior
 
 ### Pending Todos
 
@@ -94,6 +97,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-17T17:36:41.613Z
-Stopped at: Completed 13-01 — test-helpers.sh and test-all.sh with 44 stubs, credential gating, and PASS/FAIL reporting
+Last session: 2026-03-17T18:18:53.087Z
+Stopped at: Completed 16-01 — 4 advanced-feature handlers, infra registration, and test assertions
 Resume file: None

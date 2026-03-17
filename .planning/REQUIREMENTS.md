@@ -55,10 +55,10 @@ Requirements for AWS Integration Testing milestone. Each maps to roadmap phases.
 
 ### Advanced Feature Tests
 
-- [ ] **ADV-01**: Saga/compensation test — purpose-built handler registers compensations, fails forward step, runs compensations in reverse order, returns compensation sequence
-- [ ] **ADV-02**: Step timeout test — handler with long-running step times out at configured threshold
-- [ ] **ADV-03**: Conditional retry test — handler with retry_if predicate retries on matching errors only
-- [ ] **ADV-04**: Batch checkpoint test — handler using batch mode makes fewer checkpoint calls than non-batch equivalent
+- [x] **ADV-01**: Saga/compensation test — purpose-built handler registers compensations, fails forward step, runs compensations in reverse order, returns compensation sequence
+- [x] **ADV-02**: Step timeout test — handler with long-running step times out at configured threshold
+- [x] **ADV-03**: Conditional retry test — handler with retry_if predicate retries on matching errors only
+- [x] **ADV-04**: Batch checkpoint test — handler using batch mode makes fewer checkpoint calls than non-batch equivalent
 
 ### Documentation
 
@@ -128,10 +128,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | OPTEST-09 | Phase 14 | Pending |
 | OPTEST-10 | Phase 14 | Pending |
 | OPTEST-11 | Phase 14 | Pending |
-| ADV-01 | Phase 16 | Pending |
-| ADV-02 | Phase 16 | Pending |
-| ADV-03 | Phase 16 | Pending |
-| ADV-04 | Phase 16 | Pending |
+| ADV-01 | Phase 16 | Complete |
+| ADV-02 | Phase 16 | Complete |
+| ADV-03 | Phase 16 | Complete |
+| ADV-04 | Phase 16 | Complete |
 | DOC-01 | Phase 17 | Pending |
 | DOC-02 | Phase 17 | Pending |
 | DOC-03 | Phase 17 | Pending |
