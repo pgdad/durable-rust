@@ -125,7 +125,10 @@ Plans:
   3. Compensation execution is checkpointed — replay of compensation produces identical rollback
   4. Compensation failure is captured as DurableError, not swallowed
   5. Partial rollback (compensate 3 of 5) resumes from checkpoint on re-invocation
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 07-01-PLAN.md — Core compensation types, error variant, and DurableContext implementation (FEAT-25, FEAT-26, FEAT-27)
+- [ ] 07-02-PLAN.md — Trait extension, wrapper delegation, and e2e tests (FEAT-25, FEAT-26, FEAT-27, FEAT-28)
 
 ### Phase 8: Macro & Builder Improvements
 **Goal**: The proc-macro validates parameter and return types at compile time, and the builder pattern supports pre-run configuration.
@@ -163,6 +166,6 @@ Plans:
 | 4. Input Validation & Error Codes | 3/3 | Complete   | 2026-03-16 |
 | 5. Step Timeout & Conditional Retry | 3/3 | Complete   | 2026-03-16 |
 | 6. Observability & Batch Checkpoint | 2/2 | Complete   | 2026-03-16 |
-| 7. Saga / Compensation Pattern | 0/TBD | Not started | - |
+| 7. Saga / Compensation Pattern | 0/2 | Planned | - |
 | 8. Macro & Builder Improvements | 0/TBD | Not started | - |
 | 9. Documentation Overhaul | 0/TBD | Not started | - |
