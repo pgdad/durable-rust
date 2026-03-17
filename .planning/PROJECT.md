@@ -28,7 +28,25 @@ Enable Rust teams to write durable Lambda handlers with 4-8x lower memory and or
 - ✓ Documentation overhaul (determinism rules, error examples, troubleshooting FAQ) — v1.0
 
 ### Active (next milestone scope)
-(To be defined in next milestone)
+- [ ] Terraform infrastructure for all Lambda functions with durable execution enabled
+- [ ] ECR repository and Docker image build pipeline for all 4 API styles
+- [ ] IAM roles/policies for Lambda execution and durable execution API calls
+- [ ] All ~44 example handlers deployed as individual Lambda functions
+- [ ] Automated test harness — single command runs all tests with per-test pass/fail
+- [ ] Manual test instructions for individual handler invocation and verification
+- [ ] Callback testing tooling (SendDurableExecutionCallbackSuccess/Failure)
+- [ ] All missing tooling installed (Terraform, AWS CLI, Docker, etc.)
+
+## Current Milestone: v1.1 AWS Integration Testing
+
+**Goal:** Build complete AWS infrastructure and test harness to validate all SDK features and examples against real AWS Lambda Durable Execution.
+
+**Target features:**
+- Terraform-managed AWS resources (ECR, Lambda, IAM)
+- Docker build pipeline for all example handlers
+- Automated end-to-end test runner with per-test reporting
+- Manual test execution documentation
+- Callback signal tooling for interactive testing
 
 ### Out of Scope
 - Multi-runtime support (tokio only) — AWS Lambda ecosystem is tokio-based
@@ -41,6 +59,8 @@ Enable Rust teams to write durable Lambda handlers with 4-8x lower memory and or
 ## Context
 
 Shipped v1.0 Production Hardening milestone with 21,348 lines of Rust across 6 library crates + test suites. 120 commits, 9 phases, 23 plans. The SDK is now production-hardened with comprehensive test coverage (100+ tests), input validation, structured error codes, operation-level observability, batch checkpoint optimization, and first-class saga support.
+
+v1.1 focuses on validating the SDK against real AWS infrastructure. All v1.0 tests use MockDurableContext — no real AWS calls. This milestone deploys all example handlers as Lambda functions and verifies they work end-to-end against the AWS Lambda Durable Execution service. AWS profile: adfs, region: us-east-2, default VPC (no new networking resources).
 
 ## Constraints
 
@@ -65,4 +85,4 @@ Shipped v1.0 Production Hardening milestone with 21,348 lines of Rust across 6 l
 | Step timeout via tokio::time::timeout | Long-running step closures can hang forever | ✓ Good — per-step deadline with abort on expiry |
 
 ---
-*Last updated: 2026-03-17 after v1.0 milestone*
+*Last updated: 2026-03-17 after v1.1 milestone start*
