@@ -118,7 +118,10 @@ Plans:
   2. The step timeout test handler returns FAILED with a timeout error when the step closure exceeds the configured threshold
   3. The conditional retry handler retries on matching errors and does not retry on non-matching errors, confirmed by execution step count in the result
   4. The batch checkpoint handler produces fewer checkpoint API calls than the equivalent non-batch handler, confirmed by CloudWatch metrics or execution metadata
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 16-01-PLAN.md — Write 4 handler binaries, register in Cargo.toml/lambda.tf/build-images.sh/test-all.sh
+- [ ] 16-02-PLAN.md — Deploy infrastructure, build images, run integration tests
 
 ### Phase 17: Documentation
 **Goal**: Any developer can set up the tooling, run individual tests manually, and tear down all AWS resources using written instructions
@@ -142,5 +145,5 @@ Plans:
 | 13. Test Harness | 1/1 | Complete    | 2026-03-17 | - |
 | 14. Synchronous Operation Tests | v1.1 | 0/TBD | Not started | - |
 | 15. Async Operation Tests | v1.1 | 0/TBD | Not started | - |
-| 16. Advanced Feature Tests | v1.1 | 0/TBD | Not started | - |
+| 16. Advanced Feature Tests | v1.1 | 0/2 | Planned | - |
 | 17. Documentation | v1.1 | 0/TBD | Not started | - |
