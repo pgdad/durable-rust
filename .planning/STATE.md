@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-last_updated: "2026-03-17T04:59:04.347Z"
+last_updated: "2026-03-17T05:08:49.839Z"
 progress:
   total_phases: 9
-  completed_phases: 6
+  completed_phases: 7
   total_plans: 19
-  completed_plans: 18
+  completed_plans: 19
 ---
 
 # STATE.md
@@ -20,10 +20,10 @@ progress:
 
 ## Current Position
 - **Phase**: 07-saga-compensation-pattern
-- **Plan**: 07-01 complete
-- **Status**: In Progress
-- **Last Activity**: 2026-03-17 — Completed 07-01 saga/compensation core implementation
-- **Progress**: [██████████] 95% 18/19 plans complete
+- **Plan**: 07-02 complete (Phase 07 complete)
+- **Status**: Complete
+- **Last Activity**: 2026-03-17 — Completed 07-02 saga/compensation trait integration and e2e tests
+- **Progress**: [██████████] 100% 19/19 plans complete
 
 ## Performance Metrics
 - **Total Plans**: TBD (phases not yet planned into individual plans)
@@ -84,6 +84,8 @@ progress:
 - [07-01] run_compensations uses continue-on-error semantics — all compensations attempt even when one fails; per-item status captured in CompensationResult
 - [07-01] Partial rollback resume via replay engine op_id tracking — completed compensations skip closure execution on re-invocation
 - [07-01] CompensateFn wraps typed G: FnOnce(T) -> GFut with JSON serialization/deserialization for type erasure; sub_type="Compensation" for checkpoint protocol
+- [07-02] Wrapper crate trait impl delegation uses self.inner.method() pattern consistent with existing wrappers — not DurableContext:: prefix
+- [07-02] Partial rollback e2e test uses OperationIdGenerator directly to compute compensation op IDs (steps consume 1-3, compensations 4+ in LIFO) for pre-loading history
 
 ### Pending Todos
 - None — ready to begin Phase 1 execution
@@ -92,6 +94,6 @@ progress:
 - None identified
 
 ## Session Continuity
-- **Last Session**: 2026-03-17 — Completed 07-01 saga/compensation core: step_with_compensation, run_compensations, CompensationFailed error variant, 19 unit tests
-- **Stopped At**: Completed 07-saga-compensation-pattern/07-01-PLAN.md
-- **Next Action**: Execute 07-02 (integration/e2e tests for compensation pattern)
+- **Last Session**: 2026-03-17 — Completed 07-02 trait integration + 7 e2e tests for saga compensation pattern
+- **Stopped At**: Completed 07-saga-compensation-pattern/07-02-PLAN.md
+- **Next Action**: All 19 plans complete — v1.0 milestone achieved
