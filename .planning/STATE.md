@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-last_updated: "2026-03-17T05:13:43.049Z"
+last_updated: "2026-03-17T05:41:42.036Z"
 progress:
   total_phases: 9
-  completed_phases: 7
-  total_plans: 19
-  completed_plans: 19
+  completed_phases: 8
+  total_plans: 21
+  completed_plans: 21
 ---
 
 # STATE.md
@@ -19,11 +19,11 @@ progress:
 **Current Focus**: v2 milestone — production hardening, test coverage, developer experience
 
 ## Current Position
-- **Phase**: 07-saga-compensation-pattern
-- **Plan**: 07-02 complete (Phase 07 complete)
-- **Status**: Complete
-- **Last Activity**: 2026-03-17 — Completed 07-02 saga/compensation trait integration and e2e tests
-- **Progress**: [██████████] 100% 19/19 plans complete
+- **Phase**: 08-macro-builder-improvements
+- **Plan**: 08-02 complete
+- **Status**: In Progress
+- **Last Activity**: 2026-03-17 — Completed 08-02 DurableHandlerBuilder with_tracing and with_error_handler
+- **Progress**: [██████████] 95% 20/21 plans complete
 
 ## Performance Metrics
 - **Total Plans**: TBD (phases not yet planned into individual plans)
@@ -86,6 +86,8 @@ progress:
 - [07-01] CompensateFn wraps typed G: FnOnce(T) -> GFut with JSON serialization/deserialization for type erasure; sub_type="Compensation" for checkpoint protocol
 - [07-02] Wrapper crate trait impl delegation uses self.inner.method() pattern consistent with existing wrappers — not DurableContext:: prefix
 - [07-02] Partial rollback e2e test uses OperationIdGenerator directly to compute compensation op IDs (steps consume 1-3, compensations 4+ in LIFO) for pre-loading history
+- [08-02] with_tracing stores subscriber as Option<Box<dyn tracing::Subscriber + Send + Sync>> for type erasure; run() installs via set_global_default before Lambda runtime initialization
+- [08-02] error_handler stored as Option<Box<dyn Fn(DurableError) -> DurableError + Send + Sync>>; applied after handler.await before Box<dyn Error> conversion — preserves DurableError type for transformation
 
 ### Pending Todos
 - None — ready to begin Phase 1 execution
@@ -94,6 +96,6 @@ progress:
 - None identified
 
 ## Session Continuity
-- **Last Session**: 2026-03-17 — Completed 07-02 trait integration + 7 e2e tests for saga compensation pattern
-- **Stopped At**: Completed 07-saga-compensation-pattern/07-02-PLAN.md
-- **Next Action**: All 19 plans complete — v1.0 milestone achieved
+- **Last Session**: 2026-03-17 — Completed 08-02 DurableHandlerBuilder with_tracing() and with_error_handler() (TDD, 14 tests pass)
+- **Stopped At**: Completed 08-macro-builder-improvements/08-02-PLAN.md
+- **Next Action**: Continue Phase 08 remaining plans

@@ -91,9 +91,9 @@
 - [ ] **FEAT-31**: Compile-fail trybuild tests for wrong parameter types and return types
 
 ### Features — Builder Configuration
-- [ ] **FEAT-32**: DurableHandlerBuilder gains .with_tracing(subscriber) method
-- [ ] **FEAT-33**: DurableHandlerBuilder gains .with_error_handler(fn) method
-- [ ] **FEAT-34**: Tests verify custom configuration takes effect
+- [x] **FEAT-32**: DurableHandlerBuilder gains .with_tracing(subscriber) method
+- [x] **FEAT-33**: DurableHandlerBuilder gains .with_error_handler(fn) method
+- [x] **FEAT-34**: Tests verify custom configuration takes effect
 
 ### Documentation
 - [ ] **DOCS-01**: README adds "Determinism Rules" section with do/don't examples

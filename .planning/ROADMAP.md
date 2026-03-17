@@ -11,7 +11,7 @@
 - [x] **Phase 5: Step Timeout & Conditional Retry** - Per-step time limits and retry predicates for error-aware retry policies (completed 2026-03-16)
 - [x] **Phase 6: Observability & Batch Checkpoint** - Tracing spans per operation and batched checkpoint API to reduce AWS calls (completed 2026-03-16)
 - [x] **Phase 7: Saga / Compensation Pattern** - First-class support for distributed transaction rollback with durable compensations (completed 2026-03-17)
-- [ ] **Phase 8: Macro & Builder Improvements** - Type validation in proc-macro, configuration methods on builder pattern
+- [x] **Phase 8: Macro & Builder Improvements** - Type validation in proc-macro, configuration methods on builder pattern (completed 2026-03-17)
 - [ ] **Phase 9: Documentation Overhaul** - Determinism rules, error examples, troubleshooting FAQ, cross-references, metadata
 
 ## Phase Details
@@ -170,5 +170,5 @@ Plans:
 | 5. Step Timeout & Conditional Retry | 3/3 | Complete   | 2026-03-16 |
 | 6. Observability & Batch Checkpoint | 2/2 | Complete   | 2026-03-16 |
 | 7. Saga / Compensation Pattern | 2/2 | Complete   | 2026-03-17 |
-| 8. Macro & Builder Improvements | 0/2 | Planned | - |
+| 8. Macro & Builder Improvements | 2/2 | Complete   | 2026-03-17 |
 | 9. Documentation Overhaul | 0/TBD | Not started | - |
