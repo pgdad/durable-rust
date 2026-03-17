@@ -820,7 +820,8 @@ impl DurableContextOps for TraitContext {
         G: FnOnce(T) -> GFut + Send + 'static,
         GFut: Future<Output = Result<(), DurableError>> + Send + 'static,
     {
-        self.inner.step_with_compensation(name, forward_fn, compensate_fn)
+        self.inner
+            .step_with_compensation(name, forward_fn, compensate_fn)
     }
 
     fn step_with_compensation_opts<T, E, F, Fut, G, GFut>(
