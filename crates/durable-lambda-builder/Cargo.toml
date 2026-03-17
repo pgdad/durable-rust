@@ -2,6 +2,9 @@
 name = "durable-lambda-builder"
 version = "0.1.0"
 edition = "2021"
+description = "Builder-pattern API style for AWS Lambda durable execution workflows"
+keywords = ["aws", "lambda", "durable-execution", "serverless", "workflow"]
+categories = ["api-bindings", "asynchronous"]
 
 [dependencies]
 durable-lambda-core = { path = "../durable-lambda-core" }

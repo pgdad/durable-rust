@@ -2,6 +2,9 @@
 name = "durable-lambda-core"
 version = "0.1.0"
 edition = "2021"
+description = "Core replay engine, types, and operation logic for AWS Lambda durable execution in Rust"
+keywords = ["aws", "lambda", "durable-execution", "serverless", "workflow"]
+categories = ["api-bindings", "asynchronous"]
 
 [dependencies]
 aws-sdk-lambda = { workspace = true }

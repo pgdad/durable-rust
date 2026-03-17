@@ -2,6 +2,9 @@
 name = "durable-lambda-macro"
 version = "0.1.0"
 edition = "2021"
+description = "Proc-macro for zero-boilerplate AWS Lambda durable execution handler registration"
+keywords = ["aws", "lambda", "durable-execution", "serverless", "workflow"]
+categories = ["api-bindings", "asynchronous"]
 
 [lib]
 proc-macro = true

@@ -52,6 +52,7 @@ durable-lambda-testing ─┘
 - **Operation ID Generation** (`core/src/operation_id.rs`): `blake2b("{counter}")` for root, `blake2b("{parent_id}-{counter}")` for children. 64 hex chars. Must match Python SDK exactly — divergence breaks replay.
 - **`DurableBackend` trait** (`core/src/backend.rs`): The sole I/O boundary. `RealBackend` calls AWS; `MockBackend` records calls. Never call AWS APIs outside this trait.
 - **Checkpoint protocol**: Every operation sends START then SUCCEED/FAIL. Parallel/map/child_context use `OperationType::Context` with `sub_type` discriminator.
+- **`DurableContextOps` trait** (`core/src/ops_trait.rs`): Single trait defining all context methods. Implemented by `DurableContext`. Wrapper contexts (`ClosureContext`, `TraitContext`, `BuilderContext`) delegate to `DurableContext`. To add or change a context method, edit `ops_trait.rs` + `context.rs` only.
 
 ## Critical Rules
 
@@ -82,3 +83,11 @@ durable-lambda-testing ─┘
 - All dependency versions in workspace `[workspace.dependencies]`, never in individual crate Cargo.toml.
 - `#[non_exhaustive]` on public enums.
 - Commit format: `type: description` (feat, fix, test, docs, refactor, chore).
+
+### New Features (Phases 5-8)
+- **Step timeout**: `StepOptions::new().timeout_seconds(u64)` — wraps closure in tokio::time::timeout
+- **Conditional retry**: `StepOptions::new().retry_if(|e: &E| ...)` — predicate checked before consuming retry budget
+- **Batch checkpoint**: `ctx.enable_batch_mode()` — multiple sequential steps share a single checkpoint call
+- **Saga / compensation**: `ctx.step_with_compensation("name", forward_fn, compensate_fn)` — registers durable rollback
+- **Proc-macro validation**: `#[durable_execution]` validates second param is `DurableContext` and return is `Result<_, DurableError>` at compile time
+- **Builder configuration**: `.with_tracing(subscriber)` and `.with_error_handler(fn)` on `DurableHandlerBuilder`
