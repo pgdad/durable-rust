@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: AWS Integration Testing
 status: executing
-stopped_at: Phase 12 context gathered
-last_updated: "2026-03-17T16:27:13.706Z"
+stopped_at: Completed 12-01 (Dockerfile + .dockerignore with cargo-chef)
+last_updated: "2026-03-17T16:46:31.705Z"
 last_activity: 2026-03-17 — Completed 11-02 (ECR dr-examples-c351 and IAM dr-lambda-exec-c351 deployed and verified)
 progress:
   total_phases: 8
   completed_phases: 1
-  total_plans: 4
-  completed_plans: 3
+  total_plans: 6
+  completed_plans: 4
   percent: 6
 ---
 
@@ -48,6 +48,7 @@ Progress: [██░░░░░░░░] 6%
 | 11-infrastructure P02 | 1 | 6 min | 6 min |
 
 *Updated after each plan completion*
+| Phase 12-docker-build-pipeline P01 | 3 | 1 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -69,6 +70,8 @@ Recent decisions affecting current work:
 - [Phase 11-infrastructure]: terraform apply -parallelism=5 required to avoid ResourceConflictException at 44-function scale
 - [Phase 11-infrastructure]: 11-02: Targeted apply order lets Terraform resolve random_id.suffix dependency automatically; suffix c351 is now fixed for all downstream resources
 - [Phase 11-infrastructure]: 11-02: deploy-ecr.sh gates on verify-prerequisites.sh to catch expired ADFS credentials before any terraform operations
+- [Phase 12-docker-build-pipeline]: 12-01: Full workspace cargo chef cook (no -p) chosen to avoid cross-crate dep resolution failures; all 4 example crates share durable-lambda-core
+- [Phase 12-docker-build-pipeline]: 12-01: BINARY_NAME ARG added separately from PACKAGE to fix bug where Dockerfile assumed crate name equals binary name
 
 ### Pending Todos
 
@@ -80,6 +83,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-17T16:27:13.704Z
-Stopped at: Phase 12 context gathered
-Resume file: .planning/phases/12-docker-build-pipeline/12-CONTEXT.md
+Last session: 2026-03-17T16:46:31.703Z
+Stopped at: Completed 12-01 (Dockerfile + .dockerignore with cargo-chef)
+Resume file: None

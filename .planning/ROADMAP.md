@@ -67,7 +67,7 @@ Plans:
   2. A second run after a source-only change completes in under 10 minutes (dependency layer reused via cargo-chef)
   3. All 4 example crates build concurrently (parallel build visible in script output)
   4. Lambda functions updated to reference new image URIs are invocable immediately after the push
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 Plans:
 - [ ] 12-01-PLAN.md — Update Dockerfile with cargo-chef three-stage build + create .dockerignore
 - [ ] 12-02-PLAN.md — Create build-images.sh, build and push all 44 images to ECR
@@ -136,7 +136,7 @@ Plans:
 |-------|-----------|----------------|--------|-----------|
 | 10. Tooling and Prerequisites | v1.1 | Complete    | 2026-03-17 | 2026-03-17 |
 | 11. Infrastructure | 2/3 | In Progress (awaiting Phase 12) | - | - |
-| 12. Docker Build Pipeline | v1.1 | 0/2 | Planned | - |
+| 12. Docker Build Pipeline | 1/2 | In Progress|  | - |
 | 13. Test Harness | v1.1 | 0/TBD | Not started | - |
 | 14. Synchronous Operation Tests | v1.1 | 0/TBD | Not started | - |
 | 15. Async Operation Tests | v1.1 | 0/TBD | Not started | - |
