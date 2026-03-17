@@ -86,9 +86,9 @@
 - [x] **FEAT-28**: Tests for compensation order, compensation failure, partial rollback
 
 ### Features — Macro Type Validation
-- [ ] **FEAT-29**: #[durable_execution] validates second parameter is DurableContext type
-- [ ] **FEAT-30**: #[durable_execution] validates return type is Result<Value, DurableError>
-- [ ] **FEAT-31**: Compile-fail trybuild tests for wrong parameter types and return types
+- [x] **FEAT-29**: #[durable_execution] validates second parameter is DurableContext type
+- [x] **FEAT-30**: #[durable_execution] validates return type is Result<Value, DurableError>
+- [x] **FEAT-31**: Compile-fail trybuild tests for wrong parameter types and return types
 
 ### Features — Builder Configuration
 - [x] **FEAT-32**: DurableHandlerBuilder gains .with_tracing(subscriber) method

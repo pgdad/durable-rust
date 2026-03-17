@@ -20,10 +20,10 @@ progress:
 
 ## Current Position
 - **Phase**: 08-macro-builder-improvements
-- **Plan**: 08-02 complete
-- **Status**: In Progress
-- **Last Activity**: 2026-03-17 — Completed 08-02 DurableHandlerBuilder with_tracing and with_error_handler
-- **Progress**: [██████████] 95% 20/21 plans complete
+- **Plan**: 08-01 complete (08-02 also complete — Phase 08 complete)
+- **Status**: Complete
+- **Last Activity**: 2026-03-17 — Completed 08-01 macro type validation (DurableContext + Result checks + trybuild)
+- **Progress**: [██████████] 100% 21/21 plans complete
 
 ## Performance Metrics
 - **Total Plans**: TBD (phases not yet planned into individual plans)
@@ -88,6 +88,8 @@ progress:
 - [07-02] Partial rollback e2e test uses OperationIdGenerator directly to compute compensation op IDs (steps consume 1-3, compensations 4+ in LIFO) for pre-loading history
 - [08-02] with_tracing stores subscriber as Option<Box<dyn tracing::Subscriber + Send + Sync>> for type erasure; run() installs via set_global_default before Lambda runtime initialization
 - [08-02] error_handler stored as Option<Box<dyn Fn(DurableError) -> DurableError + Send + Sync>>; applied after handler.await before Box<dyn Error> conversion — preserves DurableError type for transformation
+- [08-01] Last path segment ident used for DurableContext and Result type checking — tolerates fully qualified and bare type names in #[durable_execution] validation
+- [08-01] ReturnType::Default (implicit ()) rejected at fn_token span; FnArg::Receiver handled defensively with if let in validate_signature()
 
 ### Pending Todos
 - None — ready to begin Phase 1 execution
@@ -96,6 +98,6 @@ progress:
 - None identified
 
 ## Session Continuity
-- **Last Session**: 2026-03-17 — Completed 08-02 DurableHandlerBuilder with_tracing() and with_error_handler() (TDD, 14 tests pass)
-- **Stopped At**: Completed 08-macro-builder-improvements/08-02-PLAN.md
-- **Next Action**: Continue Phase 08 remaining plans
+- **Last Session**: 2026-03-17 — Completed 08-01 macro type validation (FEAT-29/30/31 — DurableContext+Result checks, 4 trybuild tests)
+- **Stopped At**: Completed 08-macro-builder-improvements/08-01-PLAN.md
+- **Next Action**: All plans in Phase 08 complete — proceed to Phase 09 if planned
