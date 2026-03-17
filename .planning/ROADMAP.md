@@ -18,7 +18,7 @@
 
 **Milestone Goal:** Deploy all 44 example handlers as Lambda functions against real AWS, validate every SDK operation end-to-end with an automated test harness.
 
-- [ ] **Phase 10: Tooling and Prerequisites** - Install and configure all required tools on the developer machine
+- [x] **Phase 10: Tooling and Prerequisites** - Install and configure all required tools on the developer machine
 - [ ] **Phase 11: Infrastructure** - Terraform manages all AWS resources (ECR, IAM, 44 Lambda functions, aliases, stubs)
 - [ ] **Phase 12: Docker Build Pipeline** - Build and push all 44 container images to ECR with cargo-chef caching
 - [ ] **Phase 13: Test Harness** - Single-command test runner with per-test reporting and credential validation
@@ -40,7 +40,7 @@
   4. `jq --version` outputs 1.7 or higher
 **Plans:** 1 plan
 Plans:
-- [ ] 10-01-PLAN.md — Verify prerequisites and create verification script
+- [x] 10-01-PLAN.md — Verify prerequisites and create verification script
 
 ### Phase 11: Infrastructure
 **Goal**: All AWS resources exist and are correctly configured so Lambda functions can be invoked with durable execution enabled
@@ -127,7 +127,7 @@ Plans:
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 10. Tooling and Prerequisites | v1.1 | 0/1 | Planning | - |
+| 10. Tooling and Prerequisites | v1.1 | 1/1 | Complete | 2026-03-17 |
 | 11. Infrastructure | v1.1 | 0/TBD | Not started | - |
 | 12. Docker Build Pipeline | v1.1 | 0/TBD | Not started | - |
 | 13. Test Harness | v1.1 | 0/TBD | Not started | - |

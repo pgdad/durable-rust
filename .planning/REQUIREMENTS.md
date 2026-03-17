@@ -9,8 +9,8 @@ Requirements for AWS Integration Testing milestone. Each maps to roadmap phases.
 
 ### Tooling
 
-- [ ] **TOOL-01**: All missing tooling installed on Ubuntu (Terraform, AWS CLI v2, Docker CE + Buildx, jq)
-- [ ] **TOOL-02**: AWS CLI configured with `adfs` profile and `us-east-2` region
+- [x] **TOOL-01**: All missing tooling installed on Ubuntu (Terraform, AWS CLI v2, Docker CE + Buildx, jq)
+- [x] **TOOL-02**: AWS CLI configured with `adfs` profile and `us-east-2` region
 
 ### Infrastructure
 
@@ -97,8 +97,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| TOOL-01 | Phase 10 | Pending |
-| TOOL-02 | Phase 10 | Pending |
+| TOOL-01 | Phase 10 | Complete |
+| TOOL-02 | Phase 10 | Complete |
 | INFRA-01 | Phase 11 | Pending |
 | INFRA-02 | Phase 11 | Pending |
 | INFRA-03 | Phase 11 | Pending |
@@ -143,4 +143,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-03-17*
-*Last updated: 2026-03-17 after roadmap creation — all 38 requirements mapped*
+*Last updated: 2026-03-17 — TOOL-01 and TOOL-02 completed (10-01-PLAN.md)*
