@@ -539,6 +539,21 @@ impl CallbackOptions {
 /// Pass this handle to [`DurableContext::callback_result`] to retrieve the
 /// callback result or suspend if the callback hasn't been signaled yet.
 ///
+/// ## Two-phase callback protocol — two separate operation IDs
+///
+/// ```text
+/// Invocation 1:
+///   create_callback("approval", opts)  →  op_id: blake2b("1")  →  START + SUCCEED (returns handle)
+///   callback_result(&handle)           →  op_id: blake2b("2")  →  START → SUSPEND (Lambda exits)
+///
+/// External system calls SendDurableExecutionCallbackSuccess(callback_id) ...
+///
+/// Invocation 2 (re-invoked by server):
+///   create_callback("approval", opts)  →  op_id: blake2b("1")  →  REPLAY (cached SUCCEED)
+///   callback_result(&handle)           →  op_id: blake2b("2")  →  REPLAY (cached result)
+///   [workflow continues]
+/// ```
+///
 /// # Examples
 ///
 /// ```no_run
@@ -688,6 +703,34 @@ impl MapOptions {
 /// };
 /// assert_eq!(result.results.len(), 2);
 /// ```
+///
+/// Check per-item status after parallel/map — outer `Ok` does NOT mean all items succeeded:
+///
+/// ```
+/// use durable_lambda_core::types::{BatchResult, BatchItem, BatchItemStatus, CompletionReason};
+///
+/// let result = BatchResult {
+///     results: vec![
+///         BatchItem { index: 0, status: BatchItemStatus::Succeeded, result: Some(10), error: None },
+///         BatchItem { index: 1, status: BatchItemStatus::Failed, result: None, error: Some("timed out".into()) },
+///     ],
+///     completion_reason: CompletionReason::AllCompleted,
+/// };
+///
+/// for item in &result.results {
+///     match item.status {
+///         BatchItemStatus::Succeeded => println!("item {} ok: {:?}", item.index, item.result),
+///         BatchItemStatus::Failed    => println!("item {} err: {:?}", item.index, item.error),
+///         BatchItemStatus::Started   => println!("item {} still running", item.index),
+///     }
+/// }
+///
+/// // Collect only successful values:
+/// let values: Vec<i32> = result.results.iter()
+///     .filter_map(|item| item.result)
+///     .collect();
+/// assert_eq!(values, vec![10]);
+/// ```
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BatchResult<T> {
     /// Individual branch results, ordered by index.
@@ -765,9 +808,11 @@ pub enum CompletionReason {
 /// Receives the serialized forward result as `serde_json::Value`,
 /// deserializes it internally, and executes the compensation logic.
 pub type CompensateFn = Box<
-    dyn FnOnce(serde_json::Value) -> std::pin::Pin<
-        Box<dyn std::future::Future<Output = Result<(), DurableError>> + Send>,
-    > + Send
+    dyn FnOnce(
+            serde_json::Value,
+        ) -> std::pin::Pin<
+            Box<dyn std::future::Future<Output = Result<(), DurableError>> + Send>,
+        > + Send
         + 'static,
 >;
 
