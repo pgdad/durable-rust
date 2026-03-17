@@ -85,6 +85,7 @@ build_and_push_crate() {
       -f "$REPO_ROOT/examples/Dockerfile" \
       --build-arg "PACKAGE=${package}" \
       --build-arg "BINARY_NAME=${bin_name}" \
+      --provenance=false \
       -t "${ECR_URL}:${bin_name}" \
       "$REPO_ROOT"
     docker push "${ECR_URL}:${bin_name}"
