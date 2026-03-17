@@ -158,6 +158,7 @@ where
 mod tests {
     use super::*;
     use crate::context::BuilderContext;
+    use tracing_subscriber::fmt;
 
     #[test]
     fn test_builder_construction_and_type_correctness() {
@@ -181,6 +182,58 @@ mod tests {
         );
         // run() is async — calling it without .await produces a Future.
         // We just verify the method exists and returns the right type.
+        let _future = builder.run();
+        // Drop without awaiting — we can't start lambda_runtime in tests.
+    }
+
+    #[test]
+    fn test_with_tracing_stores_subscriber() {
+        // Verify handler(fn).with_tracing(subscriber) compiles and stores the subscriber.
+        let subscriber = fmt().finish();
+        let _builder = handler(
+            |_event: serde_json::Value, _ctx: BuilderContext| async move {
+                Ok(serde_json::json!({"ok": true}))
+            },
+        )
+        .with_tracing(subscriber);
+        // If this compiles, the with_tracing() method exists and accepts a Subscriber.
+    }
+
+    #[test]
+    fn test_with_error_handler_stores_handler() {
+        // Verify handler(fn).with_error_handler(fn) compiles and stores the error handler.
+        let _builder = handler(
+            |_event: serde_json::Value, _ctx: BuilderContext| async move {
+                Ok(serde_json::json!({"ok": true}))
+            },
+        )
+        .with_error_handler(|e: DurableError| e);
+        // If this compiles, the with_error_handler() method exists and accepts a closure.
+    }
+
+    #[test]
+    fn test_builder_chaining() {
+        // Verify method chaining: handler(fn).with_tracing(sub).with_error_handler(fn) compiles.
+        let subscriber = fmt().finish();
+        let _builder = handler(
+            |_event: serde_json::Value, _ctx: BuilderContext| async move {
+                Ok(serde_json::json!({"ok": true}))
+            },
+        )
+        .with_tracing(subscriber)
+        .with_error_handler(|e: DurableError| e);
+        // If this compiles, method chaining is correctly supported.
+    }
+
+    #[test]
+    fn test_builder_without_config_backward_compatible() {
+        // Verify that handler(fn).run() still works without calling with_tracing or with_error_handler.
+        let builder = handler(
+            |_event: serde_json::Value, _ctx: BuilderContext| async move {
+                Ok(serde_json::json!({"ok": true}))
+            },
+        );
+        // Confirm .run() method still exists and returns a Future (backward compat).
         let _future = builder.run();
         // Drop without awaiting — we can't start lambda_runtime in tests.
     }
