@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: AWS Integration Testing
 status: executing
-stopped_at: Phase 11 context gathered
-last_updated: "2026-03-17T14:54:49.417Z"
+stopped_at: Completed 11-infrastructure/11-01-PLAN.md
+last_updated: "2026-03-17T15:19:01.986Z"
 last_activity: 2026-03-17 — Completed 10-01 (verify-prerequisites.sh created, exits 0)
 progress:
   total_phases: 8
   completed_phases: 1
-  total_plans: 1
-  completed_plans: 1
+  total_plans: 4
+  completed_plans: 2
   percent: 3
 ---
 
@@ -46,6 +46,7 @@ Progress: [█░░░░░░░░░] 3%
 | 10-tooling-and-prerequisites | 1 | 5 min | 5 min |
 
 *Updated after each plan completion*
+| Phase 11-infrastructure P01 | 3 | 2 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -62,6 +63,9 @@ Recent decisions affecting current work:
 - v1.1: Two callee stubs needed: `order-enrichment-lambda` (invoke tests) and `fulfillment-lambda` (combined_workflow)
 - 10-01: ADFS profile region NOT modified — explicit --region us-east-2 flag used on every AWS CLI call
 - 10-01: Docker daemon checked via docker info (Docker Desktop compatible), not systemctl
+- [Phase 11-infrastructure]: 44 Lambda functions use for_each over locals map with durable_config (execution_timeout=3600, retention_period=7); publish = true required for live alias versioning
+- [Phase 11-infrastructure]: random_id suffix (4-char hex) ensures multi-workspace safe naming across all resources; force_delete=true on ECR for clean destroy
+- [Phase 11-infrastructure]: terraform apply -parallelism=5 required to avoid ResourceConflictException at 44-function scale
 
 ### Pending Todos
 
@@ -73,6 +77,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-17T14:54:49.416Z
-Stopped at: Phase 11 context gathered
-Resume file: .planning/phases/11-infrastructure/11-CONTEXT.md
+Last session: 2026-03-17T15:19:01.985Z
+Stopped at: Completed 11-infrastructure/11-01-PLAN.md
+Resume file: None

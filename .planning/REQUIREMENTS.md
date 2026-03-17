@@ -14,14 +14,14 @@ Requirements for AWS Integration Testing milestone. Each maps to roadmap phases.
 
 ### Infrastructure
 
-- [ ] **INFRA-01**: Terraform creates ECR repositories for all 4 API styles (closure, macro, trait, builder)
-- [ ] **INFRA-02**: Terraform creates IAM execution role with `AWSLambdaBasicDurableExecutionRolePolicy` managed policy
-- [ ] **INFRA-03**: Terraform creates all 44 example Lambda functions with `durable_config` block and `durable_execution_timeout`
-- [ ] **INFRA-04**: Terraform creates Lambda aliases for qualified ARN invocation on every function
-- [ ] **INFRA-05**: Terraform creates 2 callee stub Lambda functions (`order-enrichment-lambda`, `fulfillment-lambda`) for invoke/chained tests
-- [ ] **INFRA-06**: All Terraform-managed resources have consistent labels/tags for identification (project, milestone, style)
-- [ ] **INFRA-07**: Terraform uses local state file (no remote backend)
-- [ ] **INFRA-08**: `terraform destroy` cleanly removes all resources including ECR images (`force_delete = true`)
+- [x] **INFRA-01**: Terraform creates ECR repositories for all 4 API styles (closure, macro, trait, builder)
+- [x] **INFRA-02**: Terraform creates IAM execution role with `AWSLambdaBasicDurableExecutionRolePolicy` managed policy
+- [x] **INFRA-03**: Terraform creates all 44 example Lambda functions with `durable_config` block and `durable_execution_timeout`
+- [x] **INFRA-04**: Terraform creates Lambda aliases for qualified ARN invocation on every function
+- [x] **INFRA-05**: Terraform creates 2 callee stub Lambda functions (`order-enrichment-lambda`, `fulfillment-lambda`) for invoke/chained tests
+- [x] **INFRA-06**: All Terraform-managed resources have consistent labels/tags for identification (project, milestone, style)
+- [x] **INFRA-07**: Terraform uses local state file (no remote backend)
+- [x] **INFRA-08**: `terraform destroy` cleanly removes all resources including ECR images (`force_delete = true`)
 
 ### Build Pipeline
 
@@ -99,14 +99,14 @@ Which phases cover which requirements. Updated during roadmap creation.
 |-------------|-------|--------|
 | TOOL-01 | Phase 10 | Complete |
 | TOOL-02 | Phase 10 | Complete |
-| INFRA-01 | Phase 11 | Pending |
-| INFRA-02 | Phase 11 | Pending |
-| INFRA-03 | Phase 11 | Pending |
-| INFRA-04 | Phase 11 | Pending |
-| INFRA-05 | Phase 11 | Pending |
-| INFRA-06 | Phase 11 | Pending |
-| INFRA-07 | Phase 11 | Pending |
-| INFRA-08 | Phase 11 | Pending |
+| INFRA-01 | Phase 11 | Complete |
+| INFRA-02 | Phase 11 | Complete |
+| INFRA-03 | Phase 11 | Complete |
+| INFRA-04 | Phase 11 | Complete |
+| INFRA-05 | Phase 11 | Complete |
+| INFRA-06 | Phase 11 | Complete |
+| INFRA-07 | Phase 11 | Complete |
+| INFRA-08 | Phase 11 | Complete |
 | BUILD-01 | Phase 12 | Pending |
 | BUILD-02 | Phase 12 | Pending |
 | BUILD-03 | Phase 12 | Pending |
