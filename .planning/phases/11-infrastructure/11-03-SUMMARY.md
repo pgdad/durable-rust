@@ -122,6 +122,18 @@ None — no external service configuration required beyond ADFS credentials alre
 - Phase 13 (integration tests) can proceed: alias ARNs available via `terraform output -json alias_arns`
 - Phase 14 (callback tests): stub ARNs available via `terraform output -json stub_alias_arns`
 
+## Self-Check: PASSED
+
+- scripts/deploy-all.sh: FOUND
+- scripts/verify-infra.sh: FOUND
+- scripts/build-images.sh (modified): FOUND
+- 11-03-SUMMARY.md: FOUND
+- Task commit f91c40c: FOUND
+- Plan metadata commit 79a396c: FOUND
+- terraform output alias_arns count: 44
+- terraform output stub_alias_arns count: 2
+- verify-infra.sh exit code: 0 (17 checks, 0 failed)
+
 ---
 *Phase: 11-infrastructure*
 *Completed: 2026-03-17*
