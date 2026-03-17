@@ -32,12 +32,12 @@ Requirements for AWS Integration Testing milestone. Each maps to roadmap phases.
 
 ### Test Harness
 
-- [ ] **TEST-01**: Single command (`test-all.sh`) runs all integration tests and reports per-test pass/fail
-- [ ] **TEST-02**: Execution status polling helper waits for durable execution to reach terminal state (SUCCEEDED/FAILED/TIMED_OUT)
-- [ ] **TEST-03**: Callback signal tooling extracts callback_id from execution state and sends `SendDurableExecutionCallbackSuccess`
-- [ ] **TEST-04**: Test harness validates ADFS credential validity before starting test run
-- [ ] **TEST-05**: Per-test pass/fail output with test name, status, and failure reason
-- [ ] **TEST-06**: Each test individually runnable via command-line argument
+- [x] **TEST-01**: Single command (`test-all.sh`) runs all integration tests and reports per-test pass/fail
+- [x] **TEST-02**: Execution status polling helper waits for durable execution to reach terminal state (SUCCEEDED/FAILED/TIMED_OUT)
+- [x] **TEST-03**: Callback signal tooling extracts callback_id from execution state and sends `SendDurableExecutionCallbackSuccess`
+- [x] **TEST-04**: Test harness validates ADFS credential validity before starting test run
+- [x] **TEST-05**: Per-test pass/fail output with test name, status, and failure reason
+- [x] **TEST-06**: Each test individually runnable via command-line argument
 
 ### Operation Tests
 
@@ -111,12 +111,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | BUILD-02 | Phase 12 | Complete |
 | BUILD-03 | Phase 12 | Complete |
 | BUILD-04 | Phase 12 | Complete |
-| TEST-01 | Phase 13 | Pending |
-| TEST-02 | Phase 13 | Pending |
-| TEST-03 | Phase 13 | Pending |
-| TEST-04 | Phase 13 | Pending |
-| TEST-05 | Phase 13 | Pending |
-| TEST-06 | Phase 13 | Pending |
+| TEST-01 | Phase 13 | Complete |
+| TEST-02 | Phase 13 | Complete |
+| TEST-03 | Phase 13 | Complete |
+| TEST-04 | Phase 13 | Complete |
+| TEST-05 | Phase 13 | Complete |
+| TEST-06 | Phase 13 | Complete |
 | OPTEST-01 | Phase 14 | Pending |
 | OPTEST-02 | Phase 14 | Pending |
 | OPTEST-03 | Phase 14 | Pending |

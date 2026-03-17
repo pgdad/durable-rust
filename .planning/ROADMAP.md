@@ -21,7 +21,7 @@
 - [x] **Phase 10: Tooling and Prerequisites** - Install and configure all required tools on the developer machine
 - [x] **Phase 11: Infrastructure** - Terraform manages all AWS resources (ECR, IAM, 44 Lambda functions, aliases, stubs) (completed 2026-03-17)
 - [x] **Phase 12: Docker Build Pipeline** - Build and push all 44 container images to ECR with cargo-chef caching (completed 2026-03-17)
-- [ ] **Phase 13: Test Harness** - Single-command test runner with per-test reporting and credential validation
+- [x] **Phase 13: Test Harness** - Single-command test runner with per-test reporting and credential validation (completed 2026-03-17)
 - [ ] **Phase 14: Synchronous Operation Tests** - All synchronous operations validated against real Lambda (step, parallel, map, child_context, logging, combined_workflow)
 - [ ] **Phase 15: Async Operation Tests** - Wait, callback, and invoke operations validated with state polling
 - [ ] **Phase 16: Advanced Feature Tests** - Saga/compensation, step timeout, conditional retry, batch checkpoint validated
@@ -82,7 +82,7 @@ Plans:
   3. Running with expired ADFS credentials exits immediately with a clear `CREDENTIAL_EXPIRED` message before invoking any Lambda
   4. The polling helper correctly waits for a durable execution to reach SUCCEEDED/FAILED/TIMED_OUT without busy-looping
   5. The callback tooling extracts a callback_id from execution state and sends a success signal without manual steps
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 Plans:
 - [ ] 13-01-PLAN.md — Create test-helpers.sh (shared helpers) and test-all.sh (runner + stub tests)
 
@@ -139,7 +139,7 @@ Plans:
 | 10. Tooling and Prerequisites | v1.1 | Complete    | 2026-03-17 | 2026-03-17 |
 | 11. Infrastructure | 3/3 | Complete    | 2026-03-17 | - |
 | 12. Docker Build Pipeline | 2/2 | Complete    | 2026-03-17 | - |
-| 13. Test Harness | v1.1 | 0/1 | Not started | - |
+| 13. Test Harness | 1/1 | Complete   | 2026-03-17 | - |
 | 14. Synchronous Operation Tests | v1.1 | 0/TBD | Not started | - |
 | 15. Async Operation Tests | v1.1 | 0/TBD | Not started | - |
 | 16. Advanced Feature Tests | v1.1 | 0/TBD | Not started | - |

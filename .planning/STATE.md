@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: AWS Integration Testing
 status: executing
-stopped_at: Completed 11-03 — all 44 Lambda functions + 2 stubs deployed and verified, Phase 11 complete
-last_updated: "2026-03-17T17:32:18.887Z"
+stopped_at: Completed 13-01 — test-helpers.sh and test-all.sh with 44 stubs, credential gating, and PASS/FAIL reporting
+last_updated: "2026-03-17T17:36:41.614Z"
 last_activity: 2026-03-17 — Completed 11-02 (ECR dr-examples-c351 and IAM dr-lambda-exec-c351 deployed and verified)
 progress:
   total_phases: 8
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 7
-  completed_plans: 6
+  completed_plans: 7
   percent: 6
 ---
 
@@ -51,6 +51,7 @@ Progress: [██░░░░░░░░] 6%
 | Phase 12-docker-build-pipeline P01 | 3 | 1 tasks | 2 files |
 | Phase 12-docker-build-pipeline P02 | 7 | 2 tasks | 1 files |
 | Phase 11-infrastructure P03 | 10 | 2 tasks | 3 files |
+| Phase 13-test-harness P01 | 2 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -79,6 +80,9 @@ Recent decisions affecting current work:
 - [Phase 12-docker-build-pipeline]: 12-02: Binary names hardcoded in CRATE_BINS array (not computed) to guarantee exact match with lambda.tf handler map keys
 - [Phase 11-infrastructure]: 11-03: DurableConfig verified via terraform state (not AWS API) — get-function-configuration does not surface DurableConfig in response
 - [Phase 11-infrastructure]: 11-03: --provenance=false required in docker build — BuildKit creates OCI index manifests by default which Lambda rejects
+- [Phase 13-test-harness]: test-helpers.sh is a sourceable library (no shebang, no chmod +x) — enforces correct usage pattern
+- [Phase 13-test-harness]: Stub test functions return 0 so harness framework is verifiable before any real tests exist
+- [Phase 13-test-harness]: 3-second polling interval for wait_for_terminal_status and extract_callback_id — no busy-loop
 
 ### Pending Todos
 
@@ -90,6 +94,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-17T17:31:22.855Z
-Stopped at: Completed 11-03 — all 44 Lambda functions + 2 stubs deployed and verified, Phase 11 complete
+Last session: 2026-03-17T17:36:41.613Z
+Stopped at: Completed 13-01 — test-helpers.sh and test-all.sh with 44 stubs, credential gating, and PASS/FAIL reporting
 Resume file: None
