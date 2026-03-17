@@ -82,7 +82,9 @@ Plans:
   3. Running with expired ADFS credentials exits immediately with a clear `CREDENTIAL_EXPIRED` message before invoking any Lambda
   4. The polling helper correctly waits for a durable execution to reach SUCCEEDED/FAILED/TIMED_OUT without busy-looping
   5. The callback tooling extracts a callback_id from execution state and sends a success signal without manual steps
-**Plans**: TBD
+**Plans:** 1 plan
+Plans:
+- [ ] 13-01-PLAN.md — Create test-helpers.sh (shared helpers) and test-all.sh (runner + stub tests)
 
 ### Phase 14: Synchronous Operation Tests
 **Goal**: All synchronous operations (step, retry, typed errors, parallel, map, child context, logging, combined workflow) return SUCCEEDED against real AWS for all 4 API styles
@@ -137,7 +139,7 @@ Plans:
 | 10. Tooling and Prerequisites | v1.1 | Complete    | 2026-03-17 | 2026-03-17 |
 | 11. Infrastructure | 2/3 | In Progress (awaiting Phase 12) | - | - |
 | 12. Docker Build Pipeline | 2/2 | Complete    | 2026-03-17 | - |
-| 13. Test Harness | v1.1 | 0/TBD | Not started | - |
+| 13. Test Harness | v1.1 | 0/1 | Not started | - |
 | 14. Synchronous Operation Tests | v1.1 | 0/TBD | Not started | - |
 | 15. Async Operation Tests | v1.1 | 0/TBD | Not started | - |
 | 16. Advanced Feature Tests | v1.1 | 0/TBD | Not started | - |
