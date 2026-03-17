@@ -34,11 +34,13 @@
 **Depends on**: Nothing (first phase of milestone)
 **Requirements**: TOOL-01, TOOL-02
 **Success Criteria** (what must be TRUE):
-  1. `terraform version` outputs 1.14.7 or higher
+  1. `terraform version` outputs 1.14.0 or higher
   2. `aws --version` outputs aws-cli/2.x and `aws sts get-caller-identity --profile adfs` returns a valid account ID
   3. `docker buildx version` outputs a valid version and `docker info` shows the daemon is running
   4. `jq --version` outputs 1.7 or higher
-**Plans**: TBD
+**Plans:** 1 plan
+Plans:
+- [ ] 10-01-PLAN.md — Verify prerequisites and create verification script
 
 ### Phase 11: Infrastructure
 **Goal**: All AWS resources exist and are correctly configured so Lambda functions can be invoked with durable execution enabled
@@ -121,11 +123,11 @@
 
 ## Progress
 
-**Execution Order:** 10 → 11 → 12 → 13 → 14 → 15 → 16 → 17
+**Execution Order:** 10 -> 11 -> 12 -> 13 -> 14 -> 15 -> 16 -> 17
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 10. Tooling and Prerequisites | v1.1 | 0/TBD | Not started | - |
+| 10. Tooling and Prerequisites | v1.1 | 0/1 | Planning | - |
 | 11. Infrastructure | v1.1 | 0/TBD | Not started | - |
 | 12. Docker Build Pipeline | v1.1 | 0/TBD | Not started | - |
 | 13. Test Harness | v1.1 | 0/TBD | Not started | - |
