@@ -5,7 +5,7 @@
 
 use proc_macro2::TokenStream;
 use quote::quote;
-use syn::{Error, ItemFn};
+use syn::{Error, FnArg, ItemFn, PatType, ReturnType, Type};
 
 /// Validate the annotated function and generate the expanded code.
 ///
@@ -231,5 +231,67 @@ mod tests {
             "should reference lambda_runtime"
         );
         assert!(tokens.contains("aws_config"), "should reference aws_config");
+    }
+
+    #[test]
+    fn rejects_wrong_second_param_type() {
+        let func: ItemFn = parse_quote! {
+            async fn handler(x: i32, y: i32) -> Result<serde_json::Value, DurableError> {
+                todo!()
+            }
+        };
+        let result = expand_durable_execution(func);
+        assert!(result.is_err());
+        let err = result.unwrap_err().to_string();
+        assert!(
+            err.contains("DurableContext"),
+            "error should mention DurableContext: {err}"
+        );
+    }
+
+    #[test]
+    fn rejects_non_result_return_type() {
+        let func: ItemFn = parse_quote! {
+            async fn handler(event: serde_json::Value, ctx: DurableContext) -> String {
+                String::new()
+            }
+        };
+        let result = expand_durable_execution(func);
+        assert!(result.is_err());
+        let err = result.unwrap_err().to_string();
+        assert!(
+            err.contains("Result"),
+            "error should mention Result: {err}"
+        );
+    }
+
+    #[test]
+    fn rejects_missing_return_type() {
+        let func: ItemFn = parse_quote! {
+            async fn handler(event: serde_json::Value, ctx: DurableContext) {
+                let _ = (event, ctx);
+            }
+        };
+        let result = expand_durable_execution(func);
+        assert!(result.is_err());
+        let err = result.unwrap_err().to_string();
+        assert!(
+            err.contains("Result"),
+            "error should mention Result: {err}"
+        );
+    }
+
+    #[test]
+    fn accepts_mut_binding_on_context() {
+        let func: ItemFn = parse_quote! {
+            async fn handler(
+                event: serde_json::Value,
+                mut ctx: DurableContext,
+            ) -> Result<serde_json::Value, DurableError> {
+                Ok(event)
+            }
+        };
+        let result = expand_durable_execution(func);
+        assert!(result.is_ok(), "mut ctx binding should be accepted: {:?}", result.err());
     }
 }
