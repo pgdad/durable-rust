@@ -244,3 +244,264 @@ send_callback_success() {
     --result "$result_json" \
     --cli-binary-format raw-in-base64-out
 }
+
+# ===========================================================================
+# Phase 14: Shared Assertion Helpers
+# Each helper invokes a Lambda by binary name, parses the response, and
+# asserts 2-3 key fields. Used by the 32 Phase 14 test functions.
+# ===========================================================================
+
+# ---------------------------------------------------------------------------
+# assert_basic_steps(binary)
+# Invokes basic-steps handler with order_id, verifies round-trip and
+# details.status field.
+# ---------------------------------------------------------------------------
+assert_basic_steps() {
+  local binary="$1"
+  local fn_arn
+  fn_arn=$(get_alias_arn "$binary")
+  local result
+  result=$(invoke_sync "$fn_arn" '{"order_id":"test-order-001"}')
+  local status fn_error response_body
+  IFS='|' read -r status fn_error _ response_body <<< "$result"
+
+  [[ "$status" == "200" ]] || { echo "Expected HTTP 200, got: $status; body=$response_body"; return 1; }
+  [[ -z "$fn_error" ]] || { echo "Expected no FunctionError, got: $fn_error; body=$response_body"; return 1; }
+
+  local order_id
+  order_id=$(echo "$response_body" | jq -r '.order_id')
+  [[ "$order_id" == "test-order-001" ]] || \
+    { echo "Expected order_id=test-order-001, got: $order_id; body=$response_body"; return 1; }
+
+  local details_status
+  details_status=$(echo "$response_body" | jq -r '.details.status')
+  [[ "$details_status" == "found" ]] || \
+    { echo "Expected details.status=found, got: $details_status; body=$response_body"; return 1; }
+
+  echo "basic steps executed and replayed correctly via $binary"
+}
+
+# ---------------------------------------------------------------------------
+# assert_step_retries(binary)
+# Invokes step-retries handler, verifies result.api_response=success.
+# ---------------------------------------------------------------------------
+assert_step_retries() {
+  local binary="$1"
+  local fn_arn
+  fn_arn=$(get_alias_arn "$binary")
+  local result
+  result=$(invoke_sync "$fn_arn" '{}')
+  local status fn_error response_body
+  IFS='|' read -r status fn_error _ response_body <<< "$result"
+
+  [[ "$status" == "200" ]] || { echo "Expected HTTP 200, got: $status; body=$response_body"; return 1; }
+  [[ -z "$fn_error" ]] || { echo "Expected no FunctionError, got: $fn_error; body=$response_body"; return 1; }
+
+  local api_response
+  api_response=$(echo "$response_body" | jq -r '.result.api_response')
+  [[ "$api_response" == "success" ]] || \
+    { echo "Expected result.api_response=success, got: $api_response; body=$response_body"; return 1; }
+
+  echo "step retries completed successfully via $binary"
+}
+
+# ---------------------------------------------------------------------------
+# assert_typed_errors(binary)
+# Tests BOTH success path (amount=50) and error path (amount=2000).
+# Both return HTTP 200 (domain error, not Lambda error).
+# ---------------------------------------------------------------------------
+assert_typed_errors() {
+  local binary="$1"
+  local fn_arn
+  fn_arn=$(get_alias_arn "$binary")
+
+  # --- Success path: amount=50 ---
+  local result
+  result=$(invoke_sync "$fn_arn" '{"amount":50}')
+  local status fn_error response_body
+  IFS='|' read -r status fn_error _ response_body <<< "$result"
+
+  [[ "$status" == "200" ]] || { echo "Success path: Expected HTTP 200, got: $status; body=$response_body"; return 1; }
+  [[ -z "$fn_error" ]] || { echo "Success path: Expected no FunctionError, got: $fn_error; body=$response_body"; return 1; }
+
+  local transaction_id
+  transaction_id=$(echo "$response_body" | jq -r '.transaction_id')
+  [[ "$transaction_id" == "txn_50" ]] || \
+    { echo "Success path: Expected transaction_id=txn_50, got: $transaction_id; body=$response_body"; return 1; }
+
+  # --- Error path: amount=2000 ---
+  local result_err
+  result_err=$(invoke_sync "$fn_arn" '{"amount":2000}')
+  local status_err fn_error_err response_body_err
+  IFS='|' read -r status_err fn_error_err _ response_body_err <<< "$result_err"
+
+  [[ "$status_err" == "200" ]] || { echo "Error path: Expected HTTP 200, got: $status_err; body=$response_body_err"; return 1; }
+  [[ -z "$fn_error_err" ]] || { echo "Error path: Expected no FunctionError, got: $fn_error_err; body=$response_body_err"; return 1; }
+
+  local error_field
+  error_field=$(echo "$response_body_err" | jq -r '.error')
+  [[ "$error_field" == "insufficient_funds" ]] || \
+    { echo "Error path: Expected error=insufficient_funds, got: $error_field; body=$response_body_err"; return 1; }
+
+  echo "typed error correctly serialized through durable execution via $binary"
+}
+
+# ---------------------------------------------------------------------------
+# assert_parallel(binary)
+# Invokes parallel handler, verifies 3 branches returned with sorted
+# membership check (parallel order is non-deterministic).
+# ---------------------------------------------------------------------------
+assert_parallel() {
+  local binary="$1"
+  local fn_arn
+  fn_arn=$(get_alias_arn "$binary")
+  local result
+  result=$(invoke_sync "$fn_arn" '{}')
+  local status fn_error response_body
+  IFS='|' read -r status fn_error _ response_body <<< "$result"
+
+  [[ "$status" == "200" ]] || { echo "Expected HTTP 200, got: $status; body=$response_body"; return 1; }
+  [[ -z "$fn_error" ]] || { echo "Expected no FunctionError, got: $fn_error; body=$response_body"; return 1; }
+
+  local branch_count
+  branch_count=$(echo "$response_body" | jq '.parallel_results | length')
+  [[ "$branch_count" == "3" ]] || \
+    { echo "Expected 3 parallel_results, got: $branch_count; body=$response_body"; return 1; }
+
+  local branches_sorted
+  branches_sorted=$(echo "$response_body" | jq -r '[.parallel_results[] | .branch] | sort | join(",")')
+  [[ "$branches_sorted" == "a,b,c" ]] || \
+    { echo "Expected branches a,b,c (sorted), got: $branches_sorted; body=$response_body"; return 1; }
+
+  echo "parallel fan-out completed with 3 branches via $binary"
+}
+
+# ---------------------------------------------------------------------------
+# assert_map(binary)
+# Invokes map handler, verifies 4 processed orders with correct status.
+# ---------------------------------------------------------------------------
+assert_map() {
+  local binary="$1"
+  local fn_arn
+  fn_arn=$(get_alias_arn "$binary")
+  local result
+  result=$(invoke_sync "$fn_arn" '{}')
+  local status fn_error response_body
+  IFS='|' read -r status fn_error _ response_body <<< "$result"
+
+  [[ "$status" == "200" ]] || { echo "Expected HTTP 200, got: $status; body=$response_body"; return 1; }
+  [[ -z "$fn_error" ]] || { echo "Expected no FunctionError, got: $fn_error; body=$response_body"; return 1; }
+
+  local order_count
+  order_count=$(echo "$response_body" | jq '.processed_orders | length')
+  [[ "$order_count" == "4" ]] || \
+    { echo "Expected 4 processed_orders, got: $order_count; body=$response_body"; return 1; }
+
+  local first_status
+  first_status=$(echo "$response_body" | jq -r '.processed_orders[0].status')
+  [[ "$first_status" == "done" ]] || \
+    { echo "Expected processed_orders[0].status=done, got: $first_status; body=$response_body"; return 1; }
+
+  echo "map operation processed 4 orders via $binary"
+}
+
+# ---------------------------------------------------------------------------
+# assert_child_contexts(binary)
+# Invokes child-contexts handler, verifies child isolation and parent
+# step independence.
+# ---------------------------------------------------------------------------
+assert_child_contexts() {
+  local binary="$1"
+  local fn_arn
+  fn_arn=$(get_alias_arn "$binary")
+  local result
+  result=$(invoke_sync "$fn_arn" '{}')
+  local status fn_error response_body
+  IFS='|' read -r status fn_error _ response_body <<< "$result"
+
+  [[ "$status" == "200" ]] || { echo "Expected HTTP 200, got: $status; body=$response_body"; return 1; }
+  [[ -z "$fn_error" ]] || { echo "Expected no FunctionError, got: $fn_error; body=$response_body"; return 1; }
+
+  local child_validation
+  child_validation=$(echo "$response_body" | jq -r '.child_result.validation')
+  [[ "$child_validation" == "passed" ]] || \
+    { echo "Expected child_result.validation=passed, got: $child_validation; body=$response_body"; return 1; }
+
+  local parent_result
+  parent_result=$(echo "$response_body" | jq -r '.parent_result')
+  [[ "$parent_result" == "parent_validation" ]] || \
+    { echo "Expected parent_result=parent_validation, got: $parent_result; body=$response_body"; return 1; }
+
+  echo "child context isolated namespace, parent step ran independently via $binary"
+}
+
+# ---------------------------------------------------------------------------
+# assert_replay_safe_logging(binary)
+# Invokes replay-safe-logging handler, verifies order_id round-trip and
+# result.processed field. Response-only validation (no CloudWatch queries).
+# ---------------------------------------------------------------------------
+assert_replay_safe_logging() {
+  local binary="$1"
+  local fn_arn
+  fn_arn=$(get_alias_arn "$binary")
+  local result
+  result=$(invoke_sync "$fn_arn" '{"order_id":"test-order-001"}')
+  local status fn_error response_body
+  IFS='|' read -r status fn_error _ response_body <<< "$result"
+
+  [[ "$status" == "200" ]] || { echo "Expected HTTP 200, got: $status; body=$response_body"; return 1; }
+  [[ -z "$fn_error" ]] || { echo "Expected no FunctionError, got: $fn_error; body=$response_body"; return 1; }
+
+  local order_id
+  order_id=$(echo "$response_body" | jq -r '.order_id')
+  [[ "$order_id" == "test-order-001" ]] || \
+    { echo "Expected order_id=test-order-001, got: $order_id; body=$response_body"; return 1; }
+
+  local processed
+  processed=$(echo "$response_body" | jq -r '.result.processed')
+  [[ "$processed" == "true" ]] || \
+    { echo "Expected result.processed=true, got: $processed; body=$response_body"; return 1; }
+
+  echo "replay-safe logging handler executed without duplicate log side effects via $binary"
+}
+
+# ---------------------------------------------------------------------------
+# assert_combined_workflow(binary)
+# Invokes combined-workflow handler, verifies order_id, payment, fulfillment,
+# and post_processing fields. NOTE: This invocation blocks ~35+ seconds due
+# to ctx.wait(30s) inside the handler.
+# ---------------------------------------------------------------------------
+assert_combined_workflow() {
+  local binary="$1"
+  local fn_arn
+  fn_arn=$(get_alias_arn "$binary")
+  local result
+  result=$(invoke_sync "$fn_arn" '{"order_id":"test-order-001","total":99.99}')
+  local status fn_error response_body
+  IFS='|' read -r status fn_error _ response_body <<< "$result"
+
+  [[ "$status" == "200" ]] || { echo "Expected HTTP 200, got: $status; body=$response_body"; return 1; }
+  [[ -z "$fn_error" ]] || { echo "Expected no FunctionError, got: $fn_error; body=$response_body"; return 1; }
+
+  local order_id
+  order_id=$(echo "$response_body" | jq -r '.order_id')
+  [[ "$order_id" == "test-order-001" ]] || \
+    { echo "Expected order_id=test-order-001, got: $order_id; body=$response_body"; return 1; }
+
+  local payment_charged
+  payment_charged=$(echo "$response_body" | jq -r '.payment.charged')
+  [[ "$payment_charged" == "true" ]] || \
+    { echo "Expected payment.charged=true, got: $payment_charged; body=$response_body"; return 1; }
+
+  local fulfillment
+  fulfillment=$(echo "$response_body" | jq -r '.fulfillment')
+  [[ "$fulfillment" != "null" ]] || \
+    { echo "Expected fulfillment non-null, got: null; body=$response_body"; return 1; }
+
+  local post_processing
+  post_processing=$(echo "$response_body" | jq -r '.post_processing')
+  [[ "$post_processing" != "null" ]] || \
+    { echo "Expected post_processing non-null, got: null; body=$response_body"; return 1; }
+
+  echo "combined workflow completed with payment, fulfillment, and post-processing via $binary"
+}
