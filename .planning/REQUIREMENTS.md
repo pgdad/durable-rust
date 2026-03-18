@@ -41,17 +41,17 @@ Requirements for AWS Integration Testing milestone. Each maps to roadmap phases.
 
 ### Operation Tests
 
-- [ ] **OPTEST-01**: Step tests pass — all 4 styles' `basic_steps` handlers invoked and return SUCCEEDED
-- [ ] **OPTEST-02**: Step retry tests pass — all 4 styles' `step_retries` handlers invoked and return SUCCEEDED
-- [ ] **OPTEST-03**: Typed error tests pass — all 4 styles' `typed_errors` handlers invoked and return expected error
+- [x] **OPTEST-01**: Step tests pass — all 4 styles' `basic_steps` handlers invoked and return SUCCEEDED
+- [x] **OPTEST-02**: Step retry tests pass — all 4 styles' `step_retries` handlers invoked and return SUCCEEDED
+- [x] **OPTEST-03**: Typed error tests pass — all 4 styles' `typed_errors` handlers invoked and return expected error
 - [ ] **OPTEST-04**: Wait tests pass — test variant with 5-second wait deployed, invoked async, polled to SUCCEEDED
 - [ ] **OPTEST-05**: Callback tests pass — all 4 styles' `callbacks` handlers invoked async, callback signal sent, polled to SUCCEEDED
 - [ ] **OPTEST-06**: Invoke tests pass — caller invokes callee stub, returns callee result in response
-- [ ] **OPTEST-07**: Parallel tests pass — all 4 styles' `parallel` handlers invoked, all branches present in result
-- [ ] **OPTEST-08**: Map tests pass — all 4 styles' `map` handlers invoked and return SUCCEEDED
-- [ ] **OPTEST-09**: Child context tests pass — all 4 styles' `child_contexts` handlers invoked and return SUCCEEDED
-- [ ] **OPTEST-10**: Logging tests pass — all 4 styles' `replay_safe_logging` handlers invoked and return SUCCEEDED
-- [ ] **OPTEST-11**: Combined workflow tests pass — all 4 styles' `combined_workflow` handlers invoked and return SUCCEEDED
+- [x] **OPTEST-07**: Parallel tests pass — all 4 styles' `parallel` handlers invoked, all branches present in result
+- [x] **OPTEST-08**: Map tests pass — all 4 styles' `map` handlers invoked and return SUCCEEDED
+- [x] **OPTEST-09**: Child context tests pass — all 4 styles' `child_contexts` handlers invoked and return SUCCEEDED
+- [x] **OPTEST-10**: Logging tests pass — all 4 styles' `replay_safe_logging` handlers invoked and return SUCCEEDED
+- [x] **OPTEST-11**: Combined workflow tests pass — all 4 styles' `combined_workflow` handlers invoked and return SUCCEEDED
 
 ### Advanced Feature Tests
 
@@ -117,17 +117,17 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TEST-04 | Phase 13 | Complete |
 | TEST-05 | Phase 13 | Complete |
 | TEST-06 | Phase 13 | Complete |
-| OPTEST-01 | Phase 14 | Pending |
-| OPTEST-02 | Phase 14 | Pending |
-| OPTEST-03 | Phase 14 | Pending |
+| OPTEST-01 | Phase 14 | Complete |
+| OPTEST-02 | Phase 14 | Complete |
+| OPTEST-03 | Phase 14 | Complete |
 | OPTEST-04 | Phase 15 | Pending |
 | OPTEST-05 | Phase 15 | Pending |
 | OPTEST-06 | Phase 15 | Pending |
-| OPTEST-07 | Phase 14 | Pending |
-| OPTEST-08 | Phase 14 | Pending |
-| OPTEST-09 | Phase 14 | Pending |
-| OPTEST-10 | Phase 14 | Pending |
-| OPTEST-11 | Phase 14 | Pending |
+| OPTEST-07 | Phase 14 | Complete |
+| OPTEST-08 | Phase 14 | Complete |
+| OPTEST-09 | Phase 14 | Complete |
+| OPTEST-10 | Phase 14 | Complete |
+| OPTEST-11 | Phase 14 | Complete |
 | ADV-01 | Phase 16 | Complete |
 | ADV-02 | Phase 16 | Complete |
 | ADV-03 | Phase 16 | Complete |
