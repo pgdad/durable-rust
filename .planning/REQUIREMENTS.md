@@ -45,8 +45,8 @@ Requirements for AWS Integration Testing milestone. Each maps to roadmap phases.
 - [x] **OPTEST-02**: Step retry tests pass — all 4 styles' `step_retries` handlers invoked and return SUCCEEDED
 - [x] **OPTEST-03**: Typed error tests pass — all 4 styles' `typed_errors` handlers invoked and return expected error
 - [x] **OPTEST-04**: Wait tests pass — test variant with 5-second wait deployed, invoked async, polled to SUCCEEDED
-- [ ] **OPTEST-05**: Callback tests pass — all 4 styles' `callbacks` handlers invoked async, callback signal sent, polled to SUCCEEDED
-- [ ] **OPTEST-06**: Invoke tests pass — caller invokes callee stub, returns callee result in response
+- [x] **OPTEST-05**: Callback tests pass — all 4 styles' `callbacks` handlers invoked async, callback signal sent, polled to SUCCEEDED
+- [x] **OPTEST-06**: Invoke tests pass — caller invokes callee stub, returns callee result in response
 - [x] **OPTEST-07**: Parallel tests pass — all 4 styles' `parallel` handlers invoked, all branches present in result
 - [x] **OPTEST-08**: Map tests pass — all 4 styles' `map` handlers invoked and return SUCCEEDED
 - [x] **OPTEST-09**: Child context tests pass — all 4 styles' `child_contexts` handlers invoked and return SUCCEEDED
@@ -121,8 +121,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | OPTEST-02 | Phase 14 | Complete |
 | OPTEST-03 | Phase 14 | Complete |
 | OPTEST-04 | Phase 15 | Complete |
-| OPTEST-05 | Phase 15 | Pending |
-| OPTEST-06 | Phase 15 | Pending |
+| OPTEST-05 | Phase 15 | Complete |
+| OPTEST-06 | Phase 15 | Complete |
 | OPTEST-07 | Phase 14 | Complete |
 | OPTEST-08 | Phase 14 | Complete |
 | OPTEST-09 | Phase 14 | Complete |

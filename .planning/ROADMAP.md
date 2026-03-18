@@ -23,7 +23,7 @@
 - [x] **Phase 12: Docker Build Pipeline** - Build and push all 44 container images to ECR with cargo-chef caching (completed 2026-03-17)
 - [x] **Phase 13: Test Harness** - Single-command test runner with per-test reporting and credential validation (completed 2026-03-17)
 - [x] **Phase 14: Synchronous Operation Tests** - All synchronous operations validated against real Lambda (step, parallel, map, child_context, logging, combined_workflow) (completed 2026-03-18)
-- [ ] **Phase 15: Async Operation Tests** - Wait, callback, and invoke operations validated with state polling
+- [x] **Phase 15: Async Operation Tests** - Wait, callback, and invoke operations validated with state polling (completed 2026-03-18)
 - [x] **Phase 16: Advanced Feature Tests** - Saga/compensation, step timeout, conditional retry, batch checkpoint validated (completed 2026-03-17)
 - [ ] **Phase 17: Documentation** - Manual test instructions, teardown guide, tooling installation doc
 
@@ -109,7 +109,7 @@ Plans:
   2. All callback handlers (4 styles) are invoked, polled to SUSPENDED, receive a callback success signal, then poll to SUCCEEDED — no race conditions
   3. All invoke handlers (4 styles) successfully call the `order-enrichment-lambda` stub and return its result in the execution output
   4. `scripts/test-all.sh` shows all 12 async test cases as PASS
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 Plans:
 - [ ] 15-01-PLAN.md — Modify 4 waits.rs handlers for event-driven duration, rebuild images, redeploy Lambdas
 - [ ] 15-02-PLAN.md — Add 4 assertion helpers to test-helpers.sh and replace 12 test stubs in test-all.sh
@@ -149,6 +149,6 @@ Plans:
 | 12. Docker Build Pipeline | 2/2 | Complete    | 2026-03-17 | - |
 | 13. Test Harness | 1/1 | Complete    | 2026-03-17 | - |
 | 14. Synchronous Operation Tests | 1/1 | Complete    | 2026-03-18 | - |
-| 15. Async Operation Tests | 1/2 | In Progress|  | - |
+| 15. Async Operation Tests | 2/2 | Complete   | 2026-03-18 | - |
 | 16. Advanced Feature Tests | 2/2 | Complete    | 2026-03-17 | - |
 | 17. Documentation | v1.1 | 0/TBD | Not started | - |

@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: AWS Integration Testing
 status: executing
-stopped_at: Completed 15-01-PLAN.md
-last_updated: "2026-03-18T15:47:30.515Z"
-last_activity: 2026-03-18 — Completed 15-01 (event-driven wait duration in 4 handlers, Docker rebuild, Lambda deploy)
+stopped_at: Completed 15-02-PLAN.md
+last_updated: "2026-03-18T15:51:39.197Z"
+last_activity: 2026-03-18 — Completed 15-02 (4 async assertion helpers, 12 test stubs replaced)
 progress:
   total_phases: 8
-  completed_phases: 6
+  completed_phases: 7
   total_plans: 12
-  completed_plans: 11
-  percent: 97
+  completed_plans: 12
+  percent: 100
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-03-17)
 ## Current Position
 
 Phase: 15 of 17 (Async Operation Tests)
-Plan: 1 of 2 in phase 15 (complete)
+Plan: 2 of 2 in phase 15 (complete)
 Status: Executing
-Last activity: 2026-03-18 — Completed 15-01 (event-driven wait duration in 4 handlers, Docker rebuild, Lambda deploy)
+Last activity: 2026-03-18 — Completed 15-02 (4 async assertion helpers, 12 test stubs replaced)
 
-Progress: [██████████] 97%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -56,6 +56,7 @@ Progress: [██████████] 97%
 | Phase 16-advanced-feature-tests P02 | 82 | 2 tasks | 12 files |
 | Phase 14-synchronous-operation-tests P01 | 2 | 2 tasks | 2 files |
 | Phase 15-async-operation-tests P01 | 5 | 2 tasks | 4 files |
+| Phase 15 P02 | 2 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -98,6 +99,8 @@ Recent decisions affecting current work:
 - [Phase 14-synchronous-operation-tests]: 14-01: Parallel branch assertions use sorted membership check (not index access) for non-deterministic order
 - [Phase 14-synchronous-operation-tests]: 14-01: Typed errors test validates both success and error paths in a single function call
 - [Phase 15-async-operation-tests]: 15-01: ctx.wait() accepts i32 not u64 -- use as_i64() with cast for event-driven wait_seconds extraction
+- [Phase 15-async-operation-tests]: 15-02: get_execution_output uses --query Output --output text for async result retrieval
+- [Phase 15-async-operation-tests]: 15-02: assert_callbacks sends {approved:true} and validates outcome.approved only (not callback_id per user decision)
 
 ### Pending Todos
 
@@ -109,6 +112,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-18T15:47:30.513Z
-Stopped at: Completed 15-01-PLAN.md
+Last session: 2026-03-18T15:51:39.196Z
+Stopped at: Completed 15-02-PLAN.md
 Resume file: None
