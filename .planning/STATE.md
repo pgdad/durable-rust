@@ -4,8 +4,8 @@ milestone: v1.1
 milestone_name: AWS Integration Testing
 status: executing
 stopped_at: Completed 15-02-PLAN.md
-last_updated: "2026-03-18T18:24:07.230Z"
-last_activity: 2026-03-18 — Completed 15-02 (4 async assertion helpers, 12 test stubs replaced)
+last_updated: "2026-03-18T19:02:16Z"
+last_activity: 2026-03-18 — Quick fix 1: republished 11 stale Lambda functions with musl-compiled images
 progress:
   total_phases: 8
   completed_phases: 7
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-03-17)
 Phase: 15 of 17 (Async Operation Tests)
 Plan: 2 of 2 in phase 15 (complete)
 Status: Executing
-Last activity: 2026-03-18 — Completed 15-02 (4 async assertion helpers, 12 test stubs replaced)
+Last activity: 2026-03-18 — Quick fix 1: republished 11 stale Lambda functions with musl-compiled images
 
 Progress: [██████████] 100%
 
@@ -101,6 +101,7 @@ Recent decisions affecting current work:
 - [Phase 15-async-operation-tests]: 15-01: ctx.wait() accepts i32 not u64 -- use as_i64() with cast for event-driven wait_seconds extraction
 - [Phase 15-async-operation-tests]: 15-02: get_execution_output uses --query Output --output text for async result retrieval
 - [Phase 15-async-operation-tests]: 15-02: assert_callbacks sends {approved:true} and validates outcome.approved only (not callback_id per user decision)
+- [Quick fix 1]: Lambda caches old ECR image digest when tag is reused — must call update-function-code to force re-resolve
 
 ### Pending Todos
 
@@ -112,6 +113,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-18T15:51:39.196Z
-Stopped at: Completed 15-02-PLAN.md
+Last session: 2026-03-18T19:02:16Z
+Stopped at: Completed quick fix 1 (11 stale Lambda functions republished)
 Resume file: None
