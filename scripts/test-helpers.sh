@@ -654,3 +654,43 @@ assert_invoke() {
 
   echo "invoke operation round-tripped order_id with enrichment via $binary"
 }
+
+# ===========================================================================
+# XFAIL Helpers: Expected Failures for Unsupported Service Operations
+# The AWS durable execution service does not yet support the Context
+# operation type (used by parallel, map, child_context). These helpers
+# validate the functions start correctly but return the expected service
+# error. Revert to assert_parallel/assert_map/assert_child_contexts when
+# the service adds support for Context operations.
+# ===========================================================================
+
+# ---------------------------------------------------------------------------
+# assert_service_unsupported(binary, operation_name)
+# Invokes a handler expected to fail because the AWS durable execution
+# service does not yet support the Context operation type (used by
+# parallel, map, child_context). Validates the function returns
+# FunctionError=Unhandled with errorType=AWS_SDK_OPERATION.
+# This is an XFAIL (expected failure) -- the SDK code is correct per
+# the Python SDK spec, but the service hasn't implemented these ops yet.
+# ---------------------------------------------------------------------------
+assert_service_unsupported() {
+  local binary="$1"
+  local operation_name="$2"
+  local fn_arn
+  fn_arn=$(get_alias_arn "$binary")
+  local result
+  result=$(invoke_sync "$fn_arn" '{}')
+  local status fn_error response_body
+  IFS='|' read -r status fn_error _ response_body <<< "$result"
+
+  [[ "$status" == "200" ]] || { echo "Expected HTTP 200, got: $status; body=$response_body"; return 1; }
+  [[ "$fn_error" == "Unhandled" ]] || \
+    { echo "Expected FunctionError=Unhandled (service unsupported), got: fn_error=${fn_error}; body=$response_body"; return 1; }
+
+  local error_type
+  error_type=$(echo "$response_body" | jq -r '.errorType // ""')
+  [[ "$error_type" == "AWS_SDK_OPERATION" ]] || \
+    { echo "Expected errorType=AWS_SDK_OPERATION, got: $error_type; body=$response_body"; return 1; }
+
+  echo "XFAIL: $operation_name correctly returned AWS_SDK_OPERATION (service unsupported) via $binary"
+}
