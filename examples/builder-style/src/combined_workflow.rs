@@ -3,7 +3,6 @@
 //! End-to-end multi-operation workflow using the builder pattern.
 
 use durable_lambda_builder::prelude::*;
-use durable_lambda_core::context::DurableContext;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -49,32 +48,54 @@ async fn main() -> Result<(), lambda_runtime::Error> {
                 )
                 .await?;
 
-            let fulfillment: serde_json::Value = ctx
-                .invoke(
-                    "start_fulfillment",
-                    "fulfillment-lambda",
-                    &serde_json::json!({ "order_id": &validation.order_id }),
-                )
+            let fulfillment_fn = std::env::var("FULFILLMENT_FUNCTION")
+                .unwrap_or_else(|_| "fulfillment-lambda".to_string());
+            let fulfillment_payload = serde_json::json!({ "order_id": &validation.order_id });
+            let fulfillment_result: Result<serde_json::Value, String> = ctx
+                .step("start_fulfillment", move || {
+                    let fulfillment_fn = fulfillment_fn.clone();
+                    let payload = fulfillment_payload.clone();
+                    async move {
+                        let config = aws_config::defaults(aws_config::BehaviorVersion::latest())
+                            .region(aws_config::Region::new(
+                                std::env::var("AWS_REGION")
+                                    .unwrap_or_else(|_| "us-east-2".to_string()),
+                            ))
+                            .load()
+                            .await;
+                        let client = aws_sdk_lambda::Client::new(&config);
+                        let blob = aws_sdk_lambda::primitives::Blob::new(
+                            serde_json::to_vec(&payload).unwrap(),
+                        );
+                        let resp = client
+                            .invoke()
+                            .function_name(&fulfillment_fn)
+                            .payload(blob)
+                            .send()
+                            .await
+                            .map_err(|e| format!("Lambda invoke failed: {e}"))?;
+                        let payload_bytes = resp
+                            .payload()
+                            .map(|b| b.as_ref().to_vec())
+                            .unwrap_or_default();
+                        let result: serde_json::Value = serde_json::from_slice(&payload_bytes)
+                            .map_err(|e| format!("Failed to parse response: {e}"))?;
+                        Ok(result)
+                    }
+                })
                 .await?;
+            let fulfillment = fulfillment_result.map_err(|e| {
+                DurableError::checkpoint_failed("start_fulfillment", std::io::Error::other(e))
+            })?;
 
             ctx.wait("cooling_period", 30).await?;
 
-            let post_processing: serde_json::Value = ctx
-                .child_context(
-                    "post_processing",
-                    |mut child_ctx: DurableContext| async move {
-                        let _r: Result<String, String> = child_ctx
-                            .step("send_receipt", || async { Ok("receipt_sent".to_string()) })
-                            .await?;
-                        let _r2: Result<String, String> = child_ctx
-                            .step("update_inventory", || async {
-                                Ok("inventory_updated".to_string())
-                            })
-                            .await?;
-                        Ok(serde_json::json!({"receipt": "sent", "inventory": "updated"}))
-                    },
-                )
+            let post_processing: Result<serde_json::Value, String> = ctx
+                .step("post_processing", || async {
+                    Ok(serde_json::json!({"receipt": "sent", "inventory": "updated"}))
+                })
                 .await?;
+            let post_processing = post_processing.unwrap_or_default();
 
             ctx.log("Combined workflow complete");
 

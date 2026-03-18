@@ -66,6 +66,8 @@ path = "src/batch_checkpoint.rs"
 [dependencies]
 durable-lambda-closure = { path = "../../crates/durable-lambda-closure" }
 durable-lambda-core = { path = "../../crates/durable-lambda-core" }
+aws-sdk-lambda = { workspace = true }
+aws-config = { workspace = true }
 serde_json = { workspace = true }
 serde = { workspace = true }
 tokio = { workspace = true }

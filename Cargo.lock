@@ -148,9 +148,9 @@ dependencies = [
 
 [[package]]
 name = "aws-sdk-lambda"
-version = "1.118.0"
+version = "1.119.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "457ff4d8c7a6fde59fb5a49f98b6969c047a18b198e38f9675f17e24b8db049a"
+checksum = "9bcacc7c2d94698c49fb73086d16ccdff68442ed21a70fbaa924c46158e37a93"
 dependencies = [
  "aws-credential-types",
  "aws-runtime",
@@ -413,9 +413,9 @@ dependencies = [
 
 [[package]]
 name = "aws-smithy-types"
-version = "1.4.6"
+version = "1.4.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d2b1117b3b2bbe166d11199b540ceed0d0f7676e36e7b962b5a437a9971eac75"
+checksum = "9d73dbfbaa8e4bc57b9045137680b958d274823509a360abfd8e1d514d40c95c"
 dependencies = [
  "base64-simd",
  "bytes",
@@ -504,6 +504,8 @@ dependencies = [
 name = "builder-style-example"
 version = "0.1.0"
 dependencies = [
+ "aws-config",
+ "aws-sdk-lambda",
  "durable-lambda-builder",
  "durable-lambda-core",
  "lambda_runtime",
@@ -556,6 +558,8 @@ checksum = "9330f8b2ff13f34540b44e946ef35111825727b38d33286ef986142615121801"
 name = "closure-style-example"
 version = "0.1.0"
 dependencies = [
+ "aws-config",
+ "aws-sdk-lambda",
  "durable-lambda-closure",
  "durable-lambda-core",
  "lambda_runtime",
@@ -2317,6 +2321,8 @@ name = "trait-style-example"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "aws-config",
+ "aws-sdk-lambda",
  "durable-lambda-core",
  "durable-lambda-trait",
  "lambda_runtime",

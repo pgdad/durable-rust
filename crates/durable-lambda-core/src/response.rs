@@ -71,9 +71,8 @@ pub fn wrap_handler_result(
             // Serialize the user result as a JSON string (double-encoded).
             // The durable execution service expects Result to be a JSON string,
             // not a nested JSON object.
-            let result_str = serde_json::to_string(&value).map_err(|e| {
-                Box::new(e) as Box<dyn std::error::Error + Send + Sync>
-            })?;
+            let result_str = serde_json::to_string(&value)
+                .map_err(|e| Box::new(e) as Box<dyn std::error::Error + Send + Sync>)?;
             Ok(json!({
                 "Status": "SUCCEEDED",
                 "Result": result_str,
@@ -127,7 +126,9 @@ mod tests {
 
         assert_eq!(output["Status"], "SUCCEEDED");
         // Result is a JSON string
-        let result_str = output["Result"].as_str().expect("Result should be a string");
+        let result_str = output["Result"]
+            .as_str()
+            .expect("Result should be a string");
         let parsed: serde_json::Value = serde_json::from_str(result_str).unwrap();
         assert_eq!(parsed["order_id"], "123");
     }
@@ -208,8 +209,7 @@ mod tests {
     #[test]
     fn succeeded_status_result_is_json_string() {
         // The Result field must be a JSON string, not a nested object.
-        let output =
-            wrap_handler_result(Ok(serde_json::json!({"key": "value"}))).unwrap();
+        let output = wrap_handler_result(Ok(serde_json::json!({"key": "value"}))).unwrap();
         assert_eq!(output["Status"], "SUCCEEDED");
         assert!(
             output["Result"].is_string(),

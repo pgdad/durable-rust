@@ -1,4 +1,24 @@
 locals {
+  # Environment variables for handlers that use ctx.invoke()
+  invoke_env = {
+    ENRICHMENT_FUNCTION = aws_lambda_function.order_enrichment.function_name
+    FULFILLMENT_FUNCTION = aws_lambda_function.fulfillment.function_name
+  }
+
+  # Handlers that need invoke env vars
+  invoke_handlers = toset([
+    "closure-invoke", "macro-invoke", "trait-invoke", "builder-invoke",
+    "closure-combined-workflow", "macro-combined-workflow", "trait-combined-workflow", "builder-combined-workflow",
+  ])
+
+  handler_env = {
+    for key, _ in local.handlers : key => (
+      contains(local.invoke_handlers, key)
+      ? local.invoke_env
+      : {}
+    )
+  }
+
   handlers = {
     # Closure style
     "closure-basic-steps"         = { style = "closure", package = "closure-style-example" }
@@ -67,6 +87,13 @@ resource "aws_lambda_function" "examples" {
 
   timeout     = 900 # Lambda invocation timeout; durable_config.execution_timeout governs durable lifecycle
   memory_size = 256
+
+  dynamic "environment" {
+    for_each = length(local.handler_env[each.key]) > 0 ? [1] : []
+    content {
+      variables = local.handler_env[each.key]
+    }
+  }
 
   durable_config {
     execution_timeout = 840 # 14 min — must be <= 900s (Lambda timeout) to allow synchronous invocation in integration tests

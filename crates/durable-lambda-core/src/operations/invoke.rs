@@ -174,6 +174,10 @@ impl DurableContext {
     }
 
     /// Deserialize the result from a succeeded invoke operation.
+    ///
+    /// Checks `chained_invoke_details.result` first (per SDK spec), then falls
+    /// back to `step_details.result` (service may store the chained invoke
+    /// result there instead).
     fn deserialize_invoke_result<T: DeserializeOwned>(
         op: &aws_sdk_lambda::types::Operation,
         name: &str,
@@ -181,12 +185,13 @@ impl DurableContext {
         let result_str = op
             .chained_invoke_details()
             .and_then(|d| d.result())
+            .or_else(|| op.step_details().and_then(|d| d.result()))
             .ok_or_else(|| {
                 DurableError::checkpoint_failed(
                     name,
                     std::io::Error::new(
                         std::io::ErrorKind::InvalidData,
-                        "invoke succeeded but no result in chained_invoke_details",
+                        "invoke succeeded but no result in chained_invoke_details or step_details",
                     ),
                 )
             })?;

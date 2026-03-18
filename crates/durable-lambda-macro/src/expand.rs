@@ -306,10 +306,7 @@ mod tests {
         let result = expand_durable_execution(func);
         assert!(result.is_err());
         let err = result.unwrap_err().to_string();
-        assert!(
-            err.contains("Result"),
-            "error should mention Result: {err}"
-        );
+        assert!(err.contains("Result"), "error should mention Result: {err}");
     }
 
     #[test]
@@ -322,10 +319,7 @@ mod tests {
         let result = expand_durable_execution(func);
         assert!(result.is_err());
         let err = result.unwrap_err().to_string();
-        assert!(
-            err.contains("Result"),
-            "error should mention Result: {err}"
-        );
+        assert!(err.contains("Result"), "error should mention Result: {err}");
     }
 
     #[test]
@@ -339,6 +333,10 @@ mod tests {
             }
         };
         let result = expand_durable_execution(func);
-        assert!(result.is_ok(), "mut ctx binding should be accepted: {:?}", result.err());
+        assert!(
+            result.is_ok(),
+            "mut ctx binding should be accepted: {:?}",
+            result.err()
+        );
     }
 }
