@@ -505,3 +505,152 @@ assert_combined_workflow() {
 
   echo "combined workflow completed with payment, fulfillment, and post-processing via $binary"
 }
+
+# ===========================================================================
+# Phase 15: Async Operation Helpers
+# get_execution_output retrieves completed execution output.
+# assert_waits, assert_callbacks, assert_invoke validate async operations
+# across 4 API styles.
+# ===========================================================================
+
+# ---------------------------------------------------------------------------
+# get_execution_output(exec_arn)
+# Retrieves the Output field from a completed durable execution.
+# Returns the raw output string (typically JSON).
+# ---------------------------------------------------------------------------
+get_execution_output() {
+  local exec_arn="$1"
+  aws lambda get-durable-execution \
+    --profile "$PROFILE" \
+    --region "$REGION" \
+    --durable-execution-arn "$exec_arn" \
+    --query 'Output' \
+    --output text 2>/dev/null
+}
+
+# ---------------------------------------------------------------------------
+# assert_waits(binary)
+# Full async wait test flow:
+#   invoke_async with 5-second wait -> poll to SUCCEEDED -> get output
+#   -> verify started.status="started" and completed.status="completed"
+# ---------------------------------------------------------------------------
+assert_waits() {
+  local binary="$1"
+  local fn_arn
+  fn_arn=$(get_alias_arn "$binary")
+
+  # Start async execution with 5-second wait
+  local exec_arn
+  exec_arn=$(invoke_async "$fn_arn" '{"wait_seconds":5}')
+  [[ -n "$exec_arn" ]] || { echo "Expected non-empty exec_arn from invoke_async"; return 1; }
+
+  # Poll until terminal status (60s timeout = 12x margin for 5s wait)
+  local final_status
+  final_status=$(wait_for_terminal_status "$exec_arn" 60)
+  [[ "$final_status" == "SUCCEEDED" ]] || \
+    { echo "Expected SUCCEEDED, got: $final_status for exec_arn=$exec_arn"; return 1; }
+
+  # Retrieve execution output
+  local output
+  output=$(get_execution_output "$exec_arn")
+  [[ -n "$output" && "$output" != "None" ]] || \
+    { echo "Expected non-empty output, got: '$output' for exec_arn=$exec_arn"; return 1; }
+
+  # Parse and validate response fields
+  local started_status
+  started_status=$(echo "$output" | jq -r '.started.status')
+  [[ "$started_status" == "started" ]] || \
+    { echo "Expected started.status=started, got: $started_status; output=$output"; return 1; }
+
+  local completed_status
+  completed_status=$(echo "$output" | jq -r '.completed.status')
+  [[ "$completed_status" == "completed" ]] || \
+    { echo "Expected completed.status=completed, got: $completed_status; output=$output"; return 1; }
+
+  echo "async wait completed with started+completed status fields via $binary"
+}
+
+# ---------------------------------------------------------------------------
+# assert_callbacks(binary)
+# Full async callback test flow:
+#   invoke_async -> extract_callback_id -> send_callback_success
+#   -> wait_for_terminal_status -> get_execution_output
+#   -> verify outcome.approved=true
+# ---------------------------------------------------------------------------
+assert_callbacks() {
+  local binary="$1"
+  local fn_arn
+  fn_arn=$(get_alias_arn "$binary")
+
+  # Start async execution
+  local exec_arn
+  exec_arn=$(invoke_async "$fn_arn" '{}')
+  [[ -n "$exec_arn" ]] || { echo "Expected non-empty exec_arn from invoke_async"; return 1; }
+
+  # Poll for callback_id from CallbackStarted event
+  local callback_id
+  callback_id=$(extract_callback_id "$exec_arn" 60)
+  [[ -n "$callback_id" ]] || \
+    { echo "Expected non-empty callback_id, got empty for exec_arn=$exec_arn"; return 1; }
+
+  # Send callback success signal
+  if ! send_callback_success "$callback_id" '{"approved":true}' >/dev/null 2>&1; then
+    echo "send_callback_success failed for callback_id=$callback_id"
+    return 1
+  fi
+
+  # Poll until terminal status
+  local final_status
+  final_status=$(wait_for_terminal_status "$exec_arn" 60)
+  [[ "$final_status" == "SUCCEEDED" ]] || \
+    { echo "Expected SUCCEEDED, got: $final_status for exec_arn=$exec_arn"; return 1; }
+
+  # Retrieve execution output
+  local output
+  output=$(get_execution_output "$exec_arn")
+  [[ -n "$output" && "$output" != "None" ]] || \
+    { echo "Expected non-empty output, got: '$output' for exec_arn=$exec_arn"; return 1; }
+
+  # Validate callback result was processed
+  local approved
+  approved=$(echo "$output" | jq -r '.outcome.approved')
+  [[ "$approved" == "true" ]] || \
+    { echo "Expected outcome.approved=true, got: $approved; output=$output"; return 1; }
+
+  echo "async callback completed with approved=true via $binary"
+}
+
+# ---------------------------------------------------------------------------
+# assert_invoke(binary)
+# Synchronous invoke test:
+#   invoke_sync with order_id -> validate round-trip + enrichment non-null
+# ---------------------------------------------------------------------------
+assert_invoke() {
+  local binary="$1"
+  local fn_arn
+  fn_arn=$(get_alias_arn "$binary")
+
+  local result
+  result=$(invoke_sync "$fn_arn" '{"order_id":"test-invoke-001"}')
+  local status fn_error response_body
+  IFS='|' read -r status fn_error _ response_body <<< "$result"
+
+  [[ "$status" == "200" ]] || \
+    { echo "Expected HTTP 200, got: $status; body=$response_body"; return 1; }
+  [[ -z "$fn_error" ]] || \
+    { echo "Expected no FunctionError, got: $fn_error; body=$response_body"; return 1; }
+
+  # Validate order_id round-trip
+  local order_id
+  order_id=$(echo "$response_body" | jq -r '.order_id')
+  [[ "$order_id" == "test-invoke-001" ]] || \
+    { echo "Expected order_id=test-invoke-001, got: $order_id; body=$response_body"; return 1; }
+
+  # Validate enrichment is non-null (proves stub was called)
+  local enrichment
+  enrichment=$(echo "$response_body" | jq -r '.enrichment')
+  [[ "$enrichment" != "null" ]] || \
+    { echo "Expected enrichment non-null, got: null; body=$response_body"; return 1; }
+
+  echo "invoke operation round-tripped order_id with enrichment via $binary"
+}
