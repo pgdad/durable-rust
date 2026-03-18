@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: AWS Integration Testing
 status: executing
-stopped_at: Phase 15 context gathered
-last_updated: "2026-03-18T15:26:28.161Z"
-last_activity: 2026-03-18 — Completed 14-01 (32 synchronous operation tests implemented via 8 shared assertion helpers)
+stopped_at: Completed 15-01-PLAN.md
+last_updated: "2026-03-18T15:47:30.515Z"
+last_activity: 2026-03-18 — Completed 15-01 (event-driven wait duration in 4 handlers, Docker rebuild, Lambda deploy)
 progress:
   total_phases: 8
   completed_phases: 6
-  total_plans: 10
-  completed_plans: 10
-  percent: 100
+  total_plans: 12
+  completed_plans: 11
+  percent: 97
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-17)
 
 **Core value:** Enable Rust durable Lambda handlers with 4-8x lower memory and zero behavioral divergence from Python SDK
-**Current focus:** Phase 14 — Synchronous Operation Tests
+**Current focus:** Phase 15 — Async Operation Tests
 
 ## Current Position
 
-Phase: 14 of 17 (Synchronous Operation Tests)
-Plan: 1 of 1 in phase 14 (complete)
+Phase: 15 of 17 (Async Operation Tests)
+Plan: 1 of 2 in phase 15 (complete)
 Status: Executing
-Last activity: 2026-03-18 — Completed 14-01 (32 synchronous operation tests implemented via 8 shared assertion helpers)
+Last activity: 2026-03-18 — Completed 15-01 (event-driven wait duration in 4 handlers, Docker rebuild, Lambda deploy)
 
-Progress: [██████████] 100%
+Progress: [██████████] 97%
 
 ## Performance Metrics
 
@@ -55,6 +55,7 @@ Progress: [██████████] 100%
 | Phase 16-advanced-feature-tests P01 | 3 | 2 tasks | 7 files |
 | Phase 16-advanced-feature-tests P02 | 82 | 2 tasks | 12 files |
 | Phase 14-synchronous-operation-tests P01 | 2 | 2 tasks | 2 files |
+| Phase 15-async-operation-tests P01 | 5 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -96,6 +97,7 @@ Recent decisions affecting current work:
 - [Phase 14-synchronous-operation-tests]: 14-01: Shared assertion helpers in test-helpers.sh reduce 32 tests to 8 reusable functions
 - [Phase 14-synchronous-operation-tests]: 14-01: Parallel branch assertions use sorted membership check (not index access) for non-deterministic order
 - [Phase 14-synchronous-operation-tests]: 14-01: Typed errors test validates both success and error paths in a single function call
+- [Phase 15-async-operation-tests]: 15-01: ctx.wait() accepts i32 not u64 -- use as_i64() with cast for event-driven wait_seconds extraction
 
 ### Pending Todos
 
@@ -107,6 +109,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-18T15:26:28.160Z
-Stopped at: Phase 15 context gathered
-Resume file: .planning/phases/15-async-operation-tests/15-CONTEXT.md
+Last session: 2026-03-18T15:47:30.513Z
+Stopped at: Completed 15-01-PLAN.md
+Resume file: None

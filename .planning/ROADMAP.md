@@ -109,7 +109,7 @@ Plans:
   2. All callback handlers (4 styles) are invoked, polled to SUSPENDED, receive a callback success signal, then poll to SUCCEEDED — no race conditions
   3. All invoke handlers (4 styles) successfully call the `order-enrichment-lambda` stub and return its result in the execution output
   4. `scripts/test-all.sh` shows all 12 async test cases as PASS
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 Plans:
 - [ ] 15-01-PLAN.md — Modify 4 waits.rs handlers for event-driven duration, rebuild images, redeploy Lambdas
 - [ ] 15-02-PLAN.md — Add 4 assertion helpers to test-helpers.sh and replace 12 test stubs in test-all.sh
@@ -149,6 +149,6 @@ Plans:
 | 12. Docker Build Pipeline | 2/2 | Complete    | 2026-03-17 | - |
 | 13. Test Harness | 1/1 | Complete    | 2026-03-17 | - |
 | 14. Synchronous Operation Tests | 1/1 | Complete    | 2026-03-18 | - |
-| 15. Async Operation Tests | v1.1 | 0/2 | Planned | - |
+| 15. Async Operation Tests | 1/2 | In Progress|  | - |
 | 16. Advanced Feature Tests | 2/2 | Complete    | 2026-03-17 | - |
 | 17. Documentation | v1.1 | 0/TBD | Not started | - |
