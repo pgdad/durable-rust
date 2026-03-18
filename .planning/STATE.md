@@ -107,6 +107,12 @@ Recent decisions affecting current work:
 
 None yet.
 
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 1 | Fix macro-basic-steps Lambda runtime exit error (11 stale GLIBC images) | 2026-03-18 | 9037008 | [1-fix-macro-basic-steps-lambda-runtime-exi](./quick/1-fix-macro-basic-steps-lambda-runtime-exi/) |
+
 ### Blockers/Concerns
 
 - Phase 15: Exact JSON field paths for GetDurableExecution response (callback_id location) must be confirmed against a live execution before finalizing polling shell functions — treat as provisional until then.
