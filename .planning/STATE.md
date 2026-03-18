@@ -113,7 +113,7 @@ None yet.
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 1 | Fix macro-basic-steps Lambda runtime exit error (11 stale GLIBC images) | 2026-03-18 | 9037008 | [1-fix-macro-basic-steps-lambda-runtime-exi](./quick/1-fix-macro-basic-steps-lambda-runtime-exi/) |
-| 2 | Fix remaining test failures: 2 stale GLIBC closures + XFAIL for Context ops | 2026-03-18 | TBD | [2-fix-remaining-test-failures-stale-glibc-](./quick/2-fix-remaining-test-failures-stale-glibc-/) |
+| 2 | Fix remaining test failures: 2 stale GLIBC closures + XFAIL for Context ops | 2026-03-18 | e5f6433 | [2-fix-remaining-test-failures-stale-glibc-](./quick/2-fix-remaining-test-failures-stale-glibc-/) |
 
 ### Blockers/Concerns
 
