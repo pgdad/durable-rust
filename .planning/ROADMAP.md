@@ -96,7 +96,9 @@ Plans:
   3. All typed_errors handlers (4 styles) return the expected typed error in the execution result
   4. All parallel, map, child_context, replay_safe_logging, and combined_workflow handlers (4 styles each) return SUCCEEDED
   5. `scripts/test-all.sh` shows all 32 synchronous test cases as PASS
-**Plans**: TBD
+**Plans:** 1 plan
+Plans:
+- [ ] 14-01-PLAN.md — Add 8 assertion helpers to test-helpers.sh and replace 32 test stubs in test-all.sh
 
 ### Phase 15: Async Operation Tests
 **Goal**: Wait, callback, and invoke operations complete successfully against real AWS, with correct state polling before callback signal dispatch
@@ -143,7 +145,7 @@ Plans:
 | 11. Infrastructure | 3/3 | Complete    | 2026-03-17 | - |
 | 12. Docker Build Pipeline | 2/2 | Complete    | 2026-03-17 | - |
 | 13. Test Harness | 1/1 | Complete    | 2026-03-17 | - |
-| 14. Synchronous Operation Tests | v1.1 | 0/TBD | Not started | - |
+| 14. Synchronous Operation Tests | v1.1 | 0/1 | Planned | - |
 | 15. Async Operation Tests | v1.1 | 0/TBD | Not started | - |
 | 16. Advanced Feature Tests | 2/2 | Complete    | 2026-03-17 | - |
 | 17. Documentation | v1.1 | 0/TBD | Not started | - |
