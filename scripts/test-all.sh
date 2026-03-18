@@ -105,20 +105,20 @@ test_builder_combined_workflow()   { assert_combined_workflow "builder-combined-
 # waits, callbacks, invoke — 4 styles each = 12 tests
 # ---------------------------------------------------------------------------
 
-test_closure_waits()               { echo "STUB — not yet implemented"; } # TODO: Phase 15 will implement
-test_macro_waits()                 { echo "STUB — not yet implemented"; } # TODO: Phase 15 will implement
-test_trait_waits()                 { echo "STUB — not yet implemented"; } # TODO: Phase 15 will implement
-test_builder_waits()               { echo "STUB — not yet implemented"; } # TODO: Phase 15 will implement
+test_closure_waits()               { assert_waits "closure-waits"; }
+test_macro_waits()                 { assert_waits "macro-waits"; }
+test_trait_waits()                 { assert_waits "trait-waits"; }
+test_builder_waits()               { assert_waits "builder-waits"; }
 
-test_closure_callbacks()           { echo "STUB — not yet implemented"; } # TODO: Phase 15 will implement
-test_macro_callbacks()             { echo "STUB — not yet implemented"; } # TODO: Phase 15 will implement
-test_trait_callbacks()             { echo "STUB — not yet implemented"; } # TODO: Phase 15 will implement
-test_builder_callbacks()           { echo "STUB — not yet implemented"; } # TODO: Phase 15 will implement
+test_closure_callbacks()           { assert_callbacks "closure-callbacks"; }
+test_macro_callbacks()             { assert_callbacks "macro-callbacks"; }
+test_trait_callbacks()             { assert_callbacks "trait-callbacks"; }
+test_builder_callbacks()           { assert_callbacks "builder-callbacks"; }
 
-test_closure_invoke()              { echo "STUB — not yet implemented"; } # TODO: Phase 15 will implement
-test_macro_invoke()                { echo "STUB — not yet implemented"; } # TODO: Phase 15 will implement
-test_trait_invoke()                { echo "STUB — not yet implemented"; } # TODO: Phase 15 will implement
-test_builder_invoke()              { echo "STUB — not yet implemented"; } # TODO: Phase 15 will implement
+test_closure_invoke()              { assert_invoke "closure-invoke"; }
+test_macro_invoke()                { assert_invoke "macro-invoke"; }
+test_trait_invoke()                { assert_invoke "trait-invoke"; }
+test_builder_invoke()              { assert_invoke "builder-invoke"; }
 
 # ---------------------------------------------------------------------------
 # === Phase 16: Advanced Feature Tests ===
