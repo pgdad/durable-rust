@@ -1,4 +1,7 @@
 //! Waits example — trait-style API.
+//!
+//! The wait duration can be controlled via the `wait_seconds` field in the event
+//! payload (defaults to 60 seconds if not provided).
 
 use async_trait::async_trait;
 use durable_lambda_trait::prelude::*;
@@ -9,7 +12,7 @@ struct WaitHandler;
 impl DurableHandler for WaitHandler {
     async fn handle(
         &self,
-        _event: serde_json::Value,
+        event: serde_json::Value,
         mut ctx: TraitContext,
     ) -> Result<serde_json::Value, DurableError> {
         let started = ctx
@@ -18,7 +21,8 @@ impl DurableHandler for WaitHandler {
             })
             .await?;
 
-        ctx.wait("cooling_period", 60).await?;
+        let wait_secs = event["wait_seconds"].as_i64().unwrap_or(60) as i32;
+        ctx.wait("cooling_period", wait_secs).await?;
 
         let completed = ctx
             .step("finish_processing", || async {
