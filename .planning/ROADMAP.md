@@ -69,7 +69,10 @@ Plans:
   2. The crates.io API token is stored as a GitHub repository secret (`CARGO_REGISTRY_TOKEN`) and the workflow references it without exposing it in logs
   3. Every PR to main triggers a CI check that runs `cargo publish --dry-run` for all 6 crates and fails the PR if any crate has metadata errors or missing fields
   4. A developer can trigger a release by creating and pushing a version tag (e.g., `git tag v0.1.0 && git push origin v0.1.0`) with no other manual steps required
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 20-01-PLAN.md — Create release workflow and add publish-check job to CI
+- [ ] 20-02-PLAN.md — Add CARGO_REGISTRY_TOKEN to GitHub repository secrets
 
 ## Progress
 
@@ -87,4 +90,4 @@ Plans:
 | 17. Documentation | v1.1 | 0/TBD | Not started | - |
 | 18. Crate Metadata | 2/2 | Complete    | 2026-03-19 | - |
 | 19. Publishing Infrastructure | 2/2 | Complete    | 2026-03-19 | - |
-| 20. CI/CD Automation | v1.2 | 0/TBD | Not started | - |
+| 20. CI/CD Automation | v1.2 | 0/2 | Not started | - |
