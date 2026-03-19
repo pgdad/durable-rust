@@ -658,4 +658,4 @@ This project follows 38 implementation rules documented in [project-context.md](
 
 ## License
 
-Internal project. See LICENSE file for details.
+Licensed under either of [MIT](LICENSE-MIT) or [Apache-2.0](LICENSE-APACHE) at your option.

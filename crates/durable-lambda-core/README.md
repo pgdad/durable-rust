@@ -4,7 +4,7 @@ Core replay engine, types, and operation logic for AWS Lambda durable execution 
 
 [![Docs.rs](https://docs.rs/durable-lambda-core/badge.svg)](https://docs.rs/durable-lambda-core)
 [![Crates.io](https://img.shields.io/crates/v/durable-lambda-core.svg)](https://crates.io/crates/durable-lambda-core)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/pgdad/durable-rust/blob/main/LICENSE-MIT)
+[![License: MIT OR Apache-2.0](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue.svg)](https://github.com/pgdad/durable-rust#license)
 
 ## Overview
 
@@ -188,7 +188,7 @@ Full API documentation: [docs.rs/durable-lambda-core](https://docs.rs/durable-la
 
 ## License
 
-Licensed under MIT. See [LICENSE-MIT](https://github.com/pgdad/durable-rust/blob/main/LICENSE-MIT) for details.
+Licensed under either of [MIT](https://github.com/pgdad/durable-rust/blob/main/LICENSE-MIT) or [Apache-2.0](https://github.com/pgdad/durable-rust/blob/main/LICENSE-APACHE) at your option.
 
 ## Repository
 
