@@ -86,5 +86,5 @@ Plans:
 | 16. Advanced Feature Tests | v1.1 | 2/2 | Complete | 2026-03-17 |
 | 17. Documentation | v1.1 | 0/TBD | Not started | - |
 | 18. Crate Metadata | 2/2 | Complete    | 2026-03-19 | - |
-| 19. Publishing Infrastructure | 2/2 | Complete   | 2026-03-19 | - |
+| 19. Publishing Infrastructure | 2/2 | Complete    | 2026-03-19 | - |
 | 20. CI/CD Automation | v1.2 | 0/TBD | Not started | - |
