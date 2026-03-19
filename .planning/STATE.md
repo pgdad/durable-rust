@@ -68,6 +68,12 @@ Recent decisions affecting current work:
 
 None yet.
 
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 5 | Fix README license sections to match Cargo.toml dual MIT OR Apache-2.0 | 2026-03-19 | dc198d6 | [5-fix-readme-license-sections-to-match-car](./quick/5-fix-readme-license-sections-to-match-car/) |
+
 ### Blockers/Concerns
 
 - Phase 19 (PUB-01) requires a crates.io account and API token — must be obtained manually before the publish script can be tested end-to-end. Dry-run mode works without a token.
