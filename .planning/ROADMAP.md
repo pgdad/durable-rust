@@ -3,7 +3,8 @@
 ## Milestones
 
 - ✅ **v1.0 Production Hardening** - Phases 1-9 (shipped 2026-03-17)
-- 🚧 **v1.1 AWS Integration Testing** - Phases 10-17 (in progress)
+- ✅ **v1.1 AWS Integration Testing** - Phases 10-17 (shipped 2026-03-19)
+- 🚧 **v1.2 Crates.io Publishing** - Phases 18-20 (in progress)
 
 ## Phases
 
@@ -14,141 +15,70 @@
 
 </details>
 
-### 🚧 v1.1 AWS Integration Testing (In Progress)
+<details>
+<summary>✅ v1.1 AWS Integration Testing (Phases 10-17) - SHIPPED 2026-03-19</summary>
 
-**Milestone Goal:** Deploy all 44 example handlers as Lambda functions against real AWS, validate every SDK operation end-to-end with an automated test harness.
+8 phases completed. Deployed all 48 example handlers as Lambda functions against real AWS, validated every SDK operation end-to-end with an automated test harness (48/48 tests passing: 32 real + 16 XFAIL). Delivered Terraform infrastructure, Docker build pipeline with cargo-chef caching, and comprehensive service limitation documentation.
 
-- [x] **Phase 10: Tooling and Prerequisites** - Install and configure all required tools on the developer machine
-- [x] **Phase 11: Infrastructure** - Terraform manages all AWS resources (ECR, IAM, 44 Lambda functions, aliases, stubs) (completed 2026-03-17)
-- [x] **Phase 12: Docker Build Pipeline** - Build and push all 44 container images to ECR with cargo-chef caching (completed 2026-03-17)
-- [x] **Phase 13: Test Harness** - Single-command test runner with per-test reporting and credential validation (completed 2026-03-17)
-- [x] **Phase 14: Synchronous Operation Tests** - All synchronous operations validated against real Lambda (step, parallel, map, child_context, logging, combined_workflow) (completed 2026-03-18)
-- [x] **Phase 15: Async Operation Tests** - Wait, callback, and invoke operations validated with state polling (completed 2026-03-18)
-- [x] **Phase 16: Advanced Feature Tests** - Saga/compensation, step timeout, conditional retry, batch checkpoint validated (completed 2026-03-17)
-- [ ] **Phase 17: Documentation** - Manual test instructions, teardown guide, tooling installation doc
+</details>
+
+### 🚧 v1.2 Crates.io Publishing (In Progress)
+
+**Milestone Goal:** Establish a complete crate publishing pipeline from local dry-run to automated GitHub Actions release, making all 6 SDK crates available on crates.io.
+
+- [ ] **Phase 18: Crate Metadata** - All 6 publishable crates have complete, accurate Cargo.toml metadata and per-crate READMEs
+- [ ] **Phase 19: Publishing Infrastructure** - crates.io token obtained, dependency-ordered publish script passes dry-run for all crates
+- [ ] **Phase 20: CI/CD Automation** - GitHub Actions workflow publishes crates on release tags and validates dry-run on every PR
 
 ## Phase Details
 
-### Phase 10: Tooling and Prerequisites
-**Goal**: Developer machine has all required tools installed and configured to interact with AWS
+### Phase 18: Crate Metadata
+**Goal**: All 6 publishable crates are ready for crates.io submission with complete Cargo.toml metadata, consistent versioning, and per-crate documentation pages
 **Depends on**: Nothing (first phase of milestone)
-**Requirements**: TOOL-01, TOOL-02
+**Requirements**: META-01, META-02, META-03
 **Success Criteria** (what must be TRUE):
-  1. `terraform version` outputs 1.14.0 or higher
-  2. `aws --version` outputs aws-cli/2.x and `aws sts get-caller-identity --profile adfs` returns a valid account ID
-  3. `docker buildx version` outputs a valid version and `docker info` shows the daemon is running
-  4. `jq --version` outputs 1.7 or higher
-**Plans:** 1/1 plans complete
-Plans:
-- [x] 10-01-PLAN.md — Verify prerequisites and create verification script
+  1. Every publishable crate Cargo.toml contains license, repository, homepage, readme, documentation, description, categories, and keywords fields with no placeholder values
+  2. All 6 crates share version 0.1.0 managed via workspace-level `[workspace.package]` version inheritance — bumping the root version propagates to all crates
+  3. Each of the 6 crates has a README.md in its crate directory that renders correctly on crates.io (includes crate purpose, usage snippet, and links to docs.rs)
+  4. `cargo metadata --no-deps` for each crate shows no missing required fields and no publish-blocking warnings
+**Plans**: TBD
 
-### Phase 11: Infrastructure
-**Goal**: All AWS resources exist and are correctly configured so Lambda functions can be invoked with durable execution enabled
-**Depends on**: Phase 10
-**Requirements**: INFRA-01, INFRA-02, INFRA-03, INFRA-04, INFRA-05, INFRA-06, INFRA-07, INFRA-08
+### Phase 19: Publishing Infrastructure
+**Goal**: A developer can validate all 6 crates locally with a single dry-run command, and publish them in dependency order with a single publish command once credentials are in place
+**Depends on**: Phase 18
+**Requirements**: PUB-01, PUB-02, PUB-03, PUB-04
 **Success Criteria** (what must be TRUE):
-  1. `terraform apply` completes without errors and `terraform plan` shows no changes afterward
-  2. All 44 Lambda functions exist in us-east-2 with `durable_config` set and a `live` alias pointing to a published version
-  3. The 2 callee stub functions (`order-enrichment-lambda`, `fulfillment-lambda`) exist and are invocable
-  4. `terraform destroy` removes all resources cleanly including ECR images (no orphaned resources in the AWS account)
-  5. All resources carry project/milestone/style tags visible in the AWS console
-**Plans:** 3/3 plans complete
-Plans:
-- [x] 11-01-PLAN.md — Create all Terraform files (7 .tf + 2 Python stubs), terraform init + validate
-- [x] 11-02-PLAN.md — Targeted apply of ECR + IAM resources (gateway for Phase 12 image push)
-- [x] 11-03-PLAN.md — Full terraform apply + comprehensive smoke verification (after Phase 12 images) (completed 2026-03-17)
+  1. `cargo publish --dry-run` passes for all 6 crates individually without errors or warnings
+  2. Running `scripts/publish.sh --dry-run` executes dry-run publishes in dependency order (core → macro → closure/trait/builder → testing) and exits 0 only if all 6 pass
+  3. Running `scripts/publish.sh` (without --dry-run) publishes all 6 crates to crates.io in the correct order, waiting for crates.io indexing between each publish
+  4. `~/.cargo/credentials.toml` contains a valid crates.io API token that `cargo publish` can use without additional flags
+**Plans**: TBD
 
-### Phase 12: Docker Build Pipeline
-**Goal**: All 44 container images are built and pushed to ECR, with a repeatable one-command build that uses cargo-chef layer caching
-**Depends on**: Phase 11 (ECR repositories must exist before push)
-**Requirements**: BUILD-01, BUILD-02, BUILD-03, BUILD-04
+### Phase 20: CI/CD Automation
+**Goal**: Pushing a release tag to GitHub triggers automated publishing of all crates, and every PR validates that crate metadata is publish-ready before merging
+**Depends on**: Phase 19
+**Requirements**: CI-01, CI-02, CI-03
 **Success Criteria** (what must be TRUE):
-  1. Running `scripts/build-images.sh` from a clean state produces all 44 images in ECR with per-binary tags
-  2. A second run after a source-only change completes in under 10 minutes (dependency layer reused via cargo-chef)
-  3. All 4 example crates build concurrently (parallel build visible in script output)
-  4. Lambda functions updated to reference new image URIs are invocable immediately after the push
-**Plans:** 2/2 plans complete
-Plans:
-- [ ] 12-01-PLAN.md — Update Dockerfile with cargo-chef three-stage build + create .dockerignore
-- [ ] 12-02-PLAN.md — Create build-images.sh, build and push all 44 images to ECR
-
-### Phase 13: Test Harness
-**Goal**: A working test execution framework exists that can run any subset of tests, report per-test results, and fail fast on expired credentials
-**Depends on**: Phase 12 (Lambda functions must have valid images before any test runs)
-**Requirements**: TEST-01, TEST-02, TEST-03, TEST-04, TEST-05, TEST-06
-**Success Criteria** (what must be TRUE):
-  1. `scripts/test-all.sh` runs to completion and prints a per-test PASS/FAIL summary table
-  2. `scripts/test-all.sh basic-steps-closure` runs only that single test case
-  3. Running with expired ADFS credentials exits immediately with a clear `CREDENTIAL_EXPIRED` message before invoking any Lambda
-  4. The polling helper correctly waits for a durable execution to reach SUCCEEDED/FAILED/TIMED_OUT without busy-looping
-  5. The callback tooling extracts a callback_id from execution state and sends a success signal without manual steps
-**Plans:** 1/1 plans complete
-Plans:
-- [ ] 13-01-PLAN.md — Create test-helpers.sh (shared helpers) and test-all.sh (runner + stub tests)
-
-### Phase 14: Synchronous Operation Tests
-**Goal**: All synchronous operations (step, retry, typed errors, parallel, map, child context, logging, combined workflow) return SUCCEEDED against real AWS for all 4 API styles
-**Depends on**: Phase 13
-**Requirements**: OPTEST-01, OPTEST-02, OPTEST-03, OPTEST-07, OPTEST-08, OPTEST-09, OPTEST-10, OPTEST-11
-**Success Criteria** (what must be TRUE):
-  1. All basic_steps handlers (4 styles) return SUCCEEDED on first invocation and replayed invocation with no new checkpoints
-  2. All step_retries handlers (4 styles) return SUCCEEDED after the configured number of retries
-  3. All typed_errors handlers (4 styles) return the expected typed error in the execution result
-  4. All parallel, map, child_context, replay_safe_logging, and combined_workflow handlers (4 styles each) return SUCCEEDED
-  5. `scripts/test-all.sh` shows all 32 synchronous test cases as PASS
-**Plans:** 1/1 plans complete
-Plans:
-- [ ] 14-01-PLAN.md — Add 8 assertion helpers to test-helpers.sh and replace 32 test stubs in test-all.sh
-
-### Phase 15: Async Operation Tests
-**Goal**: Wait, callback, and invoke operations complete successfully against real AWS, with correct state polling before callback signal dispatch
-**Depends on**: Phase 14 (polling infrastructure validated by synchronous tests)
-**Requirements**: OPTEST-04, OPTEST-05, OPTEST-06
-**Success Criteria** (what must be TRUE):
-  1. All wait handlers (4 styles) are invoked asynchronously, polled until SUCCEEDED after the wait duration completes
-  2. All callback handlers (4 styles) are invoked, polled to SUSPENDED, receive a callback success signal, then poll to SUCCEEDED — no race conditions
-  3. All invoke handlers (4 styles) successfully call the `order-enrichment-lambda` stub and return its result in the execution output
-  4. `scripts/test-all.sh` shows all 12 async test cases as PASS
-**Plans:** 2/2 plans complete
-Plans:
-- [ ] 15-01-PLAN.md — Modify 4 waits.rs handlers for event-driven duration, rebuild images, redeploy Lambdas
-- [ ] 15-02-PLAN.md — Add 4 assertion helpers to test-helpers.sh and replace 12 test stubs in test-all.sh
-
-### Phase 16: Advanced Feature Tests
-**Goal**: Saga/compensation, step timeout, conditional retry, and batch checkpoint are validated against real Lambda execution
-**Depends on**: Phase 15 (core operation suite confirmed green)
-**Requirements**: ADV-01, ADV-02, ADV-03, ADV-04
-**Success Criteria** (what must be TRUE):
-  1. The saga test handler registers 3 compensations, fails on step 4, invokes `run_compensations`, and the execution result contains the compensation sequence in reverse order
-  2. The step timeout test handler returns FAILED with a timeout error when the step closure exceeds the configured threshold
-  3. The conditional retry handler retries on matching errors and does not retry on non-matching errors, confirmed by execution step count in the result
-  4. The batch checkpoint handler produces fewer checkpoint API calls than the equivalent non-batch handler, confirmed by CloudWatch metrics or execution metadata
-**Plans:** 2/2 plans complete
-Plans:
-- [ ] 16-01-PLAN.md — Write 4 handler binaries, register in Cargo.toml/lambda.tf/build-images.sh/test-all.sh
-- [ ] 16-02-PLAN.md — Deploy infrastructure, build images, run integration tests
-
-### Phase 17: Documentation
-**Goal**: Any developer can set up the tooling, run individual tests manually, and tear down all AWS resources using written instructions
-**Depends on**: Phase 16 (documents a complete, confirmed-working system)
-**Requirements**: DOC-01, DOC-02, DOC-03
-**Success Criteria** (what must be TRUE):
-  1. A developer following the tooling installation doc from scratch can reach a working `terraform plan` in a single session without external help
-  2. The manual test instructions document lists every handler with the exact `aws lambda invoke` command and expected output
-  3. A single command from the cleanup/teardown instructions removes all AWS resources and leaves the account in the state it was before the milestone
+  1. Pushing a tag matching `v*` to the GitHub repository triggers a GitHub Actions workflow that publishes all 6 crates to crates.io in dependency order
+  2. The crates.io API token is stored as a GitHub repository secret (`CARGO_REGISTRY_TOKEN`) and the workflow references it without exposing it in logs
+  3. Every PR to main triggers a CI check that runs `cargo publish --dry-run` for all 6 crates and fails the PR if any crate has metadata errors or missing fields
+  4. A developer can trigger a release by creating and pushing a version tag (e.g., `git tag v0.1.0 && git push origin v0.1.0`) with no other manual steps required
 **Plans**: TBD
 
 ## Progress
 
-**Execution Order:** 10 -> 11 -> 12 -> 13 -> 14 -> 15 -> 16 -> 17
+**Execution Order:** 18 -> 19 -> 20
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 10. Tooling and Prerequisites | v1.1 | Complete    | 2026-03-17 | 2026-03-17 |
-| 11. Infrastructure | 3/3 | Complete    | 2026-03-17 | - |
-| 12. Docker Build Pipeline | 2/2 | Complete    | 2026-03-17 | - |
-| 13. Test Harness | 1/1 | Complete    | 2026-03-17 | - |
-| 14. Synchronous Operation Tests | 1/1 | Complete    | 2026-03-18 | - |
-| 15. Async Operation Tests | 2/2 | Complete    | 2026-03-18 | - |
-| 16. Advanced Feature Tests | 2/2 | Complete    | 2026-03-17 | - |
+| 10. Tooling and Prerequisites | v1.1 | 1/1 | Complete | 2026-03-17 |
+| 11. Infrastructure | v1.1 | 3/3 | Complete | 2026-03-17 |
+| 12. Docker Build Pipeline | v1.1 | 2/2 | Complete | 2026-03-17 |
+| 13. Test Harness | v1.1 | 1/1 | Complete | 2026-03-17 |
+| 14. Synchronous Operation Tests | v1.1 | 1/1 | Complete | 2026-03-18 |
+| 15. Async Operation Tests | v1.1 | 2/2 | Complete | 2026-03-18 |
+| 16. Advanced Feature Tests | v1.1 | 2/2 | Complete | 2026-03-17 |
 | 17. Documentation | v1.1 | 0/TBD | Not started | - |
+| 18. Crate Metadata | v1.2 | 0/TBD | Not started | - |
+| 19. Publishing Infrastructure | v1.2 | 0/TBD | Not started | - |
+| 20. CI/CD Automation | v1.2 | 0/TBD | Not started | - |

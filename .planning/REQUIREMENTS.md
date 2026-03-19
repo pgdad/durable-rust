@@ -52,22 +52,22 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| META-01 | TBD | Pending |
-| META-02 | TBD | Pending |
-| META-03 | TBD | Pending |
-| PUB-01 | TBD | Pending |
-| PUB-02 | TBD | Pending |
-| PUB-03 | TBD | Pending |
-| PUB-04 | TBD | Pending |
-| CI-01 | TBD | Pending |
-| CI-02 | TBD | Pending |
-| CI-03 | TBD | Pending |
+| META-01 | Phase 18 | Pending |
+| META-02 | Phase 18 | Pending |
+| META-03 | Phase 18 | Pending |
+| PUB-01 | Phase 19 | Pending |
+| PUB-02 | Phase 19 | Pending |
+| PUB-03 | Phase 19 | Pending |
+| PUB-04 | Phase 19 | Pending |
+| CI-01 | Phase 20 | Pending |
+| CI-02 | Phase 20 | Pending |
+| CI-03 | Phase 20 | Pending |
 
 **Coverage:**
 - v1.2 requirements: 10 total
-- Mapped to phases: 0
-- Unmapped: 10
+- Mapped to phases: 10
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-19*
-*Last updated: 2026-03-19 after initial definition*
+*Last updated: 2026-03-19 after roadmap creation (all 10 requirements mapped)*
