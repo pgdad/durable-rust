@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Crates.io Publishing
 status: executing
-stopped_at: Phase 19 context gathered
-last_updated: "2026-03-19T12:50:40.023Z"
-last_activity: 2026-03-19 — Plan 02 complete (6 crate READMEs for crates.io)
+stopped_at: Completed 19-01-PLAN.md
+last_updated: "2026-03-19T13:04:22.000Z"
+last_activity: 2026-03-19 — Plan 01 complete (publish script with dry-run validation)
 progress:
   total_phases: 3
   completed_phases: 1
-  total_plans: 2
-  completed_plans: 2
-  percent: 100
+  total_plans: 5
+  completed_plans: 3
+  percent: 60
 ---
 
 # Project State
@@ -21,23 +21,23 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-19)
 
 **Core value:** Enable Rust durable Lambda handlers with 4-8x lower memory and zero behavioral divergence from Python SDK
-**Current focus:** v1.2 Crates.io Publishing — Phase 18: Crate Metadata (complete, both plans done)
+**Current focus:** v1.2 Crates.io Publishing — Phase 19: Publishing Infrastructure (plan 1 of 2 complete)
 
 ## Current Position
 
-Phase: 18 of 20 (Crate Metadata)
-Plan: 2 of 2 (phase complete)
+Phase: 19 of 20 (Publishing Infrastructure)
+Plan: 1 of 2
 Status: Executing
-Last activity: 2026-03-19 — Plan 02 complete (6 crate READMEs for crates.io)
+Last activity: 2026-03-19 — Plan 01 complete (publish script with dry-run validation)
 
-Progress: [██████████] 100%
+Progress: [██████----] 60%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed (v1.2): 2
-- Average duration: 3.5min
-- Total execution time: 7min
+- Total plans completed (v1.2): 3
+- Average duration: 4.7min
+- Total execution time: 14min
 
 **By Phase:**
 
@@ -45,6 +45,7 @@ Progress: [██████████] 100%
 |-------|-------|-------|----------|
 | Phase 18-crate-metadata P01 | 2min | 2 tasks | 13 files |
 | Phase 18-crate-metadata P02 | 5min | 2 tasks | 6 files |
+| Phase 19-publishing-infrastructure P01 | 7min | 2 tasks | 5 files |
 
 *Updated after each plan completion*
 
@@ -63,6 +64,8 @@ Recent decisions affecting current work:
 - [Phase 18-crate-metadata]: Workspace-level version inheritance for consistent versioning across all 6 crates
 - [Phase 18-crate-metadata]: durable-lambda-closure positioned as recommended default in all crate comparison tables
 - [Phase 18-crate-metadata]: All README links absolute URLs for crates.io compatibility
+- [Phase 19-publishing-infrastructure]: Split dry-run: full publish --dry-run for independent crates, package --list for dependent crates
+- [Phase 19-publishing-infrastructure]: Added version = 0.1.0 alongside path for inter-crate runtime dependencies
 
 ### Pending Todos
 
@@ -81,6 +84,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-19T12:50:40.022Z
-Stopped at: Phase 19 context gathered
-Resume file: .planning/phases/19-publishing-infrastructure/19-CONTEXT.md
+Last session: 2026-03-19T13:04:22.000Z
+Stopped at: Completed 19-01-PLAN.md
+Resume file: .planning/phases/19-publishing-infrastructure/19-01-SUMMARY.md
