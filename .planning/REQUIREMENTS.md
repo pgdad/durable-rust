@@ -9,8 +9,8 @@ Requirements for Crates.io Publishing milestone. Each maps to roadmap phases.
 
 ### Crate Metadata
 
-- [ ] **META-01**: All 6 publishable crates have required Cargo.toml fields (license, repository, homepage, readme, documentation)
-- [ ] **META-02**: All crates use consistent version (0.1.0) with workspace-level version management
+- [x] **META-01**: All 6 publishable crates have required Cargo.toml fields (license, repository, homepage, readme, documentation)
+- [x] **META-02**: All crates use consistent version (0.1.0) with workspace-level version management
 - [ ] **META-03**: Each crate has a crate-level README.md suitable for crates.io rendering
 
 ### Publishing Infrastructure
@@ -52,8 +52,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| META-01 | Phase 18 | Pending |
-| META-02 | Phase 18 | Pending |
+| META-01 | Phase 18 | Complete |
+| META-02 | Phase 18 | Complete |
 | META-03 | Phase 18 | Pending |
 | PUB-01 | Phase 19 | Pending |
 | PUB-02 | Phase 19 | Pending |
