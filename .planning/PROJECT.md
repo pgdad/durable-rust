@@ -35,24 +35,17 @@ Enable Rust teams to write durable Lambda handlers with 4-8x lower memory and or
 - ✓ Automated test harness — 48/48 tests passing (32 real + 16 XFAIL) — v1.1
 - ✓ Callback testing tooling (SendDurableExecutionCallbackSuccess) — v1.1
 
+### Validated (shipped & confirmed) — v1.2
+- ✓ All 6 crates published to crates.io v1.2.0 with complete metadata — v1.2
+- ✓ Workspace-level version inheritance (bump root, all crates update) — v1.2
+- ✓ Dual MIT/Apache-2.0 license with LICENSE-MIT and LICENSE-APACHE files — v1.2
+- ✓ Dependency-ordered publish script with dry-run mode and idempotent re-runs — v1.2
+- ✓ GitHub Actions release workflow (v* tag → test → publish → GitHub Release) — v1.2
+- ✓ PR publish-check CI job catches metadata issues before merging — v1.2
+
 ### Active (next milestone scope)
-- [ ] Cargo.toml metadata (description, license, repository, categories, keywords) for all publishable crates
-- [ ] Crate dependency ordering for publish (core → macro/closure/trait/builder → testing)
-- [ ] crates.io API token credential setup
-- [ ] Local publish script with dry-run validation
-- [ ] GitHub Actions workflow for automated publishing on release tags
-- [ ] Version management strategy across workspace crates
 
-## Current Milestone: v1.2 Crates.io Publishing
-
-**Goal:** Establish a complete crate publishing pipeline from local dry-run to automated GitHub Actions release, making all SDK crates available on crates.io.
-
-**Target features:**
-- Cargo.toml metadata compliance for all publishable crates
-- Dependency-ordered publish script with dry-run mode
-- crates.io API token setup and credential management
-- GitHub Actions workflow triggered by release tags
-- Version synchronization across workspace crates
+(None — awaiting next milestone definition)
 
 ### Out of Scope
 - Multi-runtime support (tokio only) — AWS Lambda ecosystem is tokio-based
@@ -65,9 +58,9 @@ Enable Rust teams to write durable Lambda handlers with 4-8x lower memory and or
 
 ## Context
 
-Shipped v1.0 Production Hardening milestone with 21,348 lines of Rust across 6 library crates + test suites. 120 commits, 9 phases, 23 plans. Shipped v1.1 AWS Integration Testing with Terraform infrastructure, Docker build pipeline, automated test harness (48/48 tests passing), and comprehensive service limitation documentation.
+Shipped v1.0 Production Hardening (9 phases, 23 plans). Shipped v1.1 AWS Integration Testing (8 phases, 12 plans) — 48 Lambda functions deployed, 48/48 tests passing. Shipped v1.2 Crates.io Publishing (3 phases, 6 plans) — all 6 crates live on crates.io v1.2.0 with automated CI/CD release pipeline.
 
-v1.2 focuses on making the SDK available to the Rust community via crates.io. Currently no crates are published and no crates.io credentials exist. The publishing process must eventually work from GitHub Actions for automated releases. The 6 publishable crates have a strict dependency order: durable-lambda-core must publish first, then the 4 wrapper crates (closure/macro/trait/builder) and testing crate.
+17,595 lines of Rust across 6 library crates. 20 phases, 41 plans completed across 3 milestones. AWS profile: adfs, region: us-east-2. Repository: https://github.com/pgdad/durable-rust.
 
 ## Constraints
 
@@ -90,6 +83,10 @@ v1.2 focuses on making the SDK available to the Rust community via crates.io. Cu
 | Arc<dyn Fn> for retry_if predicate | StepOptions must remain Clone | ✓ Good — type erasure without sacrificing Clone |
 | tokio::spawn for step closure panic safety | Panics in user closures should not crash process | ✓ Good — JoinError converted to DurableError |
 | Step timeout via tokio::time::timeout | Long-running step closures can hang forever | ✓ Good — per-step deadline with abort on expiry |
+| Dual MIT/Apache-2.0 license | Rust ecosystem standard for maximum compatibility | ✓ Good — matches tokio, serde, clap conventions |
+| Workspace version inheritance | 6 crates need synchronized versions | ✓ Good — single bump in root propagates everywhere |
+| Publish script with is_published() + "already exists" handling | crates.io API caching can miss recently-published crates | ✓ Good — idempotent re-runs after partial failures |
+| Step-wrapped invoke instead of ctx.invoke() | AWS durable execution service doesn't populate chained_invoke_details during replay | ⚠️ Revisit when service adds support |
 
 ---
-*Last updated: 2026-03-19 after v1.2 milestone start*
+*Last updated: 2026-03-19 after v1.2 milestone completion*
