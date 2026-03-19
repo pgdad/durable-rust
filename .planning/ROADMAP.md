@@ -28,7 +28,7 @@
 
 - [x] **Phase 18: Crate Metadata** - All 6 publishable crates have complete, accurate Cargo.toml metadata and per-crate READMEs (completed 2026-03-19)
 - [x] **Phase 19: Publishing Infrastructure** - crates.io token obtained, dependency-ordered publish script passes dry-run for all crates (completed 2026-03-19)
-- [ ] **Phase 20: CI/CD Automation** - GitHub Actions workflow publishes crates on release tags and validates dry-run on every PR
+- [x] **Phase 20: CI/CD Automation** - GitHub Actions workflow publishes crates on release tags and validates dry-run on every PR (completed 2026-03-19)
 
 ## Phase Details
 
@@ -69,7 +69,7 @@ Plans:
   2. The crates.io API token is stored as a GitHub repository secret (`CARGO_REGISTRY_TOKEN`) and the workflow references it without exposing it in logs
   3. Every PR to main triggers a CI check that runs `cargo publish --dry-run` for all 6 crates and fails the PR if any crate has metadata errors or missing fields
   4. A developer can trigger a release by creating and pushing a version tag (e.g., `git tag v0.1.0 && git push origin v0.1.0`) with no other manual steps required
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 Plans:
 - [ ] 20-01-PLAN.md — Create release workflow and add publish-check job to CI
 - [ ] 20-02-PLAN.md — Add CARGO_REGISTRY_TOKEN to GitHub repository secrets
@@ -90,4 +90,4 @@ Plans:
 | 17. Documentation | v1.1 | 0/TBD | Not started | - |
 | 18. Crate Metadata | 2/2 | Complete    | 2026-03-19 | - |
 | 19. Publishing Infrastructure | 2/2 | Complete    | 2026-03-19 | - |
-| 20. CI/CD Automation | 1/2 | In Progress|  | - |
+| 20. CI/CD Automation | 2/2 | Complete   | 2026-03-19 | - |
