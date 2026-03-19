@@ -55,7 +55,10 @@ Plans:
   2. Running `scripts/publish.sh --dry-run` executes dry-run publishes in dependency order (core → macro → closure/trait/builder → testing) and exits 0 only if all 6 pass
   3. Running `scripts/publish.sh` (without --dry-run) publishes all 6 crates to crates.io in the correct order, waiting for crates.io indexing between each publish
   4. `~/.cargo/credentials.toml` contains a valid crates.io API token that `cargo publish` can use without additional flags
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 19-01-PLAN.md — Create dependency-ordered publish script with dry-run validation
+- [ ] 19-02-PLAN.md — Obtain crates.io API token (human checkpoint)
 
 ### Phase 20: CI/CD Automation
 **Goal**: Pushing a release tag to GitHub triggers automated publishing of all crates, and every PR validates that crate metadata is publish-ready before merging
@@ -83,5 +86,5 @@ Plans:
 | 16. Advanced Feature Tests | v1.1 | 2/2 | Complete | 2026-03-17 |
 | 17. Documentation | v1.1 | 0/TBD | Not started | - |
 | 18. Crate Metadata | 2/2 | Complete    | 2026-03-19 | - |
-| 19. Publishing Infrastructure | v1.2 | 0/TBD | Not started | - |
+| 19. Publishing Infrastructure | v1.2 | 0/2 | Not started | - |
 | 20. CI/CD Automation | v1.2 | 0/TBD | Not started | - |
