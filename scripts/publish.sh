@@ -241,9 +241,19 @@ for i in "${!CRATES[@]}"; do
             SKIPPED=$((SKIPPED + 1))
         else
             echo "  Running: cargo publish"
-            cargo publish
-            echo -e "  ${GREEN}PUBLISHED${RESET}"
-            PASSED=$((PASSED + 1))
+            local publish_output
+            if publish_output=$(cargo publish 2>&1); then
+                echo -e "  ${GREEN}PUBLISHED${RESET}"
+                PASSED=$((PASSED + 1))
+            elif echo "$publish_output" | grep -q "already exists"; then
+                echo -e "  ${YELLOW}SKIP: $CRATE v$VERSION already exists on crates.io index${RESET}"
+                SKIPPED=$((SKIPPED + 1))
+                continue
+            else
+                echo "$publish_output" >&2
+                echo -e "  ${RED}FAILED${RESET}" >&2
+                exit 1
+            fi
 
             # Wait for crates.io indexing before publishing dependents
             if [ "$INDEX" -lt "$TOTAL" ]; then
