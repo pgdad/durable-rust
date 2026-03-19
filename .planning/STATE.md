@@ -84,6 +84,7 @@ None yet.
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 5 | Fix README license sections to match Cargo.toml dual MIT OR Apache-2.0 | 2026-03-19 | dc198d6 | [5-fix-readme-license-sections-to-match-car](./quick/5-fix-readme-license-sections-to-match-car/) |
+| 6 | Tag v1.2.0, push to GitHub, verify release workflow publishes all 6 crates to crates.io | 2026-03-19 | 7841560 | [6-tag-v1-2-force-push-to-github-verify-rel](./quick/6-tag-v1-2-force-push-to-github-verify-rel/) |
 
 ### Blockers/Concerns
 
