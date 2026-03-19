@@ -1,0 +1,7 @@
+{
+  "workflow": {
+    "research": false
+  },
+  "milestone_version": "v1.2",
+  "milestone_name": "Crates.io Publishing"
+}
