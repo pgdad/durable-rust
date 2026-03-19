@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Crates.io Publishing
-status: complete
-stopped_at: Completed 20-02-PLAN.md — v1.2 milestone complete
-last_updated: "2026-03-19T14:10:28Z"
-last_activity: 2026-03-19 — Plan 02 complete (CARGO_REGISTRY_TOKEN GitHub secret configured)
+status: completed
+stopped_at: Completed 20-02-PLAN.md -- v1.2 Crates.io Publishing milestone complete
+last_updated: "2026-03-19T14:16:46.900Z"
+last_activity: 2026-03-19 -- Plan 02 complete (CARGO_REGISTRY_TOKEN GitHub secret configured)
 progress:
   total_phases: 3
   completed_phases: 3
