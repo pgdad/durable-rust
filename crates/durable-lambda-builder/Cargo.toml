@@ -12,7 +12,7 @@ readme = "README.md"
 documentation = "https://docs.rs/durable-lambda-builder"
 
 [dependencies]
-durable-lambda-core = { version = "0.1.0", path = "../durable-lambda-core" }
+durable-lambda-core = { version = "1.2.0", path = "../durable-lambda-core" }
 lambda_runtime = { workspace = true }
 tokio = { workspace = true }
 serde = { workspace = true }

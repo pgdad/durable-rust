@@ -660,7 +660,7 @@ checksum = "92773504d58c093f6de2459af4af33faa518c13451eb8f2b5698ed3d36e7c813"
 
 [[package]]
 name = "durable-lambda-builder"
-version = "0.1.0"
+version = "1.2.0"
 dependencies = [
  "async-trait",
  "aws-config",
@@ -677,7 +677,7 @@ dependencies = [
 
 [[package]]
 name = "durable-lambda-closure"
-version = "0.1.0"
+version = "1.2.0"
 dependencies = [
  "async-trait",
  "aws-config",
@@ -704,7 +704,7 @@ dependencies = [
 
 [[package]]
 name = "durable-lambda-core"
-version = "0.1.0"
+version = "1.2.0"
 dependencies = [
  "async-trait",
  "aws-config",
@@ -723,7 +723,7 @@ dependencies = [
 
 [[package]]
 name = "durable-lambda-macro"
-version = "0.1.0"
+version = "1.2.0"
 dependencies = [
  "aws-config",
  "aws-sdk-lambda",
@@ -739,7 +739,7 @@ dependencies = [
 
 [[package]]
 name = "durable-lambda-testing"
-version = "0.1.0"
+version = "1.2.0"
 dependencies = [
  "async-trait",
  "aws-sdk-lambda",
@@ -752,7 +752,7 @@ dependencies = [
 
 [[package]]
 name = "durable-lambda-trait"
-version = "0.1.0"
+version = "1.2.0"
 dependencies = [
  "async-trait",
  "aws-config",
