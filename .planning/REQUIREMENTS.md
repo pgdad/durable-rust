@@ -15,7 +15,7 @@ Requirements for Crates.io Publishing milestone. Each maps to roadmap phases.
 
 ### Publishing Infrastructure
 
-- [ ] **PUB-01**: crates.io API token obtained and stored securely (local `~/.cargo/credentials.toml`)
+- [x] **PUB-01**: crates.io API token obtained and stored securely (local `~/.cargo/credentials.toml`)
 - [x] **PUB-02**: Publish script handles dependency-ordered publishing (core → macro → closure/trait/builder → testing)
 - [x] **PUB-03**: Publish script supports `--dry-run` mode for validation without actual publishing
 - [x] **PUB-04**: `cargo publish --dry-run` passes for all 6 crates
@@ -55,7 +55,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | META-01 | Phase 18 | Complete |
 | META-02 | Phase 18 | Complete |
 | META-03 | Phase 18 | Complete |
-| PUB-01 | Phase 19 | Pending |
+| PUB-01 | Phase 19 | Complete |
 | PUB-02 | Phase 19 | Complete |
 | PUB-03 | Phase 19 | Complete |
 | PUB-04 | Phase 19 | Complete |
