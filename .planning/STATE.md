@@ -1,17 +1,17 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.1
-milestone_name: AWS Integration Testing
-status: executing
-stopped_at: Completed 15-02-PLAN.md
-last_updated: "2026-03-19T08:44:36Z"
-last_activity: 2026-03-19 — Quick task 4: Comprehensive README documentation for root and 4 example crates
+milestone: v1.2
+milestone_name: Crates.io Publishing
+status: defining_requirements
+stopped_at: null
+last_updated: "2026-03-19T09:00:00Z"
+last_activity: 2026-03-19 — Milestone v1.2 started
 progress:
-  total_phases: 8
-  completed_phases: 7
-  total_plans: 12
-  completed_plans: 12
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-17)
 
 **Core value:** Enable Rust durable Lambda handlers with 4-8x lower memory and zero behavioral divergence from Python SDK
-**Current focus:** Phase 15 — Async Operation Tests
+**Current focus:** v1.2 Crates.io Publishing — defining requirements
 
 ## Current Position
 
-Phase: 15 of 17 (Async Operation Tests)
-Plan: 2 of 2 in phase 15 (complete)
-Status: Executing
-Last activity: 2026-03-19 — Quick task 4: Comprehensive README documentation for root and 4 example crates
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-03-19 — Milestone v1.2 started
 
-Progress: [██████████] 100%
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 

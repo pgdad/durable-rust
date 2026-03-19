@@ -27,40 +27,47 @@ Enable Rust teams to write durable Lambda handlers with 4-8x lower memory and or
 - ✓ Proc-macro type validation + builder .with_tracing()/.with_error_handler() — v1.0
 - ✓ Documentation overhaul (determinism rules, error examples, troubleshooting FAQ) — v1.0
 
+### Validated (shipped & confirmed) — v1.1
+- ✓ Terraform infrastructure for all Lambda functions with durable execution — v1.1
+- ✓ ECR repository and Docker image build pipeline for all 4 API styles — v1.1
+- ✓ IAM roles/policies for Lambda execution and durable execution API calls — v1.1
+- ✓ All 48 example handlers deployed as individual Lambda functions — v1.1
+- ✓ Automated test harness — 48/48 tests passing (32 real + 16 XFAIL) — v1.1
+- ✓ Callback testing tooling (SendDurableExecutionCallbackSuccess) — v1.1
+
 ### Active (next milestone scope)
-- [ ] Terraform infrastructure for all Lambda functions with durable execution enabled
-- [ ] ECR repository and Docker image build pipeline for all 4 API styles
-- [ ] IAM roles/policies for Lambda execution and durable execution API calls
-- [ ] All ~44 example handlers deployed as individual Lambda functions
-- [ ] Automated test harness — single command runs all tests with per-test pass/fail
-- [ ] Manual test instructions for individual handler invocation and verification
-- [ ] Callback testing tooling (SendDurableExecutionCallbackSuccess/Failure)
-- [ ] All missing tooling installed (Terraform, AWS CLI, Docker, etc.)
+- [ ] Cargo.toml metadata (description, license, repository, categories, keywords) for all publishable crates
+- [ ] Crate dependency ordering for publish (core → macro/closure/trait/builder → testing)
+- [ ] crates.io API token credential setup
+- [ ] Local publish script with dry-run validation
+- [ ] GitHub Actions workflow for automated publishing on release tags
+- [ ] Version management strategy across workspace crates
 
-## Current Milestone: v1.1 AWS Integration Testing
+## Current Milestone: v1.2 Crates.io Publishing
 
-**Goal:** Build complete AWS infrastructure and test harness to validate all SDK features and examples against real AWS Lambda Durable Execution.
+**Goal:** Establish a complete crate publishing pipeline from local dry-run to automated GitHub Actions release, making all SDK crates available on crates.io.
 
 **Target features:**
-- Terraform-managed AWS resources (ECR, Lambda, IAM)
-- Docker build pipeline for all example handlers
-- Automated end-to-end test runner with per-test reporting
-- Manual test execution documentation
-- Callback signal tooling for interactive testing
+- Cargo.toml metadata compliance for all publishable crates
+- Dependency-ordered publish script with dry-run mode
+- crates.io API token setup and credential management
+- GitHub Actions workflow triggered by release tags
+- Version synchronization across workspace crates
 
 ### Out of Scope
 - Multi-runtime support (tokio only) — AWS Lambda ecosystem is tokio-based
 - Custom serialization formats (JSON only) — matches Python SDK wire format
-- Crate publishing to crates.io — internal project for now
 - Rate limiting — client-side rate limiting before AWS calls (v2 candidate)
 - Cancellation support — cancel waiting/callback operations (v2 candidate)
 - Callback heartbeat — method to send heartbeat during callback wait (v2 candidate)
+- Changelog generation — manual for now, automate later
+- Publishing example crates — examples are not library crates, not published
 
 ## Context
 
-Shipped v1.0 Production Hardening milestone with 21,348 lines of Rust across 6 library crates + test suites. 120 commits, 9 phases, 23 plans. The SDK is now production-hardened with comprehensive test coverage (100+ tests), input validation, structured error codes, operation-level observability, batch checkpoint optimization, and first-class saga support.
+Shipped v1.0 Production Hardening milestone with 21,348 lines of Rust across 6 library crates + test suites. 120 commits, 9 phases, 23 plans. Shipped v1.1 AWS Integration Testing with Terraform infrastructure, Docker build pipeline, automated test harness (48/48 tests passing), and comprehensive service limitation documentation.
 
-v1.1 focuses on validating the SDK against real AWS infrastructure. All v1.0 tests use MockDurableContext — no real AWS calls. This milestone deploys all example handlers as Lambda functions and verifies they work end-to-end against the AWS Lambda Durable Execution service. AWS profile: adfs, region: us-east-2, default VPC (no new networking resources).
+v1.2 focuses on making the SDK available to the Rust community via crates.io. Currently no crates are published and no crates.io credentials exist. The publishing process must eventually work from GitHub Actions for automated releases. The 6 publishable crates have a strict dependency order: durable-lambda-core must publish first, then the 4 wrapper crates (closure/macro/trait/builder) and testing crate.
 
 ## Constraints
 
@@ -85,4 +92,4 @@ v1.1 focuses on validating the SDK against real AWS infrastructure. All v1.0 tes
 | Step timeout via tokio::time::timeout | Long-running step closures can hang forever | ✓ Good — per-step deadline with abort on expiry |
 
 ---
-*Last updated: 2026-03-17 after v1.1 milestone start*
+*Last updated: 2026-03-19 after v1.2 milestone start*
