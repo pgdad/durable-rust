@@ -16,6 +16,15 @@ members = [
     "compliance/rust",
 ]
 
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/pgdad/durable-rust"
+homepage = "https://github.com/pgdad/durable-rust"
+keywords = ["aws", "lambda", "durable-execution", "serverless", "workflow"]
+categories = ["api-bindings", "asynchronous"]
+
 [workspace.dependencies]
 aws-sdk-lambda = "1.119.0"
 aws-config = { version = "1.8.15", features = ["behavior-version-latest"] }

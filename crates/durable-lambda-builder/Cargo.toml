@@ -1,10 +1,15 @@
 [package]
 name = "durable-lambda-builder"
-version = "0.1.0"
-edition = "2021"
+version.workspace = true
+edition.workspace = true
 description = "Builder-pattern API style for AWS Lambda durable execution workflows"
-keywords = ["aws", "lambda", "durable-execution", "serverless", "workflow"]
-categories = ["api-bindings", "asynchronous"]
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+categories.workspace = true
+readme = "README.md"
+documentation = "https://docs.rs/durable-lambda-builder"
 
 [dependencies]
 durable-lambda-core = { path = "../durable-lambda-core" }
