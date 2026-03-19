@@ -336,6 +336,77 @@ ctx.log_error("operation failed");
 // All log methods have _with_data variants for structured data
 ```
 
+## Advanced Features
+
+These features extend the core operations with production-grade capabilities. Currently demonstrated in the [closure-style examples](examples/closure-style/README.md).
+
+### Step Timeout
+<!-- example: closure-step-timeout -->
+
+Enforce per-step deadlines. If the closure does not complete within the specified duration, the step fails with a timeout error.
+
+```rust
+let result: Result<String, String> = ctx.step_with_options(
+    "external_call",
+    StepOptions::new().timeout_seconds(10),
+    || async { call_slow_service().await },
+).await?;
+```
+
+### Conditional Retry
+<!-- example: closure-conditional-retry -->
+
+Gate retries on a predicate. The retry budget is only consumed when the predicate returns `true`, allowing permanent failures to fail fast.
+
+```rust
+let result: Result<String, ApiError> = ctx.step_with_options(
+    "api_call",
+    StepOptions::new()
+        .retries(3)
+        .retry_if(|e: &ApiError| e.is_transient()),
+    || async { call_api().await },
+).await?;
+```
+
+### Batch Checkpoint
+<!-- example: closure-batch-checkpoint -->
+
+Reduce checkpoint calls by up to 90% for sequences of independent steps. Instead of checkpointing after every step, multiple steps share a single batch checkpoint.
+
+```rust
+ctx.enable_batch_mode();
+
+// These steps batch their checkpoints together
+let a: Result<i32, String> = ctx.step("step_a", || async { Ok(1) }).await?;
+let b: Result<i32, String> = ctx.step("step_b", || async { Ok(2) }).await?;
+let c: Result<i32, String> = ctx.step("step_c", || async { Ok(3) }).await?;
+```
+
+### Saga / Compensation
+<!-- example: closure-saga-compensation -->
+
+Register compensation (rollback) closures alongside forward operations. If a later step fails, call `ctx.run_compensations()` to execute all registered compensations in reverse order.
+
+```rust
+// Forward step with compensation
+ctx.step_with_compensation(
+    "charge_payment",
+    || async { charge_card().await },
+    || async { refund_card().await },
+).await?;
+
+ctx.step_with_compensation(
+    "reserve_inventory",
+    || async { reserve_items().await },
+    || async { release_items().await },
+).await?;
+
+// On failure, roll back in reverse order
+if should_rollback {
+    ctx.run_compensations().await?;
+}
+```
+
 ## Determinism Rules
 
 Code **outside** durable operations re-executes on every invocation, including replays. Non-deterministic code produces different values each time, breaking replay.
@@ -436,10 +507,10 @@ durable-rust/
 │   ├── durable-lambda-builder/    # Builder-pattern API (BuilderContext)
 │   └── durable-lambda-testing/    # MockDurableContext, assertions
 ├── examples/
-│   ├── closure-style/             # 11 examples: all operations via closure API
-│   ├── macro-style/               # 11 examples: all operations via proc-macro
-│   ├── trait-style/               # 11 examples: all operations via trait API
-│   └── builder-style/             # 11 examples: all operations via builder API
+│   ├── closure-style/             # 15 examples: all operations + advanced features ([README](examples/closure-style/README.md))
+│   ├── macro-style/               # 11 examples: all core operations ([README](examples/macro-style/README.md))
+│   ├── trait-style/               # 11 examples: all core operations ([README](examples/trait-style/README.md))
+│   └── builder-style/             # 11 examples: all core operations ([README](examples/builder-style/README.md))
 ├── tests/
 │   ├── e2e/                       # 28 end-to-end workflow tests
 │   └── parity/                    # Cross-approach behavioral parity tests
