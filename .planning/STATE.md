@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Crates.io Publishing
-status: completed
-stopped_at: Phase 20 context gathered
-last_updated: "2026-03-19T13:48:05.563Z"
-last_activity: 2026-03-19 — Plan 02 complete (crates.io token setup and validation)
+status: executing
+stopped_at: Completed 20-01-PLAN.md
+last_updated: "2026-03-19T13:58:24.060Z"
+last_activity: 2026-03-19 — Plan 01 complete (CI/CD workflows for release and publish-check)
 progress:
   total_phases: 3
   completed_phases: 2
-  total_plans: 4
-  completed_plans: 4
-  percent: 80
+  total_plans: 6
+  completed_plans: 5
+  percent: 98
 ---
 
 # Project State
@@ -21,23 +21,23 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-19)
 
 **Core value:** Enable Rust durable Lambda handlers with 4-8x lower memory and zero behavioral divergence from Python SDK
-**Current focus:** v1.2 Crates.io Publishing — Phase 19: Publishing Infrastructure (plan 2 of 2 complete)
+**Current focus:** v1.2 Crates.io Publishing — Phase 20: CI/CD Automation (plan 1 of 2 complete)
 
 ## Current Position
 
-Phase: 19 of 20 (Publishing Infrastructure)
-Plan: 2 of 2
-Status: Phase Complete
-Last activity: 2026-03-19 — Plan 02 complete (crates.io token setup and validation)
+Phase: 20 of 20 (CI/CD Automation)
+Plan: 1 of 2
+Status: In Progress
+Last activity: 2026-03-19 — Plan 01 complete (CI/CD workflows for release and publish-check)
 
-Progress: [████████--] 80%
+Progress: [██████████] 98%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed (v1.2): 4
-- Average duration: 3.75min
-- Total execution time: 15min
+- Total plans completed (v1.2): 5
+- Average duration: 3.4min
+- Total execution time: 17min
 
 **By Phase:**
 
@@ -47,8 +47,10 @@ Progress: [████████--] 80%
 | Phase 18-crate-metadata P02 | 5min | 2 tasks | 6 files |
 | Phase 19-publishing-infrastructure P01 | 7min | 2 tasks | 5 files |
 | Phase 19-publishing-infrastructure P02 | 1min | 2 tasks | 0 files |
+| Phase 20-ci-cd-automation P01 | 2min | 2 tasks | 2 files |
 
 *Updated after each plan completion*
+| Phase 20-ci-cd-automation P01 | 2min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -68,6 +70,8 @@ Recent decisions affecting current work:
 - [Phase 19-publishing-infrastructure]: Split dry-run: full publish --dry-run for independent crates, package --list for dependent crates
 - [Phase 19-publishing-infrastructure]: Added version = 0.1.0 alongside path for inter-crate runtime dependencies
 - [Phase 19-publishing-infrastructure]: Token validated via cargo publish --dry-run on durable-lambda-core — confirms authentication works without live publish
+- [Phase 20-ci-cd-automation]: Reuse scripts/publish.sh as single source of truth for both CI dry-run and release publishing
+- [Phase 20-ci-cd-automation]: softprops/action-gh-release@v2 for GitHub Release creation with auto-generated release notes
 
 ### Pending Todos
 
@@ -86,6 +90,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-19T13:48:05.561Z
-Stopped at: Phase 20 context gathered
-Resume file: .planning/phases/20-ci-cd-automation/20-CONTEXT.md
+Last session: 2026-03-19T13:58:19.102Z
+Stopped at: Completed 20-01-PLAN.md
+Resume file: None

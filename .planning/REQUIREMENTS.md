@@ -22,9 +22,9 @@ Requirements for Crates.io Publishing milestone. Each maps to roadmap phases.
 
 ### CI/CD
 
-- [ ] **CI-01**: GitHub Actions workflow publishes all crates on release tag push (e.g., `v*`)
+- [x] **CI-01**: GitHub Actions workflow publishes all crates on release tag push (e.g., `v*`)
 - [ ] **CI-02**: crates.io API token stored as GitHub repository secret
-- [ ] **CI-03**: CI workflow validates `cargo publish --dry-run` on every PR (catches metadata issues early)
+- [x] **CI-03**: CI workflow validates `cargo publish --dry-run` on every PR (catches metadata issues early)
 
 ## v1.3 Requirements
 
@@ -59,9 +59,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PUB-02 | Phase 19 | Complete |
 | PUB-03 | Phase 19 | Complete |
 | PUB-04 | Phase 19 | Complete |
-| CI-01 | Phase 20 | Pending |
+| CI-01 | Phase 20 | Complete |
 | CI-02 | Phase 20 | Pending |
-| CI-03 | Phase 20 | Pending |
+| CI-03 | Phase 20 | Complete |
 
 **Coverage:**
 - v1.2 requirements: 10 total
