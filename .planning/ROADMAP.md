@@ -41,7 +41,10 @@
   2. All 6 crates share version 0.1.0 managed via workspace-level `[workspace.package]` version inheritance — bumping the root version propagates to all crates
   3. Each of the 6 crates has a README.md in its crate directory that renders correctly on crates.io (includes crate purpose, usage snippet, and links to docs.rs)
   4. `cargo metadata --no-deps` for each crate shows no missing required fields and no publish-blocking warnings
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 18-01-PLAN.md — Workspace metadata, license files, and Cargo.toml updates for all crates
+- [ ] 18-02-PLAN.md — Per-crate README.md files for crates.io rendering
 
 ### Phase 19: Publishing Infrastructure
 **Goal**: A developer can validate all 6 crates locally with a single dry-run command, and publish them in dependency order with a single publish command once credentials are in place
@@ -79,6 +82,6 @@
 | 15. Async Operation Tests | v1.1 | 2/2 | Complete | 2026-03-18 |
 | 16. Advanced Feature Tests | v1.1 | 2/2 | Complete | 2026-03-17 |
 | 17. Documentation | v1.1 | 0/TBD | Not started | - |
-| 18. Crate Metadata | v1.2 | 0/TBD | Not started | - |
+| 18. Crate Metadata | v1.2 | 0/2 | Planning | - |
 | 19. Publishing Infrastructure | v1.2 | 0/TBD | Not started | - |
 | 20. CI/CD Automation | v1.2 | 0/TBD | Not started | - |
